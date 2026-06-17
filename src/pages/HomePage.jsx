@@ -65,7 +65,7 @@ export default function HomePage() {
     setLoadState('loading')
     const { data, error } = await supabase
       .from('videos')
-      .select('id, title, channel, thumbnail_url, domain, tags, watch_status, saved_for_later, created_at')
+      .select('id, title, channel, thumbnail_url, domain, tags, watch_status, saved_for_later, created_at, youtube_id')
       .order('created_at', { ascending: false })
 
     if (error) { setLoadState('error'); return }
