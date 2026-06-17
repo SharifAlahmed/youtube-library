@@ -32,7 +32,7 @@ function ThumbPreview({ src, title, youtubeId }) {
 
 // ── Main ─────────────────────────────────────────────────────────────────────
 export default function AddVideoModal({ onClose }) {
-  const { profile } = useAuth()
+  const { profile, session } = useAuth()
   const { t } = useLang()
   const { triggerRefresh } = useLibrary()
 
@@ -131,6 +131,7 @@ export default function AddVideoModal({ onClose }) {
     setSaveError('')
 
     const payload = {
+      user_id:      session?.user?.id,
       title:        title.trim(),
       channel:      channel.trim()  || null,
       thumbnail_url: thumbnailUrl   || null,
@@ -150,7 +151,7 @@ export default function AddVideoModal({ onClose }) {
         setUpgrade(true)
       } else {
         setSaveError(error.message)
-      }
+)
       setSaving(false)
       return
     }
