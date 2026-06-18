@@ -6,8 +6,9 @@ import { LibraryProvider, useLibrary } from './context/LibraryContext'
 import ProtectedRoute  from './components/ProtectedRoute'
 import Header          from './components/Header'
 import AddVideoModal   from './components/AddVideoModal'
-import LoginPage       from './pages/LoginPage'
-import HomePage        from './pages/HomePage'
+import LoginPage          from './pages/LoginPage'
+import HomePage           from './pages/HomePage'
+import ResetPasswordPage  from './pages/ResetPasswordPage'
 
 /**
  * Inner shell rendered inside LibraryProvider so it can read useLibrary().
@@ -31,7 +32,8 @@ export default function App() {
         <AuthProvider>
           <BrowserRouter>
             <Routes>
-              <Route path="/login" element={<LoginPage />} />
+              <Route path="/login"          element={<LoginPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route
                 path="/"
                 element={
