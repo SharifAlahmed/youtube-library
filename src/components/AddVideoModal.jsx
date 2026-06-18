@@ -151,7 +151,7 @@ export default function AddVideoModal({ onClose }) {
         setUpgrade(true)
       } else {
         setSaveError(error.message)
-)
+      }
       setSaving(false)
       return
     }
