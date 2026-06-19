@@ -40,6 +40,13 @@ function toArr(raw) {
   return Array.isArray(raw) ? raw : []
 }
 
+// Ensure a URL has a protocol so browsers don't treat it as a relative path
+function normalizeUrl(url) {
+  const s = url.trim()
+  if (!s) return s
+  return /^https?:\/\//i.test(s) ? s : `https://${s}`
+}
+
 export default function VideoPlayerModal({ video, onClose }) {
   const { t } = useLang()
 
@@ -129,7 +136,8 @@ export default function VideoPlayerModal({ video, onClose }) {
   const handleAddLink = async () => {
     const url = newLinkUrl.trim()
     if (!url) return
-    const entry = { url, label: newLinkLabel.trim() || url, createdAt: new Date().toISOString() }
+    const normalized = normalizeUrl(url)
+    const entry = { url: normalized, label: newLinkLabel.trim() || normalized, createdAt: new Date().toISOString() }
     const next = [...links, entry]
     setLinks(next)
     setNewLinkUrl('')
@@ -330,7 +338,7 @@ export default function VideoPlayerModal({ video, onClose }) {
                     {links.map((item, idx) => (
                       <div key={item.createdAt ?? idx} className="flex items-center gap-2">
                         <a
-                          href={item.url}
+                          href={normalizeUrl(item.url)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex-1 flex items-center gap-2.5 px-3 py-2.5 rounded-xl
