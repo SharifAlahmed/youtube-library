@@ -467,6 +467,7 @@ export default function CollectionsPage() {
   const [selectedId, setSelectedId]     = useState(null)
   const [colVideos, setColVideos]       = useState([])
   const [cvLoading, setCvLoading]       = useState(false)
+  const [cvError, setCvError]           = useState('')
 
   const [showCreate, setShowCreate]     = useState(false)
   const [editTarget, setEditTarget]     = useState(null)
@@ -504,23 +505,45 @@ export default function CollectionsPage() {
 
   useEffect(() => { loadCollections() }, [loadCollections])
 
-  // ── Load videos for the selected collection ───────────────────────────────
+  // ── Load videos for the selected collection (2-step, no embed join) ─────────
   const loadColVideos = useCallback(async (colId) => {
     if (!colId || !uid) return
     setCvLoading(true)
+    setCvError('')
     try {
-      const { data, error } = await supabase
+      // Step 1: get video_ids for this collection
+      const { data: cvRows, error: cvErr } = await supabase
         .from('collection_videos')
-        .select('added_at, videos(id, title, channel, thumbnail_url, youtube_id, watch_status, user_id)')
+        .select('video_id')
         .eq('collection_id', colId)
-        .order('added_at', { ascending: false })
-      if (error) throw error
-      // Enforce user isolation: only keep videos belonging to this user
-      const videos = (data ?? [])
-        .filter(r => r.videos && r.videos.user_id === uid)
-        .map(r => r.videos)
-      setColVideos(videos)
-      setVideoCounts(prev => ({ ...prev, [colId]: videos.length }))
+      if (cvErr) {
+        console.error('[Collections] fetch collection_videos failed:', cvErr)
+        throw new Error(cvErr.message)
+      }
+
+      const videoIds = (cvRows ?? []).map(r => r.video_id).filter(Boolean)
+      if (videoIds.length === 0) {
+        setColVideos([])
+        setVideoCounts(prev => ({ ...prev, [colId]: 0 }))
+        return
+      }
+
+      // Step 2: fetch full video rows, scoped to this user for isolation
+      const { data: videos, error: vErr } = await supabase
+        .from('videos')
+        .select('id, title, channel, thumbnail_url, youtube_id, watch_status')
+        .in('id', videoIds)
+        .eq('user_id', uid)
+        .order('created_at', { ascending: false })
+      if (vErr) {
+        console.error('[Collections] fetch videos failed:', vErr)
+        throw new Error(vErr.message)
+      }
+
+      setColVideos(videos ?? [])
+      setVideoCounts(prev => ({ ...prev, [colId]: (videos ?? []).length }))
+    } catch (err) {
+      setCvError(err.message)
     } finally {
       setCvLoading(false)
     }
@@ -813,6 +836,17 @@ export default function CollectionsPage() {
             {/* ── Video grid ── */}
             {cvLoading ? (
               <div className="flex justify-center py-16"><Spinner size="w-6 h-6" /></div>
+            ) : cvError ? (
+              <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
+                <div className="text-4xl">⚠️</div>
+                <p className="text-sm font-semibold text-red-600 dark:text-red-400">{cvError}</p>
+                <button
+                  onClick={() => loadColVideos(selectedId)}
+                  className="px-4 py-2 text-sm bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition-colors"
+                >
+                  {t.retry}
+                </button>
+              </div>
             ) : colVideos.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
                 <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center">
