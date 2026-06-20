@@ -86,17 +86,21 @@ function TagInput({ tags, setTags, placeholder }) {
 
 // ── CollectionFormModal (create & edit) ───────────────────────────────────────
 function CollectionFormModal({ heading, initial, onSubmit, onClose, t }) {
-  const [name, setName] = useState(initial?.name ?? '')
-  const [icon, setIcon] = useState(initial?.icon ?? '')
-  const [tags, setTags] = useState(toArr(initial?.tags))
-  const [saving, setSaving] = useState(false)
+  const [name, setName]       = useState(initial?.name ?? '')
+  const [icon, setIcon]       = useState(initial?.icon ?? '')
+  const [tags, setTags]       = useState(toArr(initial?.tags))
+  const [saving, setSaving]   = useState(false)
+  const [saveError, setSaveError] = useState('')
 
   const handleSubmit = async () => {
     if (!name.trim()) return
     setSaving(true)
+    setSaveError('')
     try {
       await onSubmit({ name: name.trim(), icon: icon.trim(), tags })
-    } finally {
+      // parent closes modal on success — don't setSaving(false) here to avoid unmounted-component warning
+    } catch (err) {
+      setSaveError(err.message ?? t.errGeneric)
       setSaving(false)
     }
   }
@@ -173,6 +177,14 @@ function CollectionFormModal({ heading, initial, onSubmit, onClose, t }) {
           </div>
         </div>
 
+        {/* Error banner */}
+        {saveError && (
+          <div className="mx-6 mb-2 px-3 py-2 rounded-xl text-sm text-red-600 dark:text-red-400
+                          bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30">
+            {saveError}
+          </div>
+        )}
+
         {/* Footer */}
         <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-700 flex gap-3">
           <button onClick={onClose}
@@ -182,10 +194,10 @@ function CollectionFormModal({ heading, initial, onSubmit, onClose, t }) {
           </button>
           <button
             onClick={handleSubmit}
-            disabled={!name.trim() || saving}
+            disabled={saving}
             className="flex-1 py-3 rounded-xl font-semibold text-sm transition-colors
                        bg-primary-600 hover:bg-primary-700 text-white
-                       disabled:bg-gray-200 dark:disabled:bg-gray-700 disabled:text-gray-400
+                       disabled:opacity-60 disabled:cursor-not-allowed
                        flex items-center justify-center gap-2"
           >
             {saving && <Spinner size="w-4 h-4" />}
@@ -525,10 +537,14 @@ export default function CollectionsPage() {
       .insert({ user_id: uid, name, icon: icon || null, tags: tags.length ? tags : null })
       .select('id, name, icon, tags, created_at')
       .single()
-    if (!error && data) {
-      setCollections(prev => [...prev, data])
-      setSelectedId(data.id)
+    if (error) {
+      console.error('[Collections] insert failed:', error)
+      throw new Error(error.message)
     }
+    // Success: update sidebar, select new collection, close modal
+    setCollections(prev => [...prev, data])
+    setVideoCounts(prev => ({ ...prev, [data.id]: 0 }))
+    setSelectedId(data.id)
     setShowCreate(false)
   }
 
@@ -540,7 +556,11 @@ export default function CollectionsPage() {
       .eq('id', editTarget.id).eq('user_id', uid)
       .select('id, name, icon, tags, created_at')
       .single()
-    if (!error && data) setCollections(prev => prev.map(c => c.id === data.id ? data : c))
+    if (error) {
+      console.error('[Collections] update failed:', error)
+      throw new Error(error.message)
+    }
+    setCollections(prev => prev.map(c => c.id === data.id ? data : c))
     setEditTarget(null)
   }
 
