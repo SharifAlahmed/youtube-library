@@ -71,7 +71,7 @@ export default function HomePage() {
     try {
       const { data, error } = await supabase
         .from('videos')
-        .select('id, title, channel, thumbnail_url, domain, tags, watch_status, saved_for_later, created_at, youtube_id')
+        .select('id, title, channel, thumbnail_url, domain, tags, watch_status, saved_for_later, created_at, youtube_id, notes, prompts, links')
         .eq('user_id', uid)
         .order('created_at', { ascending: false })
       if (error) throw error
@@ -113,9 +113,11 @@ export default function HomePage() {
       if (activeFilter === 'saved'     && !v.saved_for_later)             return false
       // Tag filter
       if (activeTag && !normTags(v.tags).includes(activeTag)) return false
-      // Search
+      // Search (title + channel + tags + notes + prompts + links)
       if (q) {
-        const haystack = [v.title, v.channel, ...normTags(v.tags)]
+        const promptTexts = Array.isArray(v.prompts) ? v.prompts.map(p => p?.text ?? '') : []
+        const linkTexts   = Array.isArray(v.links)   ? v.links.flatMap(l => [l?.url ?? '', l?.label ?? '']) : []
+        const haystack = [v.title, v.channel, ...normTags(v.tags), v.notes ?? '', ...promptTexts, ...linkTexts]
           .filter(Boolean).join(' ').toLowerCase()
         if (!haystack.includes(q)) return false
       }

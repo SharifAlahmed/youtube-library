@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { NavLink } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LanguageContext'
 import { useTheme } from '../context/ThemeContext'
@@ -29,7 +30,7 @@ export default function Header() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 gap-3">
 
-            {/* ── Logo + Name ─────────────────────────────── */}
+            {/* ── Logo + Name + Nav ───────────────────────── */}
             <div className="flex items-center gap-3 shrink-0">
               <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center shadow-sm">
                 <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -43,6 +44,33 @@ export default function Header() {
               <span className="text-lg font-bold text-gray-900 dark:text-white hidden sm:block">
                 {t.appName}
               </span>
+              <nav className="flex items-center gap-1 ms-1">
+                <NavLink
+                  to="/app"
+                  end
+                  className={({ isActive }) =>
+                    `text-sm font-medium px-3 py-1.5 rounded-lg transition-colors ${
+                      isActive
+                        ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
+                        : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
+                    }`
+                  }
+                >
+                  {t.libraryNav}
+                </NavLink>
+                <NavLink
+                  to="/app/prompts"
+                  className={({ isActive }) =>
+                    `text-sm font-medium px-3 py-1.5 rounded-lg transition-colors ${
+                      isActive
+                        ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
+                        : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
+                    }`
+                  }
+                >
+                  {t.myPrompts}
+                </NavLink>
+              </nav>
             </div>
 
             {/* ── Controls ─────────────────────────────────── */}

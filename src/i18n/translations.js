@@ -61,8 +61,11 @@ export const translations = {
     statsWatched: 'مشاهَد',
     statsRemaining: 'متبقّي',
     statsSaved: 'لاحقاً',
+    // ── Navigation ──────────────────────────────────────────
+    libraryNav: 'المكتبة',
+    myPrompts:  'بروماتي',
     // ── Library — Search & Filters ──────────────────────────
-    searchPlaceholder: 'ابحث في العنوان، القناة، الوسوم...',
+    searchPlaceholder: 'ابحث في العنوان، القناة، الوسوم، الملاحظات، البروم...',
     filterAll: 'الكل',
     filterUnwatched: 'غير مشاهَد',
     filterWatched: 'مشاهَد',
@@ -120,6 +123,8 @@ export const translations = {
     copied:             '✓ تم النسخ',
     notesSaved:         '✓ تم الحفظ',
     noPromptsYet:       'لا يوجد بروم بعد — أضف أول بروم أدناه',
+    noPromptsGlobal:    'لا يوجد بروم في أي فيديو بعد — أضف من داخل أي فيديو',
+    searchPromptsPlaceholder: 'ابحث في البروم أو اسم الفيديو...',
     noLinksYet:         'لا توجد روابط بعد — أضف أول رابط أدناه',
     promptPlaceholder:  'اكتب البروم هنا...',
     linkUrlPlaceholder: 'https://...',
@@ -190,8 +195,11 @@ export const translations = {
     statsWatched: 'Watched',
     statsRemaining: 'Remaining',
     statsSaved: 'Saved',
+    // ── Navigation ──────────────────────────────────────────
+    libraryNav: 'Library',
+    myPrompts:  'My Prompts',
     // ── Library — Search & Filters ──────────────────────────
-    searchPlaceholder: 'Search title, channel, tags…',
+    searchPlaceholder: 'Search title, channel, tags, notes, prompts…',
     filterAll: 'All',
     filterUnwatched: 'Unwatched',
     filterWatched: 'Watched',
@@ -249,6 +257,8 @@ export const translations = {
     copied:             '✓ Copied',
     notesSaved:         '✓ Saved',
     noPromptsYet:       'No prompts yet — add the first one below',
+    noPromptsGlobal:    'No prompts in any video yet — add one from inside a video',
+    searchPromptsPlaceholder: 'Search prompts or video name…',
     noLinksYet:         'No links yet — add the first one below',
     promptPlaceholder:  'Write your prompt…',
     linkUrlPlaceholder: 'https://…',

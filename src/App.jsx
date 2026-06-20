@@ -9,6 +9,7 @@ import AddVideoModal   from './components/AddVideoModal'
 import LandingPage        from './pages/LandingPage'
 import LoginPage          from './pages/LoginPage'
 import HomePage           from './pages/HomePage'
+import PromptsPage        from './pages/PromptsPage'
 import ResetPasswordPage  from './pages/ResetPasswordPage'
 
 function AppShell() {
@@ -16,7 +17,10 @@ function AppShell() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
       <Header />
-      <HomePage />
+      <Routes>
+        <Route index element={<HomePage />} />
+        <Route path="prompts" element={<PromptsPage />} />
+      </Routes>
       {showAddModal && <AddVideoModal onClose={closeAddModal} />}
     </div>
   )
@@ -35,7 +39,7 @@ export default function App() {
               <Route path="/reset-password" element={<ResetPasswordPage />} />
               {/* Protected app */}
               <Route
-                path="/app"
+                path="/app/*"
                 element={
                   <ProtectedRoute>
                     <LibraryProvider>
