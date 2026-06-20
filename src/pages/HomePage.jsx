@@ -82,7 +82,8 @@ export default function HomePage() {
       console.error('[FETCH] error:', err)
       setLoadState('error')
     }
-  }, [session])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user?.id])
 
   // Re-fetch when a video is added (refreshKey increments via LibraryContext)
   useEffect(() => { fetchVideos() }, [fetchVideos, refreshKey])

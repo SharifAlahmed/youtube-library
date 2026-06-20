@@ -19,22 +19,24 @@ export function AuthProvider({ children }) {
   }, [])
 
   useEffect(() => {
-    // Step 1: authoritative initial check — sets loading=false exactly once
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('[AUTH] getSession result:', !!session)
-      setSession(session)
-      if (session?.user) fetchProfile(session.user.id)
-      else setProfile(null)
-      setLoading(false)
-    })
-
-    // Step 2: listen for subsequent changes (login, logout, token refresh)
-    // Does NOT touch loading — that is owned by getSession above
+    // onAuthStateChange fires INITIAL_SESSION immediately on subscribe —
+    // no need for a separate getSession() call.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('[AUTH] onAuthStateChange:', event, '| session:', !!session)
       setSession(session)
-      if (session?.user) fetchProfile(session.user.id)
-      else setProfile(null)
+
+      if (event === 'INITIAL_SESSION') {
+        if (session?.user) fetchProfile(session.user.id)
+        else setProfile(null)
+        setLoading(false)
+      } else if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+        if (session?.user) fetchProfile(session.user.id)
+        else setProfile(null)
+      } else if (event === 'SIGNED_OUT') {
+        setProfile(null)
+        setLoading(false)
+      }
+      // TOKEN_REFRESHED: setSession above is enough — no fetchProfile, no loading change
     })
 
     return () => subscription.unsubscribe()
