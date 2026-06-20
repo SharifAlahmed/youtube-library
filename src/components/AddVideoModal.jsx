@@ -57,6 +57,7 @@ export default function AddVideoModal({ onClose }) {
   const [saving, setSaving]         = useState(false)
   const [saveError, setSaveError]   = useState('')
   const [showUpgrade, setUpgrade]   = useState(false)
+  const [fieldErrors, setFieldErrors] = useState({}) // { url?: true, title?: true }
 
   const preferredDomains = Array.isArray(profile?.preferred_domains)
     ? profile.preferred_domains
@@ -91,6 +92,7 @@ export default function AddVideoModal({ onClose }) {
 
   const handleUrlChange = (val) => {
     setUrl(val)
+    if (fieldErrors.url) setFieldErrors(e => ({ ...e, url: false }))
     // Reset fetched data when URL is cleared
     if (!val.trim()) {
       setFS('idle')
@@ -126,7 +128,12 @@ export default function AddVideoModal({ onClose }) {
 
   // ── Save to Supabase ──────────────────────────────────────────────────────
   const handleSave = async () => {
-    if (!title.trim() || saving) return
+    if (saving) return
+    const errs = {}
+    if (!url.trim())   errs.url   = true
+    if (!title.trim()) errs.title = true
+    if (Object.keys(errs).length) { setFieldErrors(errs); return }
+    setFieldErrors({})
     setSaving(true)
     setSaveError('')
 
@@ -165,7 +172,7 @@ export default function AddVideoModal({ onClose }) {
     return <UpgradeModal onClose={() => { setUpgrade(false); onClose() }} />
   }
 
-  const canSave = title.trim().length > 0 && !saving
+  const hasFieldErrors = fieldErrors.url || fieldErrors.title
 
   return (
     <div
@@ -201,6 +208,7 @@ export default function AddVideoModal({ onClose }) {
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
               {t.youtubeUrl}
+              <span className="text-red-500 ms-0.5">*</span>
             </label>
             <div className="flex gap-2">
               <input
@@ -209,11 +217,12 @@ export default function AddVideoModal({ onClose }) {
                 onChange={e => handleUrlChange(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleFetch()}
                 placeholder={t.urlPlaceholder}
-                className="flex-1 min-w-0 px-4 py-2.5 rounded-xl border border-gray-200
-                           dark:border-gray-600 bg-gray-50 dark:bg-gray-700
+                className={`flex-1 min-w-0 px-4 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700
                            text-gray-900 dark:text-white placeholder-gray-400
-                           focus:outline-none focus:ring-2 focus:ring-primary-500
-                           focus:border-transparent transition-all text-sm"
+                           focus:outline-none focus:ring-2 focus:border-transparent transition-all text-sm
+                           ${fieldErrors.url
+                             ? 'border-red-500 focus:ring-red-500'
+                             : 'border-gray-200 dark:border-gray-600 focus:ring-primary-500'}`}
               />
               <button
                 onClick={handleFetch}
@@ -286,12 +295,17 @@ export default function AddVideoModal({ onClose }) {
             <input
               type="text"
               value={title}
-              onChange={e => setTitle(e.target.value)}
+              onChange={e => {
+                setTitle(e.target.value)
+                if (fieldErrors.title) setFieldErrors(err => ({ ...err, title: false }))
+              }}
               placeholder={t.videoTitlePlaceholder}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600
-                         bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white
-                         placeholder-gray-400 focus:outline-none focus:ring-2
-                         focus:ring-primary-500 focus:border-transparent transition-all text-sm"
+              className={`w-full px-4 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700
+                         text-gray-900 dark:text-white placeholder-gray-400
+                         focus:outline-none focus:ring-2 focus:border-transparent transition-all text-sm
+                         ${fieldErrors.title
+                           ? 'border-red-500 focus:ring-red-500'
+                           : 'border-gray-200 dark:border-gray-600 focus:ring-primary-500'}`}
             />
           </div>
 
@@ -395,7 +409,15 @@ export default function AddVideoModal({ onClose }) {
             />
           </div>
 
-          {/* Save error */}
+          {/* Required fields error */}
+          {hasFieldErrors && (
+            <p className="text-sm text-red-600 dark:text-red-400
+                          bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-lg">
+              {t.requiredFieldsError}
+            </p>
+          )}
+
+          {/* Save error (from Supabase) */}
           {saveError && (
             <p className="text-sm text-red-600 dark:text-red-400
                           bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-lg">
@@ -418,7 +440,7 @@ export default function AddVideoModal({ onClose }) {
           </button>
           <button
             onClick={handleSave}
-            disabled={!canSave}
+            disabled={saving}
             className="flex-1 py-3 bg-primary-600 hover:bg-primary-700
                        disabled:bg-gray-200 dark:disabled:bg-gray-600
                        text-white disabled:text-gray-400

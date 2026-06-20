@@ -111,6 +111,7 @@ export const translations = {
     save: 'حفظ',
     saving: 'جاري الحفظ...',
     playVideo: 'تشغيل امفيديو',
+    requiredFieldsError: 'يرجى تعبئة الحقول المطلوبة',
     // ── Knowledge Hub ───────────────────────────────────────────
     tabNotes:           'ملاحظات',
     tabPrompts:         'بروم',
@@ -239,6 +240,7 @@ export const translations = {
     save: 'Save',
     saving: 'Saving…',
     playVideo: 'Play video',
+    requiredFieldsError: 'Please fill in the required fields',
     // ── Knowledge Hub ───────────────────────────────────────────
     tabNotes:           'Notes',
     tabPrompts:         'Prompts',
