@@ -217,8 +217,9 @@ export const translations = {
     statsRemaining: 'Remaining',
     statsSaved: 'Saved',
     // ── Navigation ──────────────────────────────────────────
-    libraryNav: 'Library',
-    myPrompts:  'My Prompts',
+    libraryNav:     'Library',
+    myPrompts:      'My Prompts',
+    collectionsNav: 'Collections',
     // ── Library — Search & Filters ──────────────────────────
     searchPlaceholder: 'Search title, channel, tags, notes, prompts…',
     filterAll: 'All',
