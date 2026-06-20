@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Navigate, useSearchParams } from 'react-router-dom'
+import { Navigate, useSearchParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LanguageContext'
@@ -56,6 +56,7 @@ export default function LoginPage() {
   const { t, toggleLang } = useLang()
   const { isDark, toggleTheme } = useTheme()
   const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
 
   // mode: 'login' | 'signup' | 'forgot'
   const [mode, setMode]           = useState(() =>
@@ -128,6 +129,11 @@ export default function LoginPage() {
         const mapped = mapAuthError(err.message, t)
         setError(mapped.text)
         setErrorType(mapped.type)
+        setLoading(false)
+      } else {
+        console.log('[AUTH] signInWithPassword success — navigating to /app')
+        navigate('/app', { replace: true })
+        return
       }
     }
     setLoading(false)

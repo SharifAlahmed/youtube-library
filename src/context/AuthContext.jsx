@@ -19,28 +19,22 @@ export function AuthProvider({ children }) {
   }, [])
 
   useEffect(() => {
-    // resolved ensures loading=false is set by whichever resolves first
-    // (getSession or onAuthStateChange INITIAL_SESSION), preventing a stuck spinner
-    let resolved = false
-    const markResolved = () => {
-      if (!resolved) { resolved = true; setLoading(false) }
-    }
-
-    // 1) Authoritative initial check
+    // Step 1: authoritative initial check — sets loading=false exactly once
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      if (session?.user) fetchProfile(session.user.id)
-      markResolved()
-    })
-
-    // 2) Subsequent changes (login, logout, token refresh)
-    //    In Supabase v2, INITIAL_SESSION fires immediately — markResolved covers
-    //    the rare case where this fires before getSession resolves
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log('[AUTH] getSession result:', !!session)
       setSession(session)
       if (session?.user) fetchProfile(session.user.id)
       else setProfile(null)
-      markResolved()
+      setLoading(false)
+    })
+
+    // Step 2: listen for subsequent changes (login, logout, token refresh)
+    // Does NOT touch loading — that is owned by getSession above
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('[AUTH] onAuthStateChange:', event, '| session:', !!session)
+      setSession(session)
+      if (session?.user) fetchProfile(session.user.id)
+      else setProfile(null)
     })
 
     return () => subscription.unsubscribe()
@@ -48,8 +42,6 @@ export function AuthProvider({ children }) {
 
   const signOut = async () => {
     await supabase.auth.signOut()
-    setSession(null)
-    setProfile(null)
   }
 
   const refetchProfile = () => fetchProfile(session?.user?.id)

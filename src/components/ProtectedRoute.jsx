@@ -4,7 +4,9 @@ import { useAuth } from '../context/AuthContext'
 export default function ProtectedRoute({ children }) {
   const { session, loading } = useAuth()
 
-  // Never redirect while loading — wait for auth state to settle
+  console.log('[AUTH] ProtectedRoute — loading:', loading, '| session:', !!session)
+
+  // Never redirect while auth state is still being determined
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900">
@@ -16,7 +18,6 @@ export default function ProtectedRoute({ children }) {
     )
   }
 
-  // Only redirect when we are certain there is no session
   if (!session) return <Navigate to="/login" replace />
 
   return children

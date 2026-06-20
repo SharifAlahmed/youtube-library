@@ -65,7 +65,8 @@ export default function HomePage() {
   // ── Fetch ────────────────────────────────────────────────────────────────
   const fetchVideos = useCallback(async () => {
     const uid = session?.user?.id
-    if (!uid) return
+    if (!uid) { console.log('[FETCH] skipped — no uid'); return }
+    console.log('[FETCH] start uid:', uid)
     setLoadState('loading')
     try {
       const { data, error } = await supabase
@@ -74,10 +75,11 @@ export default function HomePage() {
         .eq('user_id', uid)
         .order('created_at', { ascending: false })
       if (error) throw error
+      console.log('[FETCH] done — rows:', data?.length ?? 0)
       setVideos(data ?? [])
       setLoadState('ok')
     } catch (err) {
-      console.error('fetchVideos:', err)
+      console.error('[FETCH] error:', err)
       setLoadState('error')
     }
   }, [session])
