@@ -19,18 +19,28 @@ export function AuthProvider({ children }) {
   }, [])
 
   useEffect(() => {
-    // Restore initial session
+    // resolved ensures loading=false is set by whichever resolves first
+    // (getSession or onAuthStateChange INITIAL_SESSION), preventing a stuck spinner
+    let resolved = false
+    const markResolved = () => {
+      if (!resolved) { resolved = true; setLoading(false) }
+    }
+
+    // 1) Authoritative initial check
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       if (session?.user) fetchProfile(session.user.id)
-      setLoading(false)
+      markResolved()
     })
 
-    // Listen for auth state changes (login, logout, token refresh)
+    // 2) Subsequent changes (login, logout, token refresh)
+    //    In Supabase v2, INITIAL_SESSION fires immediately — markResolved covers
+    //    the rare case where this fires before getSession resolves
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
       if (session?.user) fetchProfile(session.user.id)
       else setProfile(null)
+      markResolved()
     })
 
     return () => subscription.unsubscribe()

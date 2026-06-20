@@ -67,15 +67,19 @@ export default function HomePage() {
     const uid = session?.user?.id
     if (!uid) return
     setLoadState('loading')
-    const { data, error } = await supabase
-      .from('videos')
-      .select('id, title, channel, thumbnail_url, domain, tags, watch_status, saved_for_later, created_at, youtube_id')
-      .eq('user_id', uid)
-      .order('created_at', { ascending: false })
-
-    if (error) { setLoadState('error'); return }
-    setVideos(data ?? [])
-    setLoadState('ok')
+    try {
+      const { data, error } = await supabase
+        .from('videos')
+        .select('id, title, channel, thumbnail_url, domain, tags, watch_status, saved_for_later, created_at, youtube_id')
+        .eq('user_id', uid)
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      setVideos(data ?? [])
+      setLoadState('ok')
+    } catch (err) {
+      console.error('fetchVideos:', err)
+      setLoadState('error')
+    }
   }, [session])
 
   // Re-fetch when a video is added (refreshKey increments via LibraryContext)
