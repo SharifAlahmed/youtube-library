@@ -217,6 +217,7 @@ function AddVideosModal({ existingVideoIds, uid, onAdd, onClose, t }) {
   const [search, setSearch]       = useState('')
   const [selected, setSelected]   = useState(new Set())
   const [saving, setSaving]       = useState(false)
+  const [addError, setAddError]   = useState('')
 
   useEffect(() => {
     async function load() {
@@ -249,10 +250,12 @@ function AddVideosModal({ existingVideoIds, uid, onAdd, onClose, t }) {
   const handleAdd = async () => {
     if (selected.size === 0) return
     setSaving(true)
+    setAddError('')
     try {
       await onAdd([...selected])
       onClose()
-    } catch {
+    } catch (err) {
+      setAddError(err.message ?? t.errGeneric)
       setSaving(false)
     }
   }
@@ -338,6 +341,14 @@ function AddVideosModal({ existingVideoIds, uid, onAdd, onClose, t }) {
             </div>
           )}
         </div>
+
+        {/* Error banner */}
+        {addError && (
+          <div className="mx-4 mb-2 px-3 py-2 rounded-xl text-sm text-red-600 dark:text-red-400
+                          bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 shrink-0">
+            {addError}
+          </div>
+        )}
 
         {/* Footer */}
         <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-700 flex gap-3 shrink-0">
@@ -588,15 +599,19 @@ export default function CollectionsPage() {
   }
 
   const handleAddVideos = async (videoIds) => {
+    // AddVideosModal already filters out existing videos, so plain insert is safe.
+    // Only send the columns that exist in the schema.
     const rows = videoIds.map(vid => ({
       collection_id: selectedId,
       video_id: vid,
-      added_at: new Date().toISOString(),
     }))
     const { error } = await supabase
       .from('collection_videos')
-      .upsert(rows, { onConflict: 'collection_id,video_id', ignoreDuplicates: true })
-    if (error) throw error
+      .insert(rows)
+    if (error) {
+      console.error('[Collections] add videos failed:', error)
+      throw new Error(error.message)
+    }
     await loadColVideos(selectedId)
   }
 
