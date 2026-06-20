@@ -70,6 +70,18 @@ export default function Header() {
                 >
                   {t.myPrompts}
                 </NavLink>
+                <NavLink
+                  to="/app/collections"
+                  className={({ isActive }) =>
+                    `text-sm font-medium px-3 py-1.5 rounded-lg transition-colors ${
+                      isActive
+                        ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
+                        : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
+                    }`
+                  }
+                >
+                  {t.collectionsNav}
+                </NavLink>
               </nav>
             </div>
 
