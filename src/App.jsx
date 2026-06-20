@@ -6,14 +6,11 @@ import { LibraryProvider, useLibrary } from './context/LibraryContext'
 import ProtectedRoute  from './components/ProtectedRoute'
 import Header          from './components/Header'
 import AddVideoModal   from './components/AddVideoModal'
+import LandingPage        from './pages/LandingPage'
 import LoginPage          from './pages/LoginPage'
 import HomePage           from './pages/HomePage'
 import ResetPasswordPage  from './pages/ResetPasswordPage'
 
-/**
- * Inner shell rendered inside LibraryProvider so it can read useLibrary().
- * Renders Header + page content + AddVideoModal (when open).
- */
 function AppShell() {
   const { showAddModal, closeAddModal } = useLibrary()
   return (
@@ -32,10 +29,13 @@ export default function App() {
         <AuthProvider>
           <BrowserRouter>
             <Routes>
+              {/* Public */}
+              <Route path="/"               element={<LandingPage />} />
               <Route path="/login"          element={<LoginPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
+              {/* Protected app */}
               <Route
-                path="/"
+                path="/app"
                 element={
                   <ProtectedRoute>
                     <LibraryProvider>

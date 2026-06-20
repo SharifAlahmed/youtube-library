@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Navigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LanguageContext'
@@ -55,9 +55,12 @@ export default function LoginPage() {
   const { session } = useAuth()
   const { t, toggleLang } = useLang()
   const { isDark, toggleTheme } = useTheme()
+  const [searchParams] = useSearchParams()
 
   // mode: 'login' | 'signup' | 'forgot'
-  const [mode, setMode]           = useState('login')
+  const [mode, setMode]           = useState(() =>
+    searchParams.get('mode') === 'signup' ? 'signup' : 'login'
+  )
   const [email, setEmail]             = useState('')
   const [password, setPassword]       = useState('')
   const [confirmPw, setConfirmPw]     = useState('')
@@ -68,7 +71,7 @@ export default function LoginPage() {
   const [showPw, setShowPw]           = useState(false)
   const [showConfirmPw, setShowConfirmPw] = useState(false)
 
-  if (session) return <Navigate to="/" replace />
+  if (session) return <Navigate to="/app" replace />
 
   const clearMessages = () => { setError(''); setErrorType(null); setInfo('') }
 
