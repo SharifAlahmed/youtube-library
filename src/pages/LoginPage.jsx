@@ -58,19 +58,21 @@ export default function LoginPage() {
 
   // mode: 'login' | 'signup' | 'forgot'
   const [mode, setMode]           = useState('login')
-  const [email, setEmail]         = useState('')
-  const [password, setPassword]   = useState('')
-  const [loading, setLoading]     = useState(false)
-  const [error, setError]         = useState('')
-  const [errorType, setErrorType] = useState(null)
-  const [info, setInfo]           = useState('')
-  const [showPw, setShowPw]       = useState(false)
+  const [email, setEmail]             = useState('')
+  const [password, setPassword]       = useState('')
+  const [confirmPw, setConfirmPw]     = useState('')
+  const [loading, setLoading]         = useState(false)
+  const [error, setError]             = useState('')
+  const [errorType, setErrorType]     = useState(null)
+  const [info, setInfo]               = useState('')
+  const [showPw, setShowPw]           = useState(false)
+  const [showConfirmPw, setShowConfirmPw] = useState(false)
 
   if (session) return <Navigate to="/" replace />
 
   const clearMessages = () => { setError(''); setErrorType(null); setInfo('') }
 
-  const switchMode = (next) => { setMode(next); clearMessages(); setPassword('') }
+  const switchMode = (next) => { setMode(next); clearMessages(); setPassword(''); setConfirmPw('') }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -99,6 +101,11 @@ export default function LoginPage() {
 
     if (mode === 'signup' && password.length < 6) {
       setError(t.errWeakPassword)
+      return
+    }
+
+    if (mode === 'signup' && password !== confirmPw) {
+      setError(t.passwordsMismatch)
       return
     }
 
@@ -226,54 +233,93 @@ export default function LoginPage() {
               />
             </div>
 
-            {/* Password — hidden in forgot mode */}
+            {/* Password + Confirm — hidden in forgot mode */}
             {mode !== 'forgot' && (
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {t.password}
-                  </label>
-                  {mode === 'login' && (
+              <>
+                {/* Password */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {t.password}
+                    </label>
+                    {mode === 'login' && (
+                      <button
+                        type="button"
+                        onClick={() => switchMode('forgot')}
+                        className="text-xs text-primary-600 hover:text-primary-700 dark:text-primary-400
+                                   hover:underline transition-colors"
+                      >
+                        {t.forgotPasswordLink}
+                      </button>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <input
+                      type={showPw ? 'text' : 'password'}
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      placeholder={t.passwordPlaceholder}
+                      required
+                      className="w-full px-4 py-3 pe-12 rounded-xl border border-gray-200 dark:border-gray-600
+                                 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white
+                                 placeholder-gray-400 focus:outline-none focus:ring-2
+                                 focus:ring-primary-500 focus:border-transparent transition-all"
+                    />
                     <button
                       type="button"
-                      onClick={() => switchMode('forgot')}
-                      className="text-xs text-primary-600 hover:text-primary-700 dark:text-primary-400
-                                 hover:underline transition-colors"
+                      tabIndex={-1}
+                      onClick={() => setShowPw(p => !p)}
+                      aria-label={showPw ? t.hidePassword : t.showPassword}
+                      className="absolute inset-y-0 end-0 flex items-center px-3
+                                 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                     >
-                      {t.forgotPasswordLink}
+                      <EyeIcon open={showPw} />
                     </button>
+                  </div>
+                  {mode === 'signup' && password.length > 0 && password.length < 6 && (
+                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 ps-1">
+                      {t.passwordMinHint}
+                    </p>
                   )}
                 </div>
-                <div className="relative">
-                  <input
-                    type={showPw ? 'text' : 'password'}
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    placeholder={t.passwordPlaceholder}
-                    required
-                    className="w-full px-4 py-3 pe-12 rounded-xl border border-gray-200 dark:border-gray-600
-                               bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white
-                               placeholder-gray-400 focus:outline-none focus:ring-2
-                               focus:ring-primary-500 focus:border-transparent transition-all"
-                  />
-                  <button
-                    type="button"
-                    tabIndex={-1}
-                    onClick={() => setShowPw(p => !p)}
-                    aria-label={showPw ? t.hidePassword : t.showPassword}
-                    className="absolute inset-y-0 end-0 flex items-center px-3
-                               text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                  >
-                    <EyeIcon open={showPw} />
-                  </button>
-                </div>
-                {/* Min-length hint (signup only) */}
-                {mode === 'signup' && password.length > 0 && password.length < 6 && (
-                  <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 ps-1">
-                    {t.passwordMinHint}
-                  </p>
+
+                {/* Confirm password (signup only) */}
+                {mode === 'signup' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                      {t.confirmNewPassword}
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showConfirmPw ? 'text' : 'password'}
+                        value={confirmPw}
+                        onChange={e => setConfirmPw(e.target.value)}
+                        placeholder={t.confirmNewPasswordPlaceholder}
+                        required
+                        className="w-full px-4 py-3 pe-12 rounded-xl border border-gray-200 dark:border-gray-600
+                                   bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white
+                                   placeholder-gray-400 focus:outline-none focus:ring-2
+                                   focus:ring-primary-500 focus:border-transparent transition-all"
+                      />
+                      <button
+                        type="button"
+                        tabIndex={-1}
+                        onClick={() => setShowConfirmPw(p => !p)}
+                        aria-label={showConfirmPw ? t.hidePassword : t.showPassword}
+                        className="absolute inset-y-0 end-0 flex items-center px-3
+                                   text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                      >
+                        <EyeIcon open={showConfirmPw} />
+                      </button>
+                    </div>
+                    {confirmPw.length > 0 && confirmPw !== password && (
+                      <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 ps-1">
+                        {t.passwordsMismatch}
+                      </p>
+                    )}
+                  </div>
                 )}
-              </div>
+              </>
             )}
 
             {/* Error message */}

@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { useLang } from '../context/LanguageContext'
 import { useLibrary } from '../context/LibraryContext'
+import { useAuth } from '../context/AuthContext'
 import VideoCard from '../components/VideoCard'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -53,6 +54,7 @@ const FILTERS = ['all', 'unwatched', 'watched', 'saved']
 export default function HomePage() {
   const { t } = useLang()
   const { refreshKey } = useLibrary()
+  const { session } = useAuth()
 
   const [videos, setVideos]         = useState([])
   const [loadState, setLoadState]   = useState('loading') // 'loading' | 'ok' | 'error'
@@ -62,16 +64,19 @@ export default function HomePage() {
 
   // ── Fetch ────────────────────────────────────────────────────────────────
   const fetchVideos = useCallback(async () => {
+    const uid = session?.user?.id
+    if (!uid) return
     setLoadState('loading')
     const { data, error } = await supabase
       .from('videos')
       .select('id, title, channel, thumbnail_url, domain, tags, watch_status, saved_for_later, created_at, youtube_id')
+      .eq('user_id', uid)
       .order('created_at', { ascending: false })
 
     if (error) { setLoadState('error'); return }
     setVideos(data ?? [])
     setLoadState('ok')
-  }, [])
+  }, [session])
 
   // Re-fetch when a video is added (refreshKey increments via LibraryContext)
   useEffect(() => { fetchVideos() }, [fetchVideos, refreshKey])
