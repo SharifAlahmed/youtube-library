@@ -2,7 +2,7 @@ export const translations = {
   ar: {
     dir: 'rtl',
     // ── App / Auth ──────────────────────────────────────────
-    appName: 'مكتبة الفيديوهات',
+    appName: 'Lumina',
     login: 'تسجيل الدخول',
     logout: 'تسجيل الخروج',
     email: 'البريد الإلكتروني',
@@ -157,7 +157,7 @@ export const translations = {
   en: {
     dir: 'ltr',
     // ── App / Auth ──────────────────────────────────────────
-    appName: 'Video Library',
+    appName: 'Lumina',
     login: 'Sign In',
     logout: 'Sign Out',
     email: 'Email',

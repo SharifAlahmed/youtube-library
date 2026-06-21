@@ -24,15 +24,16 @@
 html.dark {
   --accent:        #22C55E;
   --accent-spring: #4ADE80;
-  --accent-tint:   #06371F;
-  --accent-soft:   #14532D;
+  --accent-tint:   #0F3324;  /* slightly lighter for better legibility */
+  --accent-soft:   #1A4A35;
   --ink:           #ECFDF5;
   --bg:            #0A1F17;
   --card:          #14271E;
-  --muted:         #86A99A;
-  --border:        #2A3F35;
+  --muted:         #A7C4B8;  /* raised from #86A99A → AA contrast on dark bg */
+  --border:        #3A5245;  /* lighter than #2A3F35 for visible pill borders */
   --danger-tint:   #3D0E0E;
-  --success-tint:  #06371F;
+  --success:       #4ADE80;  /* bright green for dark bg; :root value (#166534) is invisible */
+  --success-tint:  #0F3324;
   --shadow-card:   0 1px 2px rgba(0,0,0,.2), 0 8px 24px rgba(0,0,0,.2);
 }
 
