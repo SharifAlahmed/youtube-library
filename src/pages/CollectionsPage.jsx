@@ -375,9 +375,17 @@ function AddVideosModal({ existingVideoIds, uid, onAdd, onClose, t }) {
 }
 
 // ── CollectionVideoCard ───────────────────────────────────────────────────────
-function CollectionVideoCard({ video, onPlay, onRemove, t }) {
+function CollectionVideoCard({ video, onPlay, onToggleWatched, onRemove, t }) {
   const isWatched = video.watch_status === 'watched'
   const [confirmRm, setConfirmRm] = useState(false)
+  const [busy, setBusy]           = useState(false)
+
+  const run = async (fn) => {
+    if (busy) return
+    setBusy(true)
+    await fn()
+    setBusy(false)
+  }
 
   return (
     <article className="group flex flex-col rounded-xl overflow-hidden
@@ -423,30 +431,62 @@ function CollectionVideoCard({ video, onPlay, onRemove, t }) {
           <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{video.channel}</p>
         )}
         <div className="flex-1"/>
-        <div className="pt-2 border-t border-gray-100 dark:border-gray-700 flex justify-end">
+
+        {/* Footer: Remove (left) + Watched toggle (right) */}
+        <div className="pt-2 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
           {confirmRm ? (
-            <div className="flex gap-1.5">
+            <div className="flex gap-1.5 w-full">
               <button
                 onClick={onRemove}
-                className="text-xs px-2.5 py-1 rounded-lg bg-red-600 hover:bg-red-700 text-white font-medium transition-colors"
+                className="flex-1 text-xs px-2.5 py-1 rounded-lg bg-red-600 hover:bg-red-700 text-white font-medium transition-colors"
               >
                 {t.confirmDelete}
               </button>
               <button
                 onClick={() => setConfirmRm(false)}
-                className="text-xs px-2.5 py-1 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className="flex-1 text-xs px-2.5 py-1 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
                 {t.cancel}
               </button>
             </div>
           ) : (
-            <button
-              onClick={() => setConfirmRm(true)}
-              className="text-xs px-2.5 py-1 rounded-lg text-gray-400
-                         hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-            >
-              {t.removeFromCollection}
-            </button>
+            <>
+              {/* Remove from collection */}
+              <button
+                onClick={() => setConfirmRm(true)}
+                disabled={busy}
+                className="text-xs px-2.5 py-1 rounded-lg text-gray-400
+                           hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20
+                           transition-colors disabled:opacity-40"
+              >
+                {t.removeFromCollection}
+              </button>
+
+              {/* Watched toggle — same style as library card */}
+              <button
+                onClick={() => run(onToggleWatched)}
+                disabled={busy}
+                title={isWatched ? t.markUnwatched : t.markWatched}
+                className="flex items-center justify-center transition-colors disabled:opacity-40"
+                style={{
+                  width: '30px',
+                  height: '30px',
+                  borderRadius: '6px',
+                  background: isWatched ? 'rgba(34,197,94,0.1)' : 'transparent',
+                  color: isWatched ? 'rgb(21,128,60)' : 'rgb(104,111,125)',
+                }}
+              >
+                <svg
+                  className="w-[15px] h-[15px]"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={isWatched ? 2.5 : 1.75}
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -619,6 +659,22 @@ export default function CollectionsPage() {
     const next = colVideos.filter(v => v.id !== videoId)
     setColVideos(next)
     setVideoCounts(prev => ({ ...prev, [selectedId]: next.length }))
+  }
+
+  const handleToggleWatched = async (video) => {
+    const next = video.watch_status === 'watched' ? 'unwatched' : 'watched'
+    // Optimistic update
+    setColVideos(prev => prev.map(v => v.id === video.id ? { ...v, watch_status: next } : v))
+    const { error } = await supabase
+      .from('videos')
+      .update({ watch_status: next })
+      .eq('id', video.id)
+      .eq('user_id', uid)
+    if (error) {
+      console.error('[Collections] toggle watched failed:', error)
+      // Revert
+      setColVideos(prev => prev.map(v => v.id === video.id ? { ...v, watch_status: video.watch_status } : v))
+    }
   }
 
   const handleAddVideos = async (videoIds) => {
@@ -865,6 +921,7 @@ export default function CollectionsPage() {
                     key={video.id}
                     video={video}
                     onPlay={() => setActiveVideo(video)}
+                    onToggleWatched={() => handleToggleWatched(video)}
                     onRemove={() => handleRemoveVideo(video.id)}
                     t={t}
                   />
