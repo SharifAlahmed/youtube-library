@@ -74,6 +74,10 @@ export const translations = {
     // ── Library — Tags ──────────────────────────────────────
     tagsTitle: 'الوسوم',
     allTags: 'الكل',
+    channelsFilter: 'القنوات',
+    domainsFilter:  'المجالات',
+    clearFilters:   'مسح الفلاتر',
+    showFilters:    'فلترة',
     // ── Library — Card actions ──────────────────────────────
     markWatched: 'تحديد كمشاهَد',
     markUnwatched: 'تحديد كغير مشاهَد',
@@ -229,6 +233,10 @@ export const translations = {
     // ── Library — Tags ──────────────────────────────────────
     tagsTitle: 'Tags',
     allTags: 'All',
+    channelsFilter: 'Channels',
+    domainsFilter:  'Domains',
+    clearFilters:   'Clear Filters',
+    showFilters:    'Filters',
     // ── Library — Card actions ──────────────────────────────
     markWatched: 'Mark as Watched',
     markUnwatched: 'Mark as Unwatched',
