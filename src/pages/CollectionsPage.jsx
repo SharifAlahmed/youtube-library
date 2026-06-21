@@ -53,12 +53,12 @@ function TagInput({ tags, setTags, placeholder }) {
   }
 
   return (
-    <div className="flex flex-wrap gap-1.5 px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600
-                    bg-gray-50 dark:bg-gray-700 focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-transparent">
+    <div className="flex flex-wrap gap-1.5 px-3 py-2.5 rounded-xl border border-[var(--border)]
+                    bg-[var(--bg)] focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-transparent">
       {tags.map(tag => (
         <span key={tag}
-          className="inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full
-                     bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300">
+          className="inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full"
+          style={{ background: 'var(--accent-tint)', color: 'var(--success)' }}>
           {tag}
           <button type="button" onClick={() => setTags(prev => prev.filter(t => t !== tag))}
             className="hover:text-red-500 transition-colors">
@@ -388,9 +388,13 @@ function CollectionVideoCard({ video, onPlay, onToggleWatched, onRemove, t }) {
   }
 
   return (
-    <article className="group flex flex-col rounded-xl overflow-hidden
-                        bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700
-                        hover:shadow-md transition-all duration-200">
+    <article className="group flex flex-col rounded-2xl overflow-hidden
+                        bg-[var(--card)]
+                        transition-all duration-200 hover:-translate-y-0.5"
+             style={{
+               border: '1px solid var(--border)',
+               boxShadow: 'var(--shadow-card)',
+             }}>
       {/* Thumbnail */}
       <div
         className="relative aspect-video cursor-pointer overflow-hidden"
@@ -407,8 +411,9 @@ function CollectionVideoCard({ video, onPlay, onToggleWatched, onRemove, t }) {
         </div>
         {isWatched && (
           <div className="absolute top-2 start-2 flex items-center gap-1
-                          bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full backdrop-blur-sm">
-            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                          text-[10px] font-semibold px-2 py-0.5 rounded-full"
+               style={{ background: 'var(--success-tint)', color: 'var(--success)' }}>
+            <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd"
                 d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
                 clipRule="evenodd"/>
@@ -421,19 +426,21 @@ function CollectionVideoCard({ video, onPlay, onToggleWatched, onRemove, t }) {
       {/* Body */}
       <div className="flex flex-col flex-1 p-3 gap-1.5">
         <h3
-          className="text-sm font-medium text-gray-900 dark:text-white line-clamp-2 cursor-pointer
-                     hover:text-primary-600 dark:hover:text-primary-400 transition-colors leading-snug"
+          className="text-sm font-medium line-clamp-2 cursor-pointer
+                     hover:text-[var(--accent)] transition-colors leading-snug"
+          style={{ color: 'var(--ink)' }}
           onClick={onPlay}
         >
           {video.title}
         </h3>
         {video.channel && (
-          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{video.channel}</p>
+          <p className="text-xs truncate" style={{ color: 'var(--muted)' }}>{video.channel}</p>
         )}
         <div className="flex-1"/>
 
         {/* Footer: Remove (left) + Watched toggle (right) */}
-        <div className="pt-2 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+        <div className="pt-2 flex items-center justify-between"
+             style={{ borderTop: '1px solid var(--border)' }}>
           {confirmRm ? (
             <div className="flex gap-1.5 w-full">
               <button
@@ -706,12 +713,12 @@ export default function CollectionsPage() {
 
       {/* ── Sidebar (first in DOM = right in RTL, left in LTR) ── */}
       <aside className="w-full md:w-72 shrink-0 flex flex-col
-                        bg-white dark:bg-gray-900
-                        border-b md:border-b-0 md:border-e
-                        border-gray-200 dark:border-gray-700">
+                        bg-[var(--card)]
+                        border-b md:border-b-0"
+             style={{ borderInlineEnd: '1px solid var(--border)' }}>
 
-        <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+        <div className="flex items-center justify-between px-4 py-4 border-b border-[var(--border)]">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-[var(--muted)]">
             {t.collections}
           </h2>
           <button
@@ -741,16 +748,16 @@ export default function CollectionsPage() {
                 onClick={() => handleSelectCol(col.id)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-start transition-colors ${
                   active
-                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                    : 'hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300'
+                    ? 'bg-[var(--accent-tint)] text-[var(--accent)]'
+                    : 'hover:bg-[var(--accent-tint)] hover:text-[var(--accent)] text-[var(--muted)]'
                 }`}
               >
                 <span className="text-xl shrink-0">{col.icon || '📁'}</span>
                 <span className="flex-1 text-sm font-medium truncate">{col.name}</span>
                 <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${
                   active
-                    ? 'bg-primary-100 dark:bg-primary-900/50 text-primary-600 dark:text-primary-400'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                    ? 'bg-[var(--accent-soft)] text-[var(--accent)]'
+                    : 'bg-[var(--accent-tint)] text-[var(--muted)]'
                 }`}>
                   {videoCounts[col.id] ?? 0}
                 </span>
@@ -774,7 +781,11 @@ export default function CollectionsPage() {
           <div className="p-6 space-y-6 max-w-6xl">
 
             {/* ── Collection header ── */}
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start justify-between gap-4 rounded-2xl p-5 -m-1"
+                 style={{
+                   background: 'linear-gradient(135deg, var(--accent-tint) 0%, var(--card) 70%)',
+                   border: '1px solid var(--accent-soft)',
+                 }}>
               <div className="flex items-center gap-3 min-w-0">
                 <span className="text-4xl shrink-0">{selectedCol.icon || '📁'}</span>
                 <div className="min-w-0">
@@ -845,17 +856,38 @@ export default function CollectionsPage() {
 
             {/* ── Stats row ── */}
             <div className="grid grid-cols-3 gap-3">
-              <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl p-4">
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
-                <p className="text-xs mt-1 text-gray-500 dark:text-gray-400">{t.statsTotal}</p>
+              <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4"
+                   style={{ boxShadow: 'var(--shadow-card)' }}>
+                <div className="flex items-start gap-2.5">
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-base
+                                  bg-gray-100 dark:bg-gray-800/60">🎬</div>
+                  <div>
+                    <p className="text-2xl font-bold text-[var(--ink)]">{stats.total}</p>
+                    <p className="text-[11px] text-[var(--muted)] mt-0.5">{t.statsTotal}</p>
+                  </div>
+                </div>
               </div>
-              <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/40 rounded-2xl p-4">
-                <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{stats.watched}</p>
-                <p className="text-xs mt-1 text-emerald-600/70 dark:text-emerald-400/70">{t.statsWatched}</p>
+              <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4"
+                   style={{ boxShadow: 'var(--shadow-card)' }}>
+                <div className="flex items-start gap-2.5">
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-base
+                                  bg-[var(--accent-tint)]">✓</div>
+                  <div>
+                    <p className="text-2xl font-bold text-[var(--accent)]">{stats.watched}</p>
+                    <p className="text-[11px] text-[var(--muted)] mt-0.5">{t.statsWatched}</p>
+                  </div>
+                </div>
               </div>
-              <div className="bg-violet-50 dark:bg-violet-900/20 border border-violet-100 dark:border-violet-900/40 rounded-2xl p-4">
-                <p className="text-2xl font-bold text-violet-700 dark:text-violet-300">{stats.pct}%</p>
-                <p className="text-xs mt-1 text-violet-600/70 dark:text-violet-400/70">{t.completion}</p>
+              <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4"
+                   style={{ boxShadow: 'var(--shadow-card)' }}>
+                <div className="flex items-start gap-2.5">
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-base
+                                  bg-sky-50 dark:bg-sky-900/20">📊</div>
+                  <div>
+                    <p className="text-2xl font-bold text-[var(--ink)]">{stats.pct}%</p>
+                    <p className="text-[11px] text-[var(--muted)] mt-0.5">{t.completion}</p>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -866,10 +898,11 @@ export default function CollectionsPage() {
                   <span>{t.statsWatched}</span>
                   <span>{stats.watched} / {stats.total}</span>
                 </div>
-                <div className="h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div className="h-2.5 rounded-full overflow-hidden"
+                     style={{ background: 'var(--accent-tint)' }}>
                   <div
-                    className="h-full bg-primary-500 rounded-full transition-all duration-500"
-                    style={{ width: `${stats.pct}%` }}
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{ width: `${stats.pct}%`, background: 'var(--accent-spring)' }}
                   />
                 </div>
               </div>

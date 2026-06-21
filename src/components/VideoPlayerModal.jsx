@@ -159,8 +159,9 @@ export default function VideoPlayerModal({ video, onClose }) {
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-3xl bg-gray-900 rounded-2xl shadow-2xl
+        className="relative w-full max-w-3xl rounded-2xl shadow-2xl
                    max-h-[90dvh] flex flex-col overflow-hidden"
+        style={{ background: '#0F1F17' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close — RTL-safe */}

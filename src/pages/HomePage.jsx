@@ -12,14 +12,23 @@ function normTags(raw) {
   return []
 }
 
-// ── Stat Card ────────────────────────────────────────────────────────────────
-function StatCard({ label, value, icon, colour }) {
+// ── Stat Card (Fynix style: icon box + value + label) ────────────────────────
+function StatCard({ label, value, icon, iconBg, accentValue = false }) {
   return (
-    <div className={`flex items-center gap-3 p-4 rounded-2xl ${colour}`}>
-      <div className="text-2xl leading-none">{icon}</div>
-      <div>
-        <p className="text-2xl font-bold leading-none">{value}</p>
-        <p className="text-xs mt-1 opacity-70">{label}</p>
+    <div
+      className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 sm:p-5"
+      style={{ boxShadow: 'var(--shadow-card)' }}
+    >
+      <div className="flex items-start gap-3">
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-[18px] leading-none ${iconBg}`}>
+          {icon}
+        </div>
+        <div>
+          <p className={`text-2xl font-bold leading-tight ${accentValue ? 'text-[var(--accent)]' : 'text-[var(--ink)]'}`}>
+            {value}
+          </p>
+          <p className="text-[12px] text-[var(--muted)] mt-0.5">{label}</p>
+        </div>
       </div>
     </div>
   )
@@ -34,13 +43,15 @@ function FilterPill({ label, active, onClick, count }) {
         flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium
         transition-all duration-150 whitespace-nowrap
         ${active
-          ? 'bg-primary-600 text-white shadow-sm shadow-primary-200 dark:shadow-primary-900'
-          : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600'}
+          ? 'bg-gray-900 dark:bg-primary-500 text-white shadow-sm'
+          : 'bg-[var(--card)] text-[var(--muted)] border border-[var(--border)] hover:bg-[var(--accent-tint)] hover:text-[var(--accent)] hover:border-[var(--accent-soft)]'}
       `}
     >
       {label}
       {count != null && (
-        <span className={`text-xs px-1.5 py-0.5 rounded-full ${active ? 'bg-white/20' : 'bg-gray-100 dark:bg-gray-700'}`}>
+        <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+          active ? 'bg-white/20' : 'bg-[var(--accent-tint)] text-[var(--accent)]'
+        }`}>
           {count}
         </span>
       )}
@@ -167,13 +178,14 @@ export default function HomePage() {
       {/* ── Stats ─────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <StatCard label={t.statsTotal}     value={stats.total}     icon="🎬"
-          colour="bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-100 dark:border-gray-700"/>
-        <StatCard label={t.statsWatched}   value={stats.watched}   icon="✅"
-          colour="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-900/40"/>
+          iconBg="bg-gray-100 dark:bg-gray-800/80"/>
+        <StatCard label={t.statsWatched}   value={stats.watched}   icon="✓"
+          iconBg="bg-[var(--accent-tint)]"
+          accentValue/>
         <StatCard label={t.statsRemaining} value={stats.remaining} icon="⏳"
-          colour="bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 border border-blue-100 dark:border-blue-900/40"/>
+          iconBg="bg-amber-50 dark:bg-amber-900/20"/>
         <StatCard label={t.statsSaved}     value={stats.saved}     icon="🔖"
-          colour="bg-violet-50 dark:bg-violet-900/20 text-violet-800 dark:text-violet-300 border border-violet-100 dark:border-violet-900/40"/>
+          iconBg="bg-sky-50 dark:bg-sky-900/20"/>
       </div>
 
       {/* ── Search ────────────────────────────────────────────────── */}
@@ -189,9 +201,9 @@ export default function HomePage() {
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder={t.searchPlaceholder}
-          className="w-full ps-12 pe-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700
-                     bg-white dark:bg-gray-800 text-gray-900 dark:text-white
-                     placeholder-gray-400 focus:outline-none focus:ring-2
+          className="w-full ps-12 pe-4 py-3 rounded-full border border-[var(--border)]
+                     bg-[var(--card)] text-[var(--ink)]
+                     placeholder:text-[var(--muted)] focus:outline-none focus:ring-2
                      focus:ring-primary-500 focus:border-transparent transition-all"
         />
         {search && (
@@ -229,10 +241,10 @@ export default function HomePage() {
             <button
               onClick={() => setTag(null)}
               className={`
-                text-xs px-3 py-1.5 rounded-full font-medium transition-colors
+                text-xs px-3 py-1.5 rounded-full font-medium transition-all
                 ${activeTag === null
-                  ? 'bg-primary-600 text-white'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}
+                  ? 'bg-gray-900 dark:bg-primary-500 text-white shadow-sm'
+                  : 'bg-[var(--accent-tint)] text-[var(--success)] hover:bg-[var(--accent-soft)]'}
               `}
             >
               {t.allTags}
@@ -242,14 +254,14 @@ export default function HomePage() {
                 key={tag}
                 onClick={() => setTag(activeTag === tag ? null : tag)}
                 className={`
-                  flex items-center gap-1 text-xs px-3 py-1.5 rounded-full font-medium transition-colors
+                  flex items-center gap-1 text-xs px-3 py-1.5 rounded-full font-medium transition-all
                   ${activeTag === tag
-                    ? 'bg-primary-600 text-white'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}
+                    ? 'bg-gray-900 dark:bg-primary-500 text-white shadow-sm'
+                    : 'bg-[var(--accent-tint)] text-[var(--success)] hover:bg-[var(--accent-soft)]'}
                 `}
               >
                 {tag}
-                <span className={`text-[10px] px-1.5 rounded-full ${activeTag === tag ? 'bg-white/25' : 'bg-gray-200 dark:bg-gray-600'}`}>
+                <span className={`text-[10px] px-1.5 rounded-full ${activeTag === tag ? 'bg-white/25' : 'bg-[var(--accent-soft)]'}`}>
                   {count}
                 </span>
               </button>
@@ -260,7 +272,7 @@ export default function HomePage() {
 
       {/* ── Content ──────────────────────────────────────────────── */}
       {loadState === 'loading' && (
-        <div className="flex items-center justify-center py-24 gap-3 text-primary-600">
+        <div className="flex items-center justify-center py-24 gap-3 text-[var(--accent)]">
           <svg className="animate-spin w-6 h-6" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>

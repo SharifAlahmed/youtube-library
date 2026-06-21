@@ -25,8 +25,9 @@ export default function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b border-gray-200 dark:border-gray-700
-                         bg-white/80 dark:bg-gray-900/80 backdrop-blur-md">
+      <header className="sticky top-0 z-40 w-full border-b border-[var(--border)]
+                         bg-[var(--card)]/90 backdrop-blur-md"
+              style={{ boxShadow: 'var(--shadow-card)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 gap-3">
 
@@ -49,10 +50,10 @@ export default function Header() {
                   to="/app"
                   end
                   className={({ isActive }) =>
-                    `text-sm font-medium px-3 py-1.5 rounded-lg transition-colors ${
+                    `text-sm font-medium px-3.5 py-1.5 rounded-full transition-all ${
                       isActive
-                        ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
-                        : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
+                        ? 'bg-gray-900 dark:bg-primary-400 text-white dark:text-gray-900 shadow-sm'
+                        : 'text-[var(--muted)] hover:bg-[var(--accent-tint)] hover:text-[var(--accent)]'
                     }`
                   }
                 >
@@ -61,10 +62,10 @@ export default function Header() {
                 <NavLink
                   to="/app/prompts"
                   className={({ isActive }) =>
-                    `text-sm font-medium px-3 py-1.5 rounded-lg transition-colors ${
+                    `text-sm font-medium px-3.5 py-1.5 rounded-full transition-all ${
                       isActive
-                        ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
-                        : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
+                        ? 'bg-gray-900 dark:bg-primary-400 text-white dark:text-gray-900 shadow-sm'
+                        : 'text-[var(--muted)] hover:bg-[var(--accent-tint)] hover:text-[var(--accent)]'
                     }`
                   }
                 >
@@ -73,10 +74,10 @@ export default function Header() {
                 <NavLink
                   to="/app/collections"
                   className={({ isActive }) =>
-                    `text-sm font-medium px-3 py-1.5 rounded-lg transition-colors ${
+                    `text-sm font-medium px-3.5 py-1.5 rounded-full transition-all ${
                       isActive
-                        ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
-                        : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
+                        ? 'bg-gray-900 dark:bg-primary-400 text-white dark:text-gray-900 shadow-sm'
+                        : 'text-[var(--muted)] hover:bg-[var(--accent-tint)] hover:text-[var(--accent)]'
                     }`
                   }
                 >
@@ -111,10 +112,10 @@ export default function Header() {
                 <button
                   onClick={() => setShowUpgrade(true)}
                   className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold
-                             px-3 py-1.5 border border-primary-300 dark:border-primary-700
-                             text-primary-600 dark:text-primary-400
-                             hover:bg-primary-50 dark:hover:bg-primary-900/20
-                             rounded-lg transition-colors"
+                             px-3 py-1.5
+                             bg-gray-900 hover:bg-gray-800 dark:bg-primary-100 dark:hover:bg-primary-200
+                             text-white dark:text-gray-900
+                             rounded-full transition-colors"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}

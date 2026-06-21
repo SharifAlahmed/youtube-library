@@ -16,7 +16,7 @@ import ResetPasswordPage  from './pages/ResetPasswordPage'
 function AppShell() {
   const { showAddModal, closeAddModal } = useLibrary()
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+    <div className="min-h-screen transition-colors duration-200" style={{ background: 'var(--bg)' }}>
       <Header />
       <Routes>
         <Route index element={<HomePage />} />

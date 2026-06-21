@@ -2,10 +2,44 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Design Tokens (single source of truth for all colours) ──────────── */
+:root {
+  --accent:        #16A34A;
+  --accent-strong: #15803D;
+  --accent-spring: #4ADE80;
+  --accent-tint:   #DCFCE7;
+  --accent-soft:   #BBF7D0;
+  --ink:           #0B231A;
+  --bg:            #F7FAF8;
+  --card:          #FFFFFF;
+  --muted:         #6B7280;
+  --border:        #E5E7EB;
+  --danger:        #E5484D;
+  --danger-tint:   #FDEAEA;
+  --success:       #166534;
+  --success-tint:  #DCFCE7;
+  --shadow-card:   0 1px 2px rgba(11,35,26,.04), 0 8px 24px rgba(11,35,26,.06);
+}
+
+html.dark {
+  --accent:        #22C55E;
+  --accent-spring: #4ADE80;
+  --accent-tint:   #06371F;
+  --accent-soft:   #14532D;
+  --ink:           #ECFDF5;
+  --bg:            #0A1F17;
+  --card:          #14271E;
+  --muted:         #86A99A;
+  --border:        #2A3F35;
+  --danger-tint:   #3D0E0E;
+  --success-tint:  #06371F;
+  --shadow-card:   0 1px 2px rgba(0,0,0,.2), 0 8px 24px rgba(0,0,0,.2);
+}
+
 @layer base {
   html[lang="ar"],
   html[lang="ar"] * {
-    font-family: 'Noto Sans Arabic', Arial, sans-serif;
+    font-family: 'Cairo', Arial, sans-serif;
   }
 
   html[lang="en"],
@@ -15,5 +49,7 @@
 
   body {
     @apply antialiased;
+    background-color: var(--bg);
+    color: var(--ink);
   }
 }

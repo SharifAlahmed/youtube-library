@@ -96,9 +96,9 @@ export default function PromptsPage() {
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder={t.searchPromptsPlaceholder}
-          className="w-full ps-12 pe-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700
-                     bg-white dark:bg-gray-800 text-gray-900 dark:text-white
-                     placeholder-gray-400 focus:outline-none focus:ring-2
+          className="w-full ps-12 pe-4 py-3 rounded-full border border-[var(--border)]
+                     bg-[var(--card)] text-[var(--ink)]
+                     placeholder:text-[var(--muted)] focus:outline-none focus:ring-2
                      focus:ring-primary-500 focus:border-transparent transition-all"
         />
         {search && (
@@ -160,7 +160,8 @@ export default function PromptsPage() {
           {filtered.map(row => (
             <div
               key={row.key}
-              className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 space-y-3"
+              className="bg-[var(--card)] rounded-2xl p-4 space-y-3"
+              style={{ border: '1px solid var(--border)', boxShadow: 'var(--shadow-card)' }}
             >
               {/* Source video */}
               <button
@@ -179,19 +180,22 @@ export default function PromptsPage() {
               {/* Prompt text + copy button */}
               <div className="flex gap-3 items-start">
                 <pre
-                  className="flex-1 bg-gray-50 dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700
-                             rounded-xl px-3 py-2.5 text-xs text-gray-700 dark:text-gray-200
-                             whitespace-pre-wrap font-mono overflow-x-auto"
+                  className="flex-1 rounded-xl px-3 py-2.5 text-xs whitespace-pre-wrap font-mono overflow-x-auto"
+                  style={{
+                    background: 'var(--bg)',
+                    border: '1px solid var(--border)',
+                    color: 'var(--ink)',
+                  }}
                 >
                   {row.text}
                 </pre>
                 <button
                   onClick={() => handleCopy(row.key, row.text)}
                   className={`
-                    shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap
+                    shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap
                     ${copiedKey === row.key
-                      ? 'bg-emerald-600 text-white'
-                      : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200'}
+                      ? 'bg-primary-600 text-white'
+                      : 'bg-[var(--accent-tint)] text-[var(--success)] hover:bg-[var(--accent-soft)]'}
                   `}
                 >
                   {copiedKey === row.key ? t.copied : t.copyPrompt}

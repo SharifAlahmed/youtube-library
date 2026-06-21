@@ -35,8 +35,8 @@ function Thumbnail({ src, title }) {
   if (!src || err) {
     return (
       <div className="w-full h-full flex items-center justify-center"
-           style={{ background: 'rgb(240,242,244)' }}>
-        <svg className="w-10 h-10" style={{ color: 'rgb(180,186,198)' }}
+           style={{ background: 'var(--bg)' }}>
+        <svg className="w-10 h-10" style={{ color: 'var(--muted)' }}
              fill="currentColor" viewBox="0 0 24 24">
           <path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501
             s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805
@@ -95,19 +95,22 @@ export default function VideoCard({ video, onToggleWatched, onToggleSaved, onDel
     <>
       <article
         className={`
-          group relative flex flex-col rounded-xl overflow-hidden
-          bg-white dark:bg-gray-800
+          group relative flex flex-col rounded-2xl overflow-hidden
+          bg-[var(--card)]
           transition-all duration-200
-          hover:-translate-y-0.5 hover:shadow-md
-          ${isWatched ? 'opacity-70 hover:opacity-100' : ''}
+          hover:-translate-y-0.5
+          ${isWatched ? 'opacity-75 hover:opacity-100' : ''}
         `}
-        style={{ border: '1px solid rgb(232,234,237)' }}
+        style={{
+          border: '1px solid var(--border)',
+          boxShadow: 'var(--shadow-card)',
+        }}
       >
 
         {/* ── Thumbnail ── */}
         <div
           className="relative aspect-video w-full overflow-hidden cursor-pointer"
-          style={{ background: 'rgb(240,242,244)' }}
+          style={{ background: 'var(--bg)' }}
           onClick={handlePlay}
           title={t.playVideo}
         >
@@ -131,8 +134,9 @@ export default function VideoCard({ video, onToggleWatched, onToggleSaved, onDel
           {/* Watched badge */}
           {isWatched && (
             <div className="absolute top-2 start-2 flex items-center gap-1
-                            bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full backdrop-blur-sm">
-              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                            text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                 style={{ background: 'var(--success-tint)', color: 'var(--success)' }}>
+              <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd"
                   d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
                   clipRule="evenodd"/>
@@ -158,12 +162,11 @@ export default function VideoCard({ video, onToggleWatched, onToggleSaved, onDel
           {/* Title */}
           <h3
             className="font-medium line-clamp-2 cursor-pointer
-                       dark:text-white
-                       hover:text-blue-600 dark:hover:text-blue-400
+                       hover:text-[var(--accent)]
                        transition-colors duration-150"
             style={{
               fontSize: '14px',
-              color: 'rgb(26,28,35)',
+              color: 'var(--ink)',
               lineHeight: '1.375',
               minHeight: '2.5rem',
             }}
@@ -175,13 +178,13 @@ export default function VideoCard({ video, onToggleWatched, onToggleSaved, onDel
 
           {/* Meta row: dot + channel + domain badge */}
           <div className="flex items-center gap-1.5"
-               style={{ fontSize: '12px', color: 'rgb(104,111,125)' }}>
+               style={{ fontSize: '12px', color: 'var(--muted)' }}>
             {video.channel && (
               <span className="flex-shrink-0 rounded-full"
                     style={{ width: '6px', height: '6px', background: dotColor }} />
             )}
             {video.channel && (
-              <span className="flex-1 truncate dark:text-gray-400">{video.channel}</span>
+              <span className="flex-1 truncate">{video.channel}</span>
             )}
             {video.domain && (
               <span
@@ -205,13 +208,13 @@ export default function VideoCard({ video, onToggleWatched, onToggleSaved, onDel
               {tags.slice(0, 4).map(tag => (
                 <span
                   key={tag}
-                  className="cursor-default hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-500 transition-colors"
+                  className="cursor-default hover:opacity-80 transition-opacity"
                   style={{
                     fontSize: '10px',
-                    padding: '2px 6px',
-                    borderRadius: '6px',
-                    background: 'rgb(240,242,244)',
-                    color: 'rgb(104,111,125)',
+                    padding: '2px 7px',
+                    borderRadius: '999px',
+                    background: 'var(--accent-tint)',
+                    color: 'var(--success)',
                   }}
                 >
                   #{tag}
@@ -221,10 +224,10 @@ export default function VideoCard({ video, onToggleWatched, onToggleSaved, onDel
                 <span
                   style={{
                     fontSize: '10px',
-                    padding: '2px 6px',
-                    borderRadius: '6px',
-                    background: 'rgb(240,242,244)',
-                    color: 'rgb(156,163,175)',
+                    padding: '2px 7px',
+                    borderRadius: '999px',
+                    background: 'var(--accent-tint)',
+                    color: 'var(--muted)',
                   }}
                 >
                   +{tags.length - 4}
@@ -238,7 +241,7 @@ export default function VideoCard({ video, onToggleWatched, onToggleSaved, onDel
           {/* ── Footer ── */}
           <div
             className="flex items-center pt-2"
-            style={{ borderTop: '1px solid rgba(229,231,235,0.5)' }}
+            style={{ borderTop: '1px solid var(--border)' }}
           >
             {confirmDelete ? (
               /* Confirm delete row */
@@ -280,7 +283,7 @@ export default function VideoCard({ video, onToggleWatched, onToggleSaved, onDel
                     width: '32px',
                     height: '32px',
                     borderRadius: '6px',
-                    color: 'rgb(104,111,125)',
+                    color: 'var(--muted)',
                   }}
                 >
                   <svg className="w-[15px] h-[15px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -323,8 +326,8 @@ export default function VideoCard({ video, onToggleWatched, onToggleSaved, onDel
                     width: '32px',
                     height: '32px',
                     borderRadius: '6px',
-                    background: isWatched ? 'rgba(34,197,94,0.1)' : 'transparent',
-                    color: isWatched ? 'rgb(21,128,60)' : 'rgb(104,111,125)',
+                    background: isWatched ? 'var(--accent-tint)' : 'transparent',
+                    color: isWatched ? 'var(--success)' : 'var(--muted)',
                   }}
                 >
                   <svg className="w-[15px] h-[15px]"
