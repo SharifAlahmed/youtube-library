@@ -83,6 +83,18 @@ export default function Header() {
                 >
                   {t.collectionsNav}
                 </NavLink>
+                <NavLink
+                  to="/app/how"
+                  className={({ isActive }) =>
+                    `text-sm font-medium px-3.5 py-1.5 rounded-full transition-all ${
+                      isActive
+                        ? 'bg-gray-900 dark:bg-primary-400 text-white dark:text-gray-900 shadow-sm'
+                        : 'text-[var(--muted)] hover:bg-[var(--accent-tint)] hover:text-[var(--accent)]'
+                    }`
+                  }
+                >
+                  {t.howItWorksNav}
+                </NavLink>
               </nav>
             </div>
 

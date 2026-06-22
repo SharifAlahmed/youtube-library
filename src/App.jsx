@@ -11,6 +11,7 @@ import LoginPage          from './pages/LoginPage'
 import HomePage           from './pages/HomePage'
 import PromptsPage        from './pages/PromptsPage'
 import CollectionsPage    from './pages/CollectionsPage'
+import HowItWorksPage    from './pages/HowItWorksPage'
 import ResetPasswordPage  from './pages/ResetPasswordPage'
 
 function AppShell() {
@@ -22,6 +23,7 @@ function AppShell() {
         <Route index element={<HomePage />} />
         <Route path="prompts" element={<PromptsPage />} />
         <Route path="collections" element={<CollectionsPage />} />
+        <Route path="how" element={<HowItWorksPage />} />
       </Routes>
       {showAddModal && <AddVideoModal onClose={closeAddModal} />}
       {editVideo   && <AddVideoModal video={editVideo} onClose={closeEditModal} />}

@@ -65,6 +65,7 @@ export const translations = {
     libraryNav:   'المكتبة',
     myPrompts:    'مقتطفاتي',
     collectionsNav: 'القوائم',
+    howItWorksNav:  'كيف تعمل Lumina',
     // ── Library — Search & Filters ──────────────────────────
     searchPlaceholder: 'ابحث في العنوان، القناة، الوسوم، الملاحظات، المقتطفات...',
     filterAll: 'الكل',
@@ -250,6 +251,7 @@ export const translations = {
     libraryNav:     'Library',
     myPrompts:      'My Snippets',
     collectionsNav: 'Collections',
+    howItWorksNav:  'How it Works',
     // ── Library — Search & Filters ──────────────────────────
     searchPlaceholder: 'Search title, channel, tags, notes, snippets…',
     filterAll: 'All',
