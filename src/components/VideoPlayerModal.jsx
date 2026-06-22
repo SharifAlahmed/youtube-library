@@ -1,8 +1,18 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useLang } from '../context/LanguageContext'
+import { useAuth } from '../context/AuthContext'
 
-const TABS = ['notes', 'prompts', 'links']
+const TABS = ['learn', 'prompts', 'links']
+
+// Parse "1:23" / "1:02:45" / "90" to seconds; returns null if unparseable
+function parseTimeSecs(str) {
+  const parts = str.trim().split(':').map(Number)
+  if (!parts.length || parts.some(isNaN)) return null
+  if (parts.length === 1) return parts[0]
+  if (parts.length === 2) return parts[0] * 60 + parts[1]
+  return parts[0] * 3600 + parts[1] * 60 + parts[2]
+}
 
 function TabButton({ id, activeTab, label, onClick }) {
   const active = activeTab === id
@@ -35,40 +45,83 @@ function RemoveBtn({ onClick }) {
   )
 }
 
-// Safely coerce a jsonb value to a non-null array
+function AddRowBtn({ onClick, label }) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex items-center gap-1.5 text-xs font-medium text-primary-400 hover:text-primary-300 transition-colors mt-1"
+    >
+      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4"/>
+      </svg>
+      {label}
+    </button>
+  )
+}
+
+function LearnSection({ icon, title, hint, children }) {
+  return (
+    <div className="space-y-2.5">
+      <div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm leading-none">{icon}</span>
+          <span className="text-sm font-semibold text-gray-100">{title}</span>
+        </div>
+        {hint && <p className="text-xs text-gray-500 mt-0.5 ms-6">{hint}</p>}
+      </div>
+      {children}
+    </div>
+  )
+}
+
 function toArr(raw) {
   return Array.isArray(raw) ? raw : []
 }
 
-// Ensure a URL has a protocol so browsers don't treat it as a relative path
 function normalizeUrl(url) {
   const s = url.trim()
   if (!s) return s
   return /^https?:\/\//i.test(s) ? s : `https://${s}`
 }
 
+const INPUT_CLS = `w-full px-3 py-2 rounded-xl border border-gray-700
+  bg-gray-800 text-gray-100 placeholder-gray-500
+  focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm`
+
 export default function VideoPlayerModal({ video, onClose }) {
   const { t } = useLang()
+  const { session } = useAuth()
+  const uid = session?.user?.id
 
-  const [activeTab, setActiveTab] = useState('notes')
+  const [activeTab, setActiveTab] = useState('learn')
 
-  // Notes
-  const [notes, setNotes]             = useState('')
-  const [notesDirty, setNotesDirty]   = useState(false)
+  // Free notes (notes text column)
+  const [notes,       setNotes]       = useState('')
+  const [notesDirty,  setNotesDirty]  = useState(false)
   const [notesSaving, setNotesSaving] = useState(false)
-  const [notesSaved, setNotesSaved]   = useState(false)
+  const [notesSaved,  setNotesSaved]  = useState(false)
+  const [freeNotesOpen, setFreeNotesOpen] = useState(false)
 
-  // Prompts — each item: { text: string, createdAt: string }
-  const [prompts, setPrompts]       = useState([])
-  const [newPrompt, setNewPrompt]   = useState('')
-  const [copiedIdx, setCopiedIdx]   = useState(null)
+  // Active Learning Panel (learning jsonb column)
+  const [takeaways,   setTakeaways]   = useState(['', '', ''])
+  const [question,    setQuestion]    = useState('')
+  const [apply,       setApply]       = useState('')
+  const [timestamps,  setTimestamps]  = useState([{ time: '', note: '' }])
+  const [learnDirty,  setLearnDirty]  = useState(false)
+  const [learnSaving, setLearnSaving] = useState(false)
+  const [learnSaved,  setLearnSaved]  = useState(false)
 
-  // Links — each item: { url: string, label: string, createdAt: string }
-  const [links, setLinks]           = useState([])
-  const [newLinkUrl, setNewLinkUrl]   = useState('')
+  // Prompts — each item: { text, createdAt }
+  const [prompts,    setPrompts]    = useState([])
+  const [newPrompt,  setNewPrompt]  = useState('')
+  const [copiedIdx,  setCopiedIdx]  = useState(null)
+
+  // Links — each item: { url, label, createdAt }
+  const [links,        setLinks]        = useState([])
+  const [newLinkUrl,   setNewLinkUrl]   = useState('')
   const [newLinkLabel, setNewLinkLabel] = useState('')
 
-  // Fetch fresh data (select * so any column set works regardless of migration state)
+  // Load all data on mount (select * so every column loads without migration changes)
   useEffect(() => {
     async function load() {
       const { data } = await supabase
@@ -80,35 +133,77 @@ export default function VideoPlayerModal({ video, onClose }) {
         setNotes(data.notes ?? '')
         setPrompts(toArr(data.prompts))
         setLinks(toArr(data.links))
+        const raw = (data.learning && typeof data.learning === 'object') ? data.learning : {}
+        setTakeaways(Array.isArray(raw.takeaways) && raw.takeaways.length ? raw.takeaways : ['', '', ''])
+        setQuestion(raw.question ?? '')
+        setApply(raw.apply ?? '')
+        setTimestamps(Array.isArray(raw.timestamps) && raw.timestamps.length ? raw.timestamps : [{ time: '', note: '' }])
       }
     }
     load()
   }, [video.id])
 
-  // Escape key
   useEffect(() => {
     const h = (e) => { if (e.key === 'Escape') onClose() }
     window.addEventListener('keydown', h)
     return () => window.removeEventListener('keydown', h)
   }, [onClose])
 
-  // Lock body scroll
   useEffect(() => {
     document.body.style.overflow = 'hidden'
     return () => { document.body.style.overflow = '' }
   }, [])
 
-  // ── Notes ──────────────────────────────────────────────────────────────────
+  // ── Free notes ─────────────────────────────────────────────────────────────
   const handleSaveNotes = async () => {
     setNotesSaving(true)
-    await supabase.from('videos').update({ notes: notes || null }).eq('id', video.id)
+    await supabase.from('videos')
+      .update({ notes: notes || null })
+      .eq('id', video.id)
+      .eq('user_id', uid)
     setNotesSaving(false)
     setNotesDirty(false)
     setNotesSaved(true)
     setTimeout(() => setNotesSaved(false), 2000)
   }
 
-  // ── Prompts ────────────────────────────────────────────────────────────────
+  // ── Learning helpers ────────────────────────────────────────────────────────
+  const markLearnDirty = () => { setLearnDirty(true); setLearnSaved(false) }
+
+  const updTakeaway = (i, val) => {
+    setTakeaways(p => { const n = [...p]; n[i] = val; return n })
+    markLearnDirty()
+  }
+  const addTakeaway = () => { setTakeaways(p => [...p, '']); markLearnDirty() }
+  const delTakeaway = (i) => { setTakeaways(p => p.filter((_, j) => j !== i)); markLearnDirty() }
+
+  const updTS = (i, field, val) => {
+    setTimestamps(p => { const n = [...p]; n[i] = { ...n[i], [field]: val }; return n })
+    markLearnDirty()
+  }
+  const addTS = () => { setTimestamps(p => [...p, { time: '', note: '' }]); markLearnDirty() }
+  const delTS = (i) => { setTimestamps(p => p.filter((_, j) => j !== i)); markLearnDirty() }
+
+  // ── Learning save ───────────────────────────────────────────────────────────
+  const handleSaveLearning = async () => {
+    setLearnSaving(true)
+    const payload = {
+      takeaways:  takeaways.filter(tk => tk.trim()),
+      question:   question.trim(),
+      apply:      apply.trim(),
+      timestamps: timestamps.filter(ts => ts.time.trim() || ts.note.trim()),
+    }
+    await supabase.from('videos')
+      .update({ learning: payload })
+      .eq('id', video.id)
+      .eq('user_id', uid)
+    setLearnSaving(false)
+    setLearnDirty(false)
+    setLearnSaved(true)
+    setTimeout(() => setLearnSaved(false), 2000)
+  }
+
+  // ── Prompts ─────────────────────────────────────────────────────────────────
   const handleAddPrompt = async () => {
     const text = newPrompt.trim()
     if (!text) return
@@ -132,7 +227,7 @@ export default function VideoPlayerModal({ video, onClose }) {
     })
   }
 
-  // ── Links ──────────────────────────────────────────────────────────────────
+  // ── Links ───────────────────────────────────────────────────────────────────
   const handleAddLink = async () => {
     const url = newLinkUrl.trim()
     if (!url) return
@@ -151,7 +246,16 @@ export default function VideoPlayerModal({ video, onClose }) {
     await supabase.from('videos').update({ links: next.length ? next : null }).eq('id', video.id)
   }
 
-  const tabLabel = { notes: t.tabNotes, prompts: t.tabPrompts, links: t.tabLinks }
+  const tabLabel = { learn: t.tabLearn, prompts: t.tabPrompts, links: t.tabLinks }
+
+  const saveBtnCls = (dirty, saved) => `
+    px-5 py-2 rounded-xl text-sm font-semibold transition-all
+    ${saved
+      ? 'bg-emerald-600 text-white'
+      : dirty
+        ? 'bg-primary-600 hover:bg-primary-700 text-white'
+        : 'bg-gray-700 text-gray-500 cursor-not-allowed'}
+  `
 
   return (
     <div
@@ -164,7 +268,7 @@ export default function VideoPlayerModal({ video, onClose }) {
         style={{ background: '#0F1F17' }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close — RTL-safe */}
+        {/* Close */}
         <button
           onClick={onClose}
           title={t.close}
@@ -202,7 +306,6 @@ export default function VideoPlayerModal({ video, onClose }) {
 
           {/* ── Knowledge Hub ── */}
           <div>
-
             {/* Tab bar */}
             <div className="flex border-b border-gray-700/60 px-2 overflow-x-auto">
               {TABS.map(tab => (
@@ -219,38 +322,166 @@ export default function VideoPlayerModal({ video, onClose }) {
             {/* Tab content */}
             <div className="p-4">
 
-              {/* ── Notes ── */}
-              {activeTab === 'notes' && (
-                <div className="space-y-3">
-                  <textarea
-                    value={notes}
-                    onChange={e => {
-                      setNotes(e.target.value)
-                      setNotesDirty(true)
-                      setNotesSaved(false)
-                    }}
-                    placeholder={t.notesPlaceholder}
-                    rows={6}
-                    className="w-full px-3 py-2.5 rounded-xl border border-gray-700
-                               bg-gray-800 text-gray-100 placeholder-gray-500
-                               focus:outline-none focus:ring-2 focus:ring-primary-500
-                               text-sm resize-none"
-                  />
-                  <div className="flex justify-end">
+              {/* ── Active Learning Panel ── */}
+              {activeTab === 'learn' && (
+                <div className="space-y-5">
+
+                  {/* 1. Key Takeaways */}
+                  <LearnSection icon="💡" title={t.learnTakeaways} hint={t.learnTakeawaysHint}>
+                    <div className="space-y-2">
+                      {takeaways.map((tk, i) => (
+                        <div key={i} className="flex gap-2 items-center">
+                          <input
+                            type="text"
+                            value={tk}
+                            onChange={e => updTakeaway(i, e.target.value)}
+                            placeholder={t.learnTakeawayPlaceholder}
+                            className={INPUT_CLS}
+                          />
+                          {takeaways.length > 1 && (
+                            <RemoveBtn onClick={() => delTakeaway(i)} />
+                          )}
+                        </div>
+                      ))}
+                      <AddRowBtn onClick={addTakeaway} label={t.learnAddTakeaway} />
+                    </div>
+                  </LearnSection>
+
+                  {/* 2. My Question */}
+                  <LearnSection icon="❓" title={t.learnQuestion} hint={t.learnQuestionHint}>
+                    <textarea
+                      value={question}
+                      onChange={e => { setQuestion(e.target.value); markLearnDirty() }}
+                      placeholder={t.learnQuestionPlaceholder}
+                      rows={2}
+                      className={`${INPUT_CLS} resize-none`}
+                    />
+                  </LearnSection>
+
+                  {/* 3. What I'll Apply */}
+                  <LearnSection icon="⚡" title={t.learnApply} hint={t.learnApplyHint}>
+                    <textarea
+                      value={apply}
+                      onChange={e => { setApply(e.target.value); markLearnDirty() }}
+                      placeholder={t.learnApplyPlaceholder}
+                      rows={2}
+                      className={`${INPUT_CLS} resize-none`}
+                    />
+                  </LearnSection>
+
+                  {/* 4. Timestamps */}
+                  <LearnSection icon="🔖" title={t.learnTimestamps} hint={t.learnTimestampsHint}>
+                    <div className="space-y-2">
+                      {timestamps.map((ts, i) => {
+                        const secs = parseTimeSecs(ts.time)
+                        const ytHref = video.youtube_id && secs !== null
+                          ? `https://www.youtube.com/watch?v=${video.youtube_id}&t=${secs}`
+                          : null
+                        return (
+                          <div key={i} className="flex gap-2 items-center">
+                            <input
+                              type="text"
+                              value={ts.time}
+                              onChange={e => updTS(i, 'time', e.target.value)}
+                              placeholder={t.learnTimePlaceholder}
+                              className="w-24 shrink-0 px-3 py-2 rounded-xl border border-gray-700
+                                         bg-gray-800 text-gray-100 placeholder-gray-500
+                                         focus:outline-none focus:ring-2 focus:ring-primary-500
+                                         text-sm font-mono"
+                            />
+                            <input
+                              type="text"
+                              value={ts.note}
+                              onChange={e => updTS(i, 'note', e.target.value)}
+                              placeholder={t.learnNotePlaceholder}
+                              className={INPUT_CLS}
+                            />
+                            {ytHref && (
+                              <a
+                                href={ytHref}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="Open at this timestamp"
+                                className="shrink-0 p-1.5 rounded-lg text-primary-400 hover:text-primary-300
+                                           hover:bg-gray-700 transition-colors"
+                              >
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                </svg>
+                              </a>
+                            )}
+                            {timestamps.length > 1 && (
+                              <RemoveBtn onClick={() => delTS(i)} />
+                            )}
+                          </div>
+                        )
+                      })}
+                      <AddRowBtn onClick={addTS} label={t.learnAddTimestamp} />
+                    </div>
+                  </LearnSection>
+
+                  {/* Save */}
+                  <div className="flex justify-end pt-1">
                     <button
-                      onClick={handleSaveNotes}
-                      disabled={!notesDirty || notesSaving}
-                      className={`
-                        px-5 py-2 rounded-xl text-sm font-semibold transition-all
-                        ${notesSaved
-                          ? 'bg-emerald-600 text-white'
-                          : notesDirty
-                            ? 'bg-primary-600 hover:bg-primary-700 text-white'
-                            : 'bg-gray-700 text-gray-500 cursor-not-allowed'}
-                      `}
+                      onClick={handleSaveLearning}
+                      disabled={!learnDirty || learnSaving}
+                      className={saveBtnCls(learnDirty, learnSaved)}
                     >
-                      {notesSaving ? t.saving : notesSaved ? t.notesSaved : t.save}
+                      {learnSaving ? t.saving : learnSaved ? t.notesSaved : t.save}
                     </button>
+                  </div>
+
+                  {/* Collapsible free notes */}
+                  <div className="border-t border-gray-700/60 pt-3">
+                    <button
+                      onClick={() => setFreeNotesOpen(o => !o)}
+                      className="flex items-center gap-2 text-xs font-medium text-gray-500
+                                 hover:text-gray-300 transition-colors w-full text-start"
+                    >
+                      <svg
+                        className={`w-3.5 h-3.5 shrink-0 transition-transform ${freeNotesOpen ? '' : '-rotate-90'}`}
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/>
+                      </svg>
+                      {t.learnFreeNotes}
+                      {notes && !freeNotesOpen && (
+                        <span className="ms-1 w-1.5 h-1.5 rounded-full bg-primary-500 shrink-0" />
+                      )}
+                    </button>
+
+                    {freeNotesOpen && (
+                      <div className="mt-2 space-y-2">
+                        <textarea
+                          value={notes}
+                          onChange={e => {
+                            setNotes(e.target.value)
+                            setNotesDirty(true)
+                            setNotesSaved(false)
+                          }}
+                          placeholder={t.notesPlaceholder}
+                          rows={4}
+                          className={`${INPUT_CLS} resize-none`}
+                        />
+                        <div className="flex justify-end">
+                          <button
+                            onClick={handleSaveNotes}
+                            disabled={!notesDirty || notesSaving}
+                            className={`
+                              px-4 py-1.5 rounded-xl text-xs font-semibold transition-all
+                              ${notesSaved
+                                ? 'bg-emerald-600 text-white'
+                                : notesDirty
+                                  ? 'bg-primary-600 hover:bg-primary-700 text-white'
+                                  : 'bg-gray-700 text-gray-500 cursor-not-allowed'}
+                            `}
+                          >
+                            {notesSaving ? t.saving : notesSaved ? t.notesSaved : t.save}
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -299,7 +530,6 @@ export default function VideoPlayerModal({ video, onClose }) {
                     ))}
                   </div>
 
-                  {/* Add prompt */}
                   <div className="flex gap-2 pt-2 border-t border-gray-700/60">
                     <textarea
                       value={newPrompt}
@@ -360,7 +590,6 @@ export default function VideoPlayerModal({ video, onClose }) {
                     ))}
                   </div>
 
-                  {/* Add link */}
                   <div className="pt-2 border-t border-gray-700/60 space-y-2">
                     <input
                       type="url"
