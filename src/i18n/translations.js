@@ -137,6 +137,10 @@ export const translations = {
     linkLabelPlaceholder: 'التسمية (اختياري)',
     add:                'إضافة',
     remove:             'حذف',
+    // ── Intent field ─────────────────────────────────────────────
+    intentLabel:             'لماذا تحفظ هذا؟',
+    intentPlaceholder:       'مثال: لتطوير أسلوب الحديث أمام الكاميرا...',
+    intentGoalPrefix:        'الهدف:',
     // ── Active Learning Panel ────────────────────────────────────
     learnTakeaways:          'أبرز ما تعلّمته',
     learnTakeawaysHint:      'ما الذي تعلّمته من هذا الفيديو؟',
@@ -314,6 +318,10 @@ export const translations = {
     linkLabelPlaceholder: 'Label (optional)',
     add:                'Add',
     remove:             'Remove',
+    // ── Intent field ─────────────────────────────────────────────
+    intentLabel:             'Why are you saving this?',
+    intentPlaceholder:       'e.g. To improve my camera presence — or to compare with other talks',
+    intentGoalPrefix:        'Goal:',
     // ── Active Learning Panel ────────────────────────────────────
     learnTakeaways:          'Key Takeaways',
     learnTakeawaysHint:      'What did I learn?',

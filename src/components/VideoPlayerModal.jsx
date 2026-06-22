@@ -95,6 +95,9 @@ export default function VideoPlayerModal({ video, onClose }) {
 
   const [activeTab, setActiveTab] = useState('learn')
 
+  // Intent (why they saved this)
+  const [intent, setIntent] = useState('')
+
   // Free notes (notes text column)
   const [notes,       setNotes]       = useState('')
   const [notesDirty,  setNotesDirty]  = useState(false)
@@ -130,6 +133,7 @@ export default function VideoPlayerModal({ video, onClose }) {
         .eq('id', video.id)
         .single()
       if (data) {
+        setIntent(data.intent ?? '')
         setNotes(data.notes ?? '')
         setPrompts(toArr(data.prompts))
         setLinks(toArr(data.links))
@@ -296,11 +300,17 @@ export default function VideoPlayerModal({ video, onClose }) {
             />
           </div>
 
-          {/* Title + Channel */}
+          {/* Title + Channel + Goal */}
           <div className="px-4 py-3 border-b border-gray-700/60">
             <h2 className="text-sm font-semibold text-white line-clamp-2">{video.title}</h2>
             {video.channel && (
               <p className="text-xs text-gray-400 mt-0.5">{video.channel}</p>
+            )}
+            {intent && (
+              <p className="text-xs mt-1">
+                <span className="text-gray-500">{t.intentGoalPrefix}</span>{' '}
+                <span className="text-gray-400">{intent}</span>
+              </p>
             )}
           </div>
 

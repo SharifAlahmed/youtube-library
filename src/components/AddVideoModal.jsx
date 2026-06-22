@@ -1,13 +1,51 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LanguageContext'
 import { useLibrary } from '../context/LibraryContext'
 import UpgradeModal from './UpgradeModal'
 
-// ── Tag input helpers ────────────────────────────────────────────────────────
+// ── Normalization ─────────────────────────────────────────────────────────────
+function normTag(s) {
+  return s.trim().toLowerCase()
+}
+
 function parseTags(raw) {
-  return raw.split(',').map(s => s.trim()).filter(Boolean)
+  return [...new Set(raw.split(',').map(normTag).filter(Boolean))]
+}
+
+function normalizeTags(arr) {
+  return [...new Set(arr.map(normTag).filter(Boolean))]
+}
+
+// ── Autosuggest dropdown ──────────────────────────────────────────────────────
+function SuggestDropdown({ options, onSelect }) {
+  if (!options.length) return null
+  return (
+    <div
+      className="absolute z-30 top-full start-0 end-0 mt-1 rounded-xl
+                 overflow-hidden overflow-y-auto max-h-44"
+      style={{
+        background: 'var(--card)',
+        border: '1px solid var(--border)',
+        boxShadow: 'var(--shadow-card)',
+      }}
+    >
+      {options.map(opt => (
+        <button
+          key={opt}
+          type="button"
+          onMouseDown={e => e.preventDefault()}
+          onClick={() => onSelect(opt)}
+          className="w-full text-start px-3 py-2 text-sm text-[var(--ink)]
+                     hover:bg-[var(--accent-tint)] hover:text-[var(--accent)]
+                     transition-colors"
+        >
+          {opt}
+        </button>
+      ))}
+    </div>
+  )
 }
 
 // ── Thumbnail preview with hi-res fallback ───────────────────────────────────
@@ -42,43 +80,58 @@ export default function AddVideoModal({ onClose }) {
   const [fetchError, setFetchErr] = useState('')
 
   // Video fields
-  const [title, setTitle]           = useState('')
-  const [channel, setChannel]       = useState('')
-  const [thumbnailUrl, setThumb]    = useState('')
-  const [youtubeId, setYoutubeId]   = useState('')
+  const [title, setTitle]         = useState('')
+  const [channel, setChannel]     = useState('')
+  const [thumbnailUrl, setThumb]  = useState('')
+  const [youtubeId, setYoutubeId] = useState('')
 
-  // Extra fields
-  const [domain, setDomain]         = useState('')
-  const [tags, setTags]             = useState([])
-  const [tagInput, setTagInput]     = useState('')
-  const [notes, setNotes]           = useState('')
+  // Categorization
+  const [domain, setDomain]       = useState('')
+  const [showDomainSuggest, setShowDomainSuggest] = useState(false)
+  const [tags, setTags]           = useState([])
+  const [tagInput, setTagInput]   = useState('')
+
+  // Intent + notes
+  const [intent, setIntent]       = useState('')
+  const [notes, setNotes]         = useState('')
+
+  // Existing tags/domains for autosuggest
+  const [allTags, setAllTags]     = useState([])
+  const [allDomains, setAllDomains] = useState([])
 
   // Save
-  const [saving, setSaving]         = useState(false)
-  const [saveError, setSaveError]   = useState('')
-  const [showUpgrade, setUpgrade]   = useState(false)
-  const [fieldErrors, setFieldErrors] = useState({}) // { url?: true, title?: true }
+  const [saving, setSaving]       = useState(false)
+  const [saveError, setSaveError] = useState('')
+  const [showUpgrade, setUpgrade] = useState(false)
+  const [fieldErrors, setFieldErrors] = useState({})
 
-  const preferredDomains = Array.isArray(profile?.preferred_domains)
-    ? profile.preferred_domains
-    : []
+  // Load user's existing tags + domains once for autosuggest
+  useEffect(() => {
+    const uid = session?.user?.id
+    if (!uid) return
+    supabase.from('videos').select('tags, domain').eq('user_id', uid).then(({ data }) => {
+      if (!data) return
+      const tagSet = new Set()
+      const domSet = new Set()
+      data.forEach(v => {
+        ;(Array.isArray(v.tags) ? v.tags : []).forEach(tg => { if (tg) tagSet.add(tg.trim().toLowerCase()) })
+        if (v.domain) domSet.add(v.domain.trim().toLowerCase())
+      })
+      setAllTags([...tagSet].sort())
+      setAllDomains([...domSet].sort())
+    })
+  }, [session?.user?.id])
 
-  // ── Fetch oEmbed via edge function ────────────────────────────────────────
+  // ── Fetch oEmbed ─────────────────────────────────────────────────────────
   const handleFetch = async () => {
     const raw = url.trim()
     if (!raw) return
-
     setFS('loading')
     setFetchErr('')
-
     try {
-      const { data, error } = await supabase.functions.invoke('oembed', {
-        body: { url: raw },
-      })
-
+      const { data, error } = await supabase.functions.invoke('oembed', { body: { url: raw } })
       if (error) throw new Error(error.message)
       if (data?.error) throw new Error(data.error)
-
       setTitle(data.title    ?? '')
       setChannel(data.channel ?? '')
       setThumb(data.thumbnail ?? '')
@@ -93,7 +146,6 @@ export default function AddVideoModal({ onClose }) {
   const handleUrlChange = (val) => {
     setUrl(val)
     if (fieldErrors.url) setFieldErrors(e => ({ ...e, url: false }))
-    // Reset fetched data when URL is cleared
     if (!val.trim()) {
       setFS('idle')
       setFetchErr('')
@@ -126,7 +178,16 @@ export default function AddVideoModal({ onClose }) {
     if (tagInput.trim()) { commitTags(tagInput); setTagInput('') }
   }
 
-  // ── Save to Supabase ──────────────────────────────────────────────────────
+  // Suggestions: existing tags that contain the current input (excluding already-added)
+  const tagSuggestions = tagInput.trim()
+    ? allTags.filter(tg => tg.includes(tagInput.trim().toLowerCase()) && !tags.includes(tg))
+    : []
+
+  const domainSuggestions = domain.trim()
+    ? allDomains.filter(d => d.includes(domain.trim().toLowerCase()) && d !== domain.trim().toLowerCase())
+    : []
+
+  // ── Save ─────────────────────────────────────────────────────────────────
   const handleSave = async () => {
     if (saving) return
     const errs = {}
@@ -137,17 +198,20 @@ export default function AddVideoModal({ onClose }) {
     setSaving(true)
     setSaveError('')
 
+    const finalTags = normalizeTags(tags)
+
     const payload = {
-      user_id:      session?.user?.id,
-      title:        title.trim(),
-      channel:      channel.trim()  || null,
-      thumbnail_url: thumbnailUrl   || null,
-      youtube_id:   youtubeId       || null,
-      url:          url.trim()      || null,
-      domain:       domain.trim()   || null,
-      tags:         tags.length     ? tags : null,
-      notes:        notes.trim()    || null,
-      watch_status: 'unwatched',
+      user_id:         session?.user?.id,
+      title:           title.trim(),
+      channel:         channel.trim()  || null,
+      thumbnail_url:   thumbnailUrl    || null,
+      youtube_id:      youtubeId       || null,
+      url:             url.trim()      || null,
+      domain:          domain.trim().toLowerCase() || null,
+      tags:            finalTags.length ? finalTags : null,
+      intent:          intent.trim()   || null,
+      notes:           notes.trim()    || null,
+      watch_status:    'unwatched',
       saved_for_later: false,
     }
 
@@ -167,12 +231,16 @@ export default function AddVideoModal({ onClose }) {
     onClose()
   }
 
-  // ── UpgradeModal short-circuit ─────────────────────────────────────────────
   if (showUpgrade) {
     return <UpgradeModal onClose={() => { setUpgrade(false); onClose() }} />
   }
 
   const hasFieldErrors = fieldErrors.url || fieldErrors.title
+
+  const inputCls = `w-full px-4 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700
+    text-gray-900 dark:text-white placeholder-gray-400
+    focus:outline-none focus:ring-2 focus:border-transparent transition-all text-sm
+    border-gray-200 dark:border-gray-600 focus:ring-primary-500`
 
   return (
     <div
@@ -184,7 +252,7 @@ export default function AddVideoModal({ onClose }) {
                       rounded-t-3xl sm:rounded-2xl shadow-2xl
                       max-h-[92dvh] flex flex-col">
 
-        {/* ── Modal header ── */}
+        {/* ── Header ── */}
         <div className="flex items-center justify-between px-6 pt-5 pb-4
                         border-b border-gray-100 dark:border-gray-700 shrink-0">
           <h2 className="text-lg font-bold text-gray-900 dark:text-white">
@@ -248,7 +316,6 @@ export default function AddVideoModal({ onClose }) {
               </button>
             </div>
 
-            {/* Fetch error */}
             {fetchState === 'error' && fetchError && (
               <div className="mt-2 flex items-start gap-2 text-xs text-amber-700
                               dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20
@@ -261,7 +328,6 @@ export default function AddVideoModal({ onClose }) {
               </div>
             )}
 
-            {/* Success preview */}
             {fetchState === 'done' && (title || thumbnailUrl) && (
               <div className="mt-3 flex gap-3 items-center p-3
                               bg-emerald-50 dark:bg-emerald-900/20 rounded-xl
@@ -272,9 +338,7 @@ export default function AddVideoModal({ onClose }) {
                     {title}
                   </p>
                   {channel && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
-                      {channel}
-                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">{channel}</p>
                   )}
                 </div>
                 <svg className="w-5 h-5 text-emerald-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -319,76 +383,97 @@ export default function AddVideoModal({ onClose }) {
               value={channel}
               onChange={e => setChannel(e.target.value)}
               placeholder={t.channelPlaceholder}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600
-                         bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white
-                         placeholder-gray-400 focus:outline-none focus:ring-2
-                         focus:ring-primary-500 focus:border-transparent transition-all text-sm"
+              className={inputCls}
             />
           </div>
 
-          {/* Domain */}
+          {/* Domain + autosuggest */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
               {t.domainLabel}
             </label>
-            <input
-              list="domain-list"
-              value={domain}
-              onChange={e => setDomain(e.target.value)}
-              placeholder={t.domainPlaceholder}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600
-                         bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white
-                         placeholder-gray-400 focus:outline-none focus:ring-2
-                         focus:ring-primary-500 focus:border-transparent transition-all text-sm"
-            />
-            {preferredDomains.length > 0 && (
-              <datalist id="domain-list">
-                {preferredDomains.map(d => <option key={d} value={d}/>)}
-              </datalist>
-            )}
+            <div className="relative">
+              <input
+                type="text"
+                value={domain}
+                onChange={e => { setDomain(e.target.value); setShowDomainSuggest(true) }}
+                onFocus={() => setShowDomainSuggest(true)}
+                onBlur={() => setShowDomainSuggest(false)}
+                placeholder={t.domainPlaceholder}
+                className={inputCls}
+              />
+              {showDomainSuggest && (
+                <SuggestDropdown
+                  options={domainSuggestions}
+                  onSelect={d => { setDomain(d); setShowDomainSuggest(false) }}
+                />
+              )}
+            </div>
           </div>
 
-          {/* Tags */}
+          {/* Tags + autosuggest */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
               {t.tagsLabel}
             </label>
-            {/* Tag chips */}
-            <div className={`
-              flex flex-wrap gap-1.5 px-3 py-2.5 rounded-xl border transition-all
-              bg-gray-50 dark:bg-gray-700
-              border-gray-200 dark:border-gray-600
-              focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-transparent
-              ${tags.length > 0 ? 'pb-2' : ''}
-            `}>
-              {tags.map(tag => (
-                <span key={tag}
-                  className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full
-                             bg-primary-100 dark:bg-primary-900/50
-                             text-primary-700 dark:text-primary-300">
-                  {tag}
-                  <button
-                    type="button"
-                    onClick={() => setTags(prev => prev.filter(t => t !== tag))}
-                    className="hover:text-red-500 transition-colors"
-                  >
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                  </button>
-                </span>
-              ))}
-              <input
-                type="text"
-                value={tagInput}
-                onChange={e => setTagInput(e.target.value)}
-                onKeyDown={onTagKeyDown}
-                onBlur={onTagBlur}
-                placeholder={tags.length === 0 ? t.tagsPlaceholder : ''}
-                className="flex-1 min-w-[120px] bg-transparent text-sm text-gray-900
-                           dark:text-white placeholder-gray-400 outline-none"
+            <div className="relative">
+              <div className={`
+                flex flex-wrap gap-1.5 px-3 py-2.5 rounded-xl border transition-all
+                bg-gray-50 dark:bg-gray-700
+                border-gray-200 dark:border-gray-600
+                focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-transparent
+                ${tags.length > 0 ? 'pb-2' : ''}
+              `}>
+                {tags.map(tag => (
+                  <span key={tag}
+                    className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full
+                               bg-primary-100 dark:bg-primary-900/50
+                               text-primary-700 dark:text-primary-300">
+                    {tag}
+                    <button
+                      type="button"
+                      onClick={() => setTags(prev => prev.filter(t => t !== tag))}
+                      className="hover:text-red-500 transition-colors"
+                    >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12"/>
+                      </svg>
+                    </button>
+                  </span>
+                ))}
+                <input
+                  type="text"
+                  value={tagInput}
+                  onChange={e => setTagInput(e.target.value)}
+                  onKeyDown={onTagKeyDown}
+                  onBlur={onTagBlur}
+                  placeholder={tags.length === 0 ? t.tagsPlaceholder : ''}
+                  className="flex-1 min-w-[120px] bg-transparent text-sm text-gray-900
+                             dark:text-white placeholder-gray-400 outline-none"
+                />
+              </div>
+              <SuggestDropdown
+                options={tagSuggestions}
+                onSelect={tag => {
+                  setTags(prev => prev.includes(tag) ? prev : [...prev, tag])
+                  setTagInput('')
+                }}
               />
             </div>
+          </div>
+
+          {/* Intent */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              {t.intentLabel}
+            </label>
+            <input
+              type="text"
+              value={intent}
+              onChange={e => setIntent(e.target.value)}
+              placeholder={t.intentPlaceholder}
+              className={inputCls}
+            />
           </div>
 
           {/* Notes */}
@@ -409,7 +494,6 @@ export default function AddVideoModal({ onClose }) {
             />
           </div>
 
-          {/* Required fields error */}
           {hasFieldErrors && (
             <p className="text-sm text-red-600 dark:text-red-400
                           bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-lg">
@@ -417,7 +501,6 @@ export default function AddVideoModal({ onClose }) {
             </p>
           )}
 
-          {/* Save error (from Supabase) */}
           {saveError && (
             <p className="text-sm text-red-600 dark:text-red-400
                           bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-lg">
@@ -426,7 +509,7 @@ export default function AddVideoModal({ onClose }) {
           )}
         </div>
 
-        {/* ── Footer actions ── */}
+        {/* ── Footer ── */}
         <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-700
                         flex gap-3 shrink-0">
           <button
