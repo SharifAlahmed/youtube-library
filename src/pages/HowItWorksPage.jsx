@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import { useLibrary } from '../context/LibraryContext'
 
 const STEPS = [
@@ -19,13 +20,25 @@ const STEPS = [
     title: 'ارجع لها متى تريد',
     desc: 'مكتبة منظّمة، قابلة للبحث، كل شيء في مكانه.',
   },
+  {
+    num: '④',
+    icon: '🚫',
+    title: 'بدون إعلانات',
+    desc: 'فيديوهاتك تُشغَّل داخل Lumina مباشرة — بدون مقاطعة، بدون تشتيت.',
+  },
 ]
 
 export default function HowItWorksPage() {
   const { openAddModal } = useLibrary()
+  const navigate = useNavigate()
+
+  function handleStart() {
+    openAddModal()
+    navigate('/app')
+  }
 
   return (
-    <div dir="rtl" className="max-w-2xl mx-auto px-6 py-14">
+    <div dir="rtl" className="max-w-5xl mx-auto px-6 py-14">
 
       {/* ── Hero ── */}
       <h1
@@ -36,31 +49,28 @@ export default function HowItWorksPage() {
       </h1>
 
       {/* ── Intro ── */}
-      <div
-        className="text-center mb-12 space-y-1.5"
-        style={{ fontSize: '16px', lineHeight: '1.9', color: 'var(--muted)' }}
+      <p
+        className="text-center mb-12 mx-auto max-w-xl"
+        style={{ fontSize: '16px', lineHeight: '2', color: 'var(--muted)' }}
       >
-        <p>كلنا نشاهد ساعات على يوتيوب.</p>
-        <p>لكن كم منها يتحوّل فعلاً لتطوّر؟</p>
-        <p
-          className="mt-4 text-base font-medium"
-          style={{ color: 'var(--ink)' }}
-        >
+        كلنا نشاهد ساعات على يوتيوب.{' '}
+        لكن كم منها يتحوّل فعلاً لتطوّر؟{' '}
+        <span style={{ color: 'var(--ink)', fontWeight: 500 }}>
           Lumina تساعدك تبني مكتبة تعلّم شخصية من الفيديوهات اللي تختارها —
           بدل ما تضيع في الـ Watch Later وما ترجع لها.
-        </p>
-      </div>
+        </span>
+      </p>
 
-      {/* ── Step cards ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-12">
+      {/* ── Step cards — 4-up on lg, 2-up on sm, stacked on mobile ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-14">
         {STEPS.map((step, i) => (
           <div
             key={i}
             className="rounded-2xl p-6 text-center flex flex-col items-center gap-3"
             style={{
-              background:    'var(--card)',
-              border:        '1px solid var(--border)',
-              boxShadow:     'var(--shadow-card)',
+              background: 'var(--card)',
+              border:     '1px solid var(--border)',
+              boxShadow:  'var(--shadow-card)',
             }}
           >
             <span className="text-4xl">{step.icon}</span>
@@ -76,8 +86,8 @@ export default function HowItWorksPage() {
 
       {/* ── Closing line ── */}
       <p
-        className="text-center text-sm italic mb-10"
-        style={{ color: 'var(--muted)' }}
+        className="text-center font-medium mb-10"
+        style={{ fontSize: '17px', color: 'var(--ink)' }}
       >
         لكل من يريد أن يتعلّم بقصد — لا أن يشاهد بدون أثر.
       </p>
@@ -85,16 +95,12 @@ export default function HowItWorksPage() {
       {/* ── CTA ── */}
       <div className="flex justify-center">
         <button
-          onClick={openAddModal}
+          onClick={handleStart}
           className="px-10 py-3 rounded-xl text-base font-semibold text-white
-                     transition-opacity hover:opacity-90 focus:outline-none
-                     focus:ring-2 focus:ring-offset-2"
-          style={{
-            background:    'var(--accent)',
-            focusRingColor:'var(--accent)',
-          }}
+                     transition-opacity hover:opacity-90 focus:outline-none"
+          style={{ background: 'var(--accent)' }}
         >
-          ابدأ الآن
+          أضف أول فيديو الآن
         </button>
       </div>
 
