@@ -88,7 +88,7 @@ const INPUT_CLS = `w-full px-3 py-2 rounded-xl border border-gray-700
   bg-gray-800 text-gray-100 placeholder-gray-500
   focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm`
 
-export default function VideoPlayerModal({ video, onClose }) {
+export default function VideoPlayerModal({ video, onClose, onEdit }) {
   const { t } = useLang()
   const { session } = useAuth()
   const uid = session?.user?.id
@@ -302,16 +302,34 @@ export default function VideoPlayerModal({ video, onClose }) {
 
           {/* Title + Channel + Goal */}
           <div className="px-4 py-3 border-b border-gray-700/60">
-            <h2 className="text-sm font-semibold text-white line-clamp-2">{video.title}</h2>
-            {video.channel && (
-              <p className="text-xs text-gray-400 mt-0.5">{video.channel}</p>
-            )}
-            {intent && (
-              <p className="text-xs mt-1">
-                <span className="text-gray-500">{t.intentGoalPrefix}</span>{' '}
-                <span className="text-gray-400">{intent}</span>
-              </p>
-            )}
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <h2 className="text-sm font-semibold text-white line-clamp-2">{video.title}</h2>
+                {video.channel && (
+                  <p className="text-xs text-gray-400 mt-0.5">{video.channel}</p>
+                )}
+                {intent && (
+                  <p className="text-xs mt-1">
+                    <span className="text-gray-500">{t.intentGoalPrefix}</span>{' '}
+                    <span className="text-gray-400">{intent}</span>
+                  </p>
+                )}
+              </div>
+              {onEdit && (
+                <button
+                  onClick={() => onEdit(video)}
+                  title={t.editVideo}
+                  className="shrink-0 p-1.5 rounded-lg text-gray-500
+                             hover:text-primary-400 hover:bg-gray-700/60
+                             transition-colors mt-0.5"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                  </svg>
+                </button>
+              )}
+            </div>
           </div>
 
           {/* ── Knowledge Hub ── */}

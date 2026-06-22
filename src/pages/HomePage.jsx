@@ -137,7 +137,7 @@ const FILTERS = ['all', 'unwatched', 'watched', 'saved']
 
 export default function HomePage() {
   const { t } = useLang()
-  const { refreshKey } = useLibrary()
+  const { refreshKey, openEditModal } = useLibrary()
   const { session } = useAuth()
 
   const [videos,    setVideos]    = useState([])
@@ -159,7 +159,7 @@ export default function HomePage() {
     try {
       const { data, error } = await supabase
         .from('videos')
-        .select('id, title, channel, thumbnail_url, domain, tags, watch_status, saved_for_later, created_at, youtube_id, notes, prompts, links, intent')
+        .select('id, title, channel, thumbnail_url, domain, tags, watch_status, saved_for_later, created_at, youtube_id, notes, prompts, links, intent, url')
         .eq('user_id', uid)
         .order('created_at', { ascending: false })
       if (error) throw error
@@ -503,6 +503,7 @@ export default function HomePage() {
                   onToggleWatched={() => handleToggleWatched(video)}
                   onToggleSaved={() => handleToggleSaved(video)}
                   onDelete={() => handleDelete(video)}
+                  onEdit={openEditModal}
                 />
               ))}
             </div>

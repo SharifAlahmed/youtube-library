@@ -137,6 +137,10 @@ export const translations = {
     linkLabelPlaceholder: 'التسمية (اختياري)',
     add:                'إضافة',
     remove:             'حذف',
+    // ── Edit Video ───────────────────────────────────────────────
+    editVideo:               'تعديل',
+    editVideoTitle:          'تعديل الفيديو',
+    saveChanges:             'حفظ التغييرات',
     // ── Intent field ─────────────────────────────────────────────
     intentLabel:             'لماذا تحفظ هذا؟',
     intentPlaceholder:       'مثال: لتطوير أسلوب الحديث أمام الكاميرا...',
@@ -318,6 +322,10 @@ export const translations = {
     linkLabelPlaceholder: 'Label (optional)',
     add:                'Add',
     remove:             'Remove',
+    // ── Edit Video ───────────────────────────────────────────────
+    editVideo:               'Edit',
+    editVideoTitle:          'Edit video',
+    saveChanges:             'Save changes',
     // ── Intent field ─────────────────────────────────────────────
     intentLabel:             'Why are you saving this?',
     intentPlaceholder:       'e.g. To improve my camera presence — or to compare with other talks',

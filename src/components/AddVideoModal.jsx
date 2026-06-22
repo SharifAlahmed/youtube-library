@@ -6,9 +6,7 @@ import { useLibrary } from '../context/LibraryContext'
 import UpgradeModal from './UpgradeModal'
 
 // ── Normalization ─────────────────────────────────────────────────────────────
-function normTag(s) {
-  return s.trim().toLowerCase()
-}
+function normTag(s) { return s.trim().toLowerCase() }
 
 function parseTags(raw) {
   return [...new Set(raw.split(',').map(normTag).filter(Boolean))]
@@ -16,6 +14,22 @@ function parseTags(raw) {
 
 function normalizeTags(arr) {
   return [...new Set(arr.map(normTag).filter(Boolean))]
+}
+
+// ── Extract youtube_id from any YouTube URL format ────────────────────────────
+function extractYoutubeId(url) {
+  if (!url) return null
+  const patterns = [
+    /[?&]v=([A-Za-z0-9_-]{11})/,
+    /youtu\.be\/([A-Za-z0-9_-]{11})/,
+    /youtube\.com\/embed\/([A-Za-z0-9_-]{11})/,
+    /youtube\.com\/shorts\/([A-Za-z0-9_-]{11})/,
+  ]
+  for (const p of patterns) {
+    const m = url.match(p)
+    if (m) return m[1]
+  }
+  return null
 }
 
 // ── Autosuggest dropdown ──────────────────────────────────────────────────────
@@ -48,16 +62,14 @@ function SuggestDropdown({ options, onSelect }) {
   )
 }
 
-// ── Thumbnail preview with hi-res fallback ───────────────────────────────────
+// ── Thumbnail preview ─────────────────────────────────────────────────────────
 function ThumbPreview({ src, title, youtubeId }) {
   const [useFallback, setUseFallback] = useState(false)
   const fallback = youtubeId
     ? `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`
     : null
-
   const imgSrc = useFallback ? fallback : src
   if (!imgSrc) return null
-
   return (
     <img
       src={imgSrc}
@@ -69,43 +81,49 @@ function ThumbPreview({ src, title, youtubeId }) {
 }
 
 // ── Main ─────────────────────────────────────────────────────────────────────
-export default function AddVideoModal({ onClose }) {
-  const { profile, session } = useAuth()
+// video prop = null → add mode; video prop = object → edit mode
+export default function AddVideoModal({ onClose, video: initialVideo = null }) {
+  const { session } = useAuth()
   const { t } = useLang()
   const { triggerRefresh } = useLibrary()
 
+  const isEditMode = !!initialVideo
+
   // URL + fetch
-  const [url, setUrl]             = useState('')
-  const [fetchState, setFS]       = useState('idle')   // idle | loading | done | error
+  const [url, setUrl]           = useState(initialVideo?.url ?? '')
+  const [fetchState, setFS]     = useState(
+    isEditMode && (initialVideo?.title || initialVideo?.thumbnail_url) ? 'done' : 'idle'
+  )
   const [fetchError, setFetchErr] = useState('')
 
-  // Video fields
-  const [title, setTitle]         = useState('')
-  const [channel, setChannel]     = useState('')
-  const [thumbnailUrl, setThumb]  = useState('')
-  const [youtubeId, setYoutubeId] = useState('')
+  // Video fields — pre-fill in edit mode
+  const [title, setTitle]       = useState(initialVideo?.title ?? '')
+  const [channel, setChannel]   = useState(initialVideo?.channel ?? '')
+  const [thumbnailUrl, setThumb] = useState(initialVideo?.thumbnail_url ?? '')
+  const [youtubeId, setYoutubeId] = useState(initialVideo?.youtube_id ?? '')
 
   // Categorization
-  const [domain, setDomain]       = useState('')
+  const [domain, setDomain]     = useState(initialVideo?.domain ?? '')
   const [showDomainSuggest, setShowDomainSuggest] = useState(false)
-  const [tags, setTags]           = useState([])
-  const [tagInput, setTagInput]   = useState('')
+  const [tags, setTags]         = useState(
+    Array.isArray(initialVideo?.tags) ? initialVideo.tags : []
+  )
+  const [tagInput, setTagInput] = useState('')
 
-  // Intent + notes
-  const [intent, setIntent]       = useState('')
-  const [notes, setNotes]         = useState('')
+  // Intent + notes (notes not edited here per spec; intent is)
+  const [intent, setIntent]     = useState(initialVideo?.intent ?? '')
 
   // Existing tags/domains for autosuggest
-  const [allTags, setAllTags]     = useState([])
+  const [allTags, setAllTags]   = useState([])
   const [allDomains, setAllDomains] = useState([])
 
   // Save
-  const [saving, setSaving]       = useState(false)
+  const [saving, setSaving]     = useState(false)
   const [saveError, setSaveError] = useState('')
   const [showUpgrade, setUpgrade] = useState(false)
   const [fieldErrors, setFieldErrors] = useState({})
 
-  // Load user's existing tags + domains once for autosuggest
+  // Load user's existing tags + domains for autosuggest
   useEffect(() => {
     const uid = session?.user?.id
     if (!uid) return
@@ -122,7 +140,7 @@ export default function AddVideoModal({ onClose }) {
     })
   }, [session?.user?.id])
 
-  // ── Fetch oEmbed ─────────────────────────────────────────────────────────
+  // ── Fetch oEmbed ──────────────────────────────────────────────────────────
   const handleFetch = async () => {
     const raw = url.trim()
     if (!raw) return
@@ -146,7 +164,7 @@ export default function AddVideoModal({ onClose }) {
   const handleUrlChange = (val) => {
     setUrl(val)
     if (fieldErrors.url) setFieldErrors(e => ({ ...e, url: false }))
-    if (!val.trim()) {
+    if (!val.trim() && !isEditMode) {
       setFS('idle')
       setFetchErr('')
       setTitle('')
@@ -178,7 +196,6 @@ export default function AddVideoModal({ onClose }) {
     if (tagInput.trim()) { commitTags(tagInput); setTagInput('') }
   }
 
-  // Suggestions: existing tags that contain the current input (excluding already-added)
   const tagSuggestions = tagInput.trim()
     ? allTags.filter(tg => tg.includes(tagInput.trim().toLowerCase()) && !tags.includes(tg))
     : []
@@ -199,36 +216,62 @@ export default function AddVideoModal({ onClose }) {
     setSaveError('')
 
     const finalTags = normalizeTags(tags)
+    const finalUrl  = url.trim()
 
-    const payload = {
-      user_id:         session?.user?.id,
-      title:           title.trim(),
-      channel:         channel.trim()  || null,
-      thumbnail_url:   thumbnailUrl    || null,
-      youtube_id:      youtubeId       || null,
-      url:             url.trim()      || null,
-      domain:          domain.trim().toLowerCase() || null,
-      tags:            finalTags.length ? finalTags : null,
-      intent:          intent.trim()   || null,
-      notes:           notes.trim()    || null,
-      watch_status:    'unwatched',
-      saved_for_later: false,
-    }
+    if (isEditMode) {
+      // Derive youtube_id from updated URL; fall back to current
+      const derivedId = extractYoutubeId(finalUrl) || youtubeId || null
+      // Update thumbnail only when the ID changed
+      const derivedThumb = (derivedId && derivedId !== initialVideo.youtube_id)
+        ? `https://img.youtube.com/vi/${derivedId}/mqdefault.jpg`
+        : thumbnailUrl || null
 
-    const { error } = await supabase.from('videos').insert(payload)
+      const { error } = await supabase.from('videos')
+        .update({
+          title:         title.trim(),
+          channel:       channel.trim() || null,
+          url:           finalUrl       || null,
+          domain:        domain.trim().toLowerCase() || null,
+          tags:          finalTags.length ? finalTags : null,
+          intent:        intent.trim()   || null,
+          youtube_id:    derivedId,
+          thumbnail_url: derivedThumb,
+        })
+        .eq('id', initialVideo.id)
+        .eq('user_id', session.user.id)
 
-    if (error) {
-      if (error.message?.includes('FREE_LIMIT_REACHED')) {
-        setUpgrade(true)
-      } else {
-        setSaveError(error.message)
+      if (error) { setSaveError(error.message); setSaving(false); return }
+      triggerRefresh()
+      onClose()
+    } else {
+      // Add mode
+      const payload = {
+        user_id:         session?.user?.id,
+        title:           title.trim(),
+        channel:         channel.trim()  || null,
+        thumbnail_url:   thumbnailUrl    || null,
+        youtube_id:      youtubeId       || null,
+        url:             finalUrl        || null,
+        domain:          domain.trim().toLowerCase() || null,
+        tags:            finalTags.length ? finalTags : null,
+        intent:          intent.trim()   || null,
+        notes:           null,
+        watch_status:    'unwatched',
+        saved_for_later: false,
       }
-      setSaving(false)
-      return
+      const { error } = await supabase.from('videos').insert(payload)
+      if (error) {
+        if (error.message?.includes('FREE_LIMIT_REACHED')) {
+          setUpgrade(true)
+        } else {
+          setSaveError(error.message)
+        }
+        setSaving(false)
+        return
+      }
+      triggerRefresh()
+      onClose()
     }
-
-    triggerRefresh()
-    onClose()
   }
 
   if (showUpgrade) {
@@ -256,7 +299,7 @@ export default function AddVideoModal({ onClose }) {
         <div className="flex items-center justify-between px-6 pt-5 pb-4
                         border-b border-gray-100 dark:border-gray-700 shrink-0">
           <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-            {t.addVideoTitle}
+            {isEditMode ? t.editVideoTitle : t.addVideoTitle}
           </h2>
           <button
             onClick={onClose}
@@ -328,6 +371,7 @@ export default function AddVideoModal({ onClose }) {
               </div>
             )}
 
+            {/* Thumbnail preview — shown in both add (after fetch) and edit (pre-filled) */}
             {fetchState === 'done' && (title || thumbnailUrl) && (
               <div className="mt-3 flex gap-3 items-center p-3
                               bg-emerald-50 dark:bg-emerald-900/20 rounded-xl
@@ -476,24 +520,6 @@ export default function AddVideoModal({ onClose }) {
             />
           </div>
 
-          {/* Notes */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-              {t.notesLabel}
-            </label>
-            <textarea
-              value={notes}
-              onChange={e => setNotes(e.target.value)}
-              placeholder={t.notesPlaceholder}
-              rows={3}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600
-                         bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white
-                         placeholder-gray-400 focus:outline-none focus:ring-2
-                         focus:ring-primary-500 focus:border-transparent transition-all
-                         text-sm resize-none"
-            />
-          </div>
-
           {hasFieldErrors && (
             <p className="text-sm text-red-600 dark:text-red-400
                           bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-lg">
@@ -538,7 +564,7 @@ export default function AddVideoModal({ onClose }) {
                 </svg>
                 {t.saving}
               </>
-            ) : t.save}
+            ) : isEditMode ? t.saveChanges : t.save}
           </button>
         </div>
 

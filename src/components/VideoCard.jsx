@@ -58,7 +58,7 @@ function Thumbnail({ src, title }) {
 }
 
 // ── Main component ───────────────────────────────────────────────────────────
-export default function VideoCard({ video, onToggleWatched, onToggleSaved, onDelete }) {
+export default function VideoCard({ video, onToggleWatched, onToggleSaved, onDelete, onEdit }) {
   const { t } = useLang()
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -292,7 +292,30 @@ export default function VideoCard({ video, onToggleWatched, onToggleSaved, onDel
                   </svg>
                 </button>
 
-                {/* Save */}
+                {/* Edit */}
+                {onEdit && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onEdit(video) }}
+                    disabled={busy}
+                    title={t.editVideo}
+                    className="flex items-center justify-center
+                               hover:bg-[var(--accent-tint)] hover:text-[var(--accent)]
+                               transition-colors disabled:opacity-50"
+                    style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '6px',
+                      color: 'var(--muted)',
+                    }}
+                  >
+                    <svg className="w-[15px] h-[15px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                  </button>
+                )}
+
+                {/* Save (bookmark) */}
                 <button
                   onClick={(e) => { e.stopPropagation(); run(onToggleSaved) }}
                   disabled={busy}
@@ -351,6 +374,7 @@ export default function VideoCard({ video, onToggleWatched, onToggleSaved, onDel
         <VideoPlayerModal
           video={video}
           onClose={() => setShowPlayer(false)}
+          onEdit={onEdit ? (v) => { setShowPlayer(false); onEdit(v) } : undefined}
         />
       )}
     </>

@@ -14,7 +14,7 @@ import CollectionsPage    from './pages/CollectionsPage'
 import ResetPasswordPage  from './pages/ResetPasswordPage'
 
 function AppShell() {
-  const { showAddModal, closeAddModal } = useLibrary()
+  const { showAddModal, closeAddModal, editVideo, closeEditModal } = useLibrary()
   return (
     <div className="min-h-screen transition-colors duration-200" style={{ background: 'var(--bg)' }}>
       <Header />
@@ -24,6 +24,7 @@ function AppShell() {
         <Route path="collections" element={<CollectionsPage />} />
       </Routes>
       {showAddModal && <AddVideoModal onClose={closeAddModal} />}
+      {editVideo   && <AddVideoModal video={editVideo} onClose={closeEditModal} />}
     </div>
   )
 }
