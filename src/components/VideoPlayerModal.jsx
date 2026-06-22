@@ -99,14 +99,11 @@ export default function VideoPlayerModal({ video, onClose, onEdit }) {
   const [intent, setIntent] = useState('')
 
   // Free notes (notes text column)
-  const [notes,       setNotes]       = useState('')
-  const [notesDirty,  setNotesDirty]  = useState(false)
-  const [notesSaving, setNotesSaving] = useState(false)
-  const [notesSaved,  setNotesSaved]  = useState(false)
+  const [notes, setNotes] = useState('')
   const [freeNotesOpen, setFreeNotesOpen] = useState(false)
 
   // Active Learning Panel (learning jsonb column)
-  const [takeaways,   setTakeaways]   = useState(['', '', ''])
+  const [takeaways,   setTakeaways]   = useState('')  // stored as string
   const [question,    setQuestion]    = useState('')
   const [apply,       setApply]       = useState('')
   const [timestamps,  setTimestamps]  = useState([{ time: '', note: '' }])
@@ -138,7 +135,8 @@ export default function VideoPlayerModal({ video, onClose, onEdit }) {
         setPrompts(toArr(data.prompts))
         setLinks(toArr(data.links))
         const raw = (data.learning && typeof data.learning === 'object') ? data.learning : {}
-        setTakeaways(Array.isArray(raw.takeaways) && raw.takeaways.length ? raw.takeaways : ['', '', ''])
+        const tw = raw.takeaways
+        setTakeaways(Array.isArray(tw) ? tw.join('\n') : typeof tw === 'string' ? tw : '')
         setQuestion(raw.question ?? '')
         setApply(raw.apply ?? '')
         setTimestamps(Array.isArray(raw.timestamps) && raw.timestamps.length ? raw.timestamps : [{ time: '', note: '' }])
@@ -158,28 +156,8 @@ export default function VideoPlayerModal({ video, onClose, onEdit }) {
     return () => { document.body.style.overflow = '' }
   }, [])
 
-  // ── Free notes ─────────────────────────────────────────────────────────────
-  const handleSaveNotes = async () => {
-    setNotesSaving(true)
-    await supabase.from('videos')
-      .update({ notes: notes || null })
-      .eq('id', video.id)
-      .eq('user_id', uid)
-    setNotesSaving(false)
-    setNotesDirty(false)
-    setNotesSaved(true)
-    setTimeout(() => setNotesSaved(false), 2000)
-  }
-
   // ── Learning helpers ────────────────────────────────────────────────────────
   const markLearnDirty = () => { setLearnDirty(true); setLearnSaved(false) }
-
-  const updTakeaway = (i, val) => {
-    setTakeaways(p => { const n = [...p]; n[i] = val; return n })
-    markLearnDirty()
-  }
-  const addTakeaway = () => { setTakeaways(p => [...p, '']); markLearnDirty() }
-  const delTakeaway = (i) => { setTakeaways(p => p.filter((_, j) => j !== i)); markLearnDirty() }
 
   const updTS = (i, field, val) => {
     setTimestamps(p => { const n = [...p]; n[i] = { ...n[i], [field]: val }; return n })
@@ -188,17 +166,17 @@ export default function VideoPlayerModal({ video, onClose, onEdit }) {
   const addTS = () => { setTimestamps(p => [...p, { time: '', note: '' }]); markLearnDirty() }
   const delTS = (i) => { setTimestamps(p => p.filter((_, j) => j !== i)); markLearnDirty() }
 
-  // ── Learning save ───────────────────────────────────────────────────────────
+  // ── Save everything (learning jsonb + notes) in one update ──────────────────
   const handleSaveLearning = async () => {
     setLearnSaving(true)
     const payload = {
-      takeaways:  takeaways.filter(tk => tk.trim()),
+      takeaways:  takeaways.trim(),
       question:   question.trim(),
       apply:      apply.trim(),
       timestamps: timestamps.filter(ts => ts.time.trim() || ts.note.trim()),
     }
     await supabase.from('videos')
-      .update({ learning: payload })
+      .update({ learning: payload, notes: notes || null })
       .eq('id', video.id)
       .eq('user_id', uid)
     setLearnSaving(false)
@@ -356,23 +334,13 @@ export default function VideoPlayerModal({ video, onClose, onEdit }) {
 
                   {/* 1. Key Takeaways */}
                   <LearnSection icon="💡" title={t.learnTakeaways} hint={t.learnTakeawaysHint}>
-                    <div className="space-y-2">
-                      {takeaways.map((tk, i) => (
-                        <div key={i} className="flex gap-2 items-center">
-                          <input
-                            type="text"
-                            value={tk}
-                            onChange={e => updTakeaway(i, e.target.value)}
-                            placeholder={t.learnTakeawayPlaceholder}
-                            className={INPUT_CLS}
-                          />
-                          {takeaways.length > 1 && (
-                            <RemoveBtn onClick={() => delTakeaway(i)} />
-                          )}
-                        </div>
-                      ))}
-                      <AddRowBtn onClick={addTakeaway} label={t.learnAddTakeaway} />
-                    </div>
+                    <textarea
+                      value={takeaways}
+                      onChange={e => { setTakeaways(e.target.value); markLearnDirty() }}
+                      placeholder={t.learnTakeawayPlaceholder}
+                      rows={3}
+                      className={`${INPUT_CLS} resize-none`}
+                    />
                   </LearnSection>
 
                   {/* 2. My Question */}
@@ -449,17 +417,6 @@ export default function VideoPlayerModal({ video, onClose, onEdit }) {
                     </div>
                   </LearnSection>
 
-                  {/* Save */}
-                  <div className="flex justify-end pt-1">
-                    <button
-                      onClick={handleSaveLearning}
-                      disabled={!learnDirty || learnSaving}
-                      className={saveBtnCls(learnDirty, learnSaved)}
-                    >
-                      {learnSaving ? t.saving : learnSaved ? t.notesSaved : t.save}
-                    </button>
-                  </div>
-
                   {/* Collapsible free notes */}
                   <div className="border-t border-gray-700/60 pt-3">
                     <button
@@ -480,36 +437,27 @@ export default function VideoPlayerModal({ video, onClose, onEdit }) {
                     </button>
 
                     {freeNotesOpen && (
-                      <div className="mt-2 space-y-2">
+                      <div className="mt-2">
                         <textarea
                           value={notes}
-                          onChange={e => {
-                            setNotes(e.target.value)
-                            setNotesDirty(true)
-                            setNotesSaved(false)
-                          }}
+                          onChange={e => { setNotes(e.target.value); markLearnDirty() }}
                           placeholder={t.notesPlaceholder}
                           rows={4}
                           className={`${INPUT_CLS} resize-none`}
                         />
-                        <div className="flex justify-end">
-                          <button
-                            onClick={handleSaveNotes}
-                            disabled={!notesDirty || notesSaving}
-                            className={`
-                              px-4 py-1.5 rounded-xl text-xs font-semibold transition-all
-                              ${notesSaved
-                                ? 'bg-emerald-600 text-white'
-                                : notesDirty
-                                  ? 'bg-primary-600 hover:bg-primary-700 text-white'
-                                  : 'bg-gray-700 text-gray-500 cursor-not-allowed'}
-                            `}
-                          >
-                            {notesSaving ? t.saving : notesSaved ? t.notesSaved : t.save}
-                          </button>
-                        </div>
                       </div>
                     )}
+                  </div>
+
+                  {/* Single Save button for everything */}
+                  <div className="flex justify-end pt-1">
+                    <button
+                      onClick={handleSaveLearning}
+                      disabled={!learnDirty || learnSaving}
+                      className={saveBtnCls(learnDirty, learnSaved)}
+                    >
+                      {learnSaving ? t.saving : learnSaved ? t.notesSaved : t.save}
+                    </button>
                   </div>
                 </div>
               )}
