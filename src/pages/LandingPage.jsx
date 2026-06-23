@@ -122,11 +122,7 @@ export default function LandingPage() {
             {t.landingWhyTitle}
           </p>
           <p className="text-xl text-gray-700 leading-relaxed">
-            I used to track videos in Notion docs, paste links into Excel sheets, and
-            dump playlists into messy Drive folders — only to lose them anyway.
-            Lumina was built to give every video that matters a{' '}
-            <span className="font-semibold text-gray-900">permanent, searchable home</span>:
-            with your notes, your AI prompts, and the links that go with it — all in one place.
+            {t.whyBody}
           </p>
         </div>
       </section>
@@ -249,10 +245,10 @@ export default function LandingPage() {
       {/* ── Features ────────────────────────────────────────────────────── */}
       <section className="max-w-5xl mx-auto px-6 py-20">
         <p className="text-center text-sm font-semibold uppercase tracking-widest text-gray-400 mb-3">
-          Everything you need
+          {t.featuresSectionBadge}
         </p>
         <h2 className="text-center text-3xl font-bold text-gray-900 mb-12">
-          Stop losing videos. Start building knowledge.
+          {t.featuresHeadline}
         </h2>
 
         <div className="grid sm:grid-cols-3 gap-5">
@@ -263,8 +259,8 @@ export default function LandingPage() {
                   d="M12 4v16m8-8H4"/>
               </svg>
             }
-            title="Capture in one click"
-            desc="Paste a YouTube URL and Lumina fetches the title, channel, and thumbnail automatically."
+            title={t.feature1Title}
+            desc={t.feature1Desc}
           />
           <FeatureCard
             icon={
@@ -273,8 +269,8 @@ export default function LandingPage() {
                   d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
               </svg>
             }
-            title="Your Knowledge Hub"
-            desc="Attach notes, AI prompts, and reference links to every video — all surfaced the moment you need them."
+            title={t.feature2Title}
+            desc={t.feature2Desc}
           />
           <FeatureCard
             icon={
@@ -283,8 +279,8 @@ export default function LandingPage() {
                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
               </svg>
             }
-            title="Search everything"
-            desc="Find any saved video instantly by title, channel, tag, or domain — no more digging through playlists."
+            title={t.feature3Title}
+            desc={t.feature3Desc}
           />
         </div>
       </section>
@@ -293,9 +289,9 @@ export default function LandingPage() {
       <section className="bg-primary-600">
         <div className="max-w-3xl mx-auto px-6 py-16 text-center">
           <h2 className="text-3xl font-bold text-white mb-3">
-            Ready to build your library?
+            {t.ctaHeadline}
           </h2>
-          <p className="text-primary-200 mb-8 text-base">
+          <p className="text-primary-200 mb-8 text-base" dir="ltr" style={{ textAlign: 'center' }}>
             Free to start. No credit card required.
           </p>
           <Link
@@ -323,7 +319,7 @@ export default function LandingPage() {
             </div>
             <span className="text-sm font-semibold text-gray-700">Lumina</span>
           </div>
-          <p className="text-xs text-gray-400">© 2026 Lumina. All rights reserved.</p>
+          <p className="text-xs text-gray-400" dir="ltr">© 2026 Lumina. All rights reserved.</p>
         </div>
       </footer>
 

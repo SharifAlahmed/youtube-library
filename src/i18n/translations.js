@@ -97,6 +97,18 @@ export const translations = {
     landingHow2Desc:    'اكتب درسك الأساسي، أضف وسوماً، وضعه في مجموعة. كل شيء منظّم من اليوم الأول.',
     landingHow3Title:   'ابنِ مكتبتك',
     landingHow3Desc:    'ابحث، ارجع، وأنمِّ قاعدة معرفة شخصية تخصّك أنت — بدون إعلانات، بدون تشتيت.',
+    // ── Landing — Why body ───────────────────────────────────────────────────
+    whyBody: 'كنت أتتبع الفيديوهات في Notion، وأنسخ الروابط في Excel، وأرمي القوائم في Drive — ثم أضيّعها على أي حال. بنيتُ Lumina لأعطي كل فيديو مهم بيتاً دائماً وقابلاً للبحث: مع ملاحظاتك وأفكارك والروابط المرتبطة — كلها في مكان واحد.',
+    // ── Landing — Features section ───────────────────────────────────────────
+    featuresSectionBadge: 'كل ما تحتاجه',
+    featuresHeadline:     'توقّف عن ضياع الفيديوهات. ابدأ ببناء المعرفة.',
+    feature1Title:        'احفظ بنقرة واحدة',
+    feature1Desc:         'الصق رابط يوتيوب و Lumina يجلب العنوان والقناة والصورة تلقائياً.',
+    feature2Title:        'مركز المعرفة',
+    feature2Desc:         'أضف ملاحظاتك وأفكارك وروابطك لكل فيديو — كلها في متناول يدك عند الحاجة.',
+    feature3Title:        'ابحث في كل شيء',
+    feature3Desc:         'اعثر على أي فيديو محفوظ فوراً بالعنوان أو القناة أو الوسم — بلا تنقيب في القوائم.',
+    ctaHeadline:          'هل أنت مستعد لبناء مكتبتك؟',
     // ── How Lumina Works page ────────────────────────────────────────────────
     hiwHero:        'Lumina — حوّل يوتيوب لجامعتك الخاصة',
     hiwIntro1:      'كلنا نشاهد ساعات على يوتيوب.',
@@ -329,6 +341,18 @@ export const translations = {
     landingHow2Desc:    'Write your key lesson, tag it, and add it to a collection. Everything organized from day one.',
     landingHow3Title:   'Build your library',
     landingHow3Desc:    "Search, revisit, and grow a personal knowledge base that's entirely yours — no ads, no distractions.",
+    // ── Landing — Why body ───────────────────────────────────────────────────
+    whyBody: "I used to track videos in Notion docs, paste links into Excel sheets, and dump playlists into messy Drive folders — only to lose them anyway. Lumina was built to give every video that matters a permanent, searchable home: with your notes, your AI prompts, and the links that go with it — all in one place.",
+    // ── Landing — Features section ───────────────────────────────────────────
+    featuresSectionBadge: 'Everything you need',
+    featuresHeadline:     'Stop losing videos. Start building knowledge.',
+    feature1Title:        'Capture in one click',
+    feature1Desc:         'Paste a YouTube URL and Lumina fetches the title, channel, and thumbnail automatically.',
+    feature2Title:        'Your Knowledge Hub',
+    feature2Desc:         'Attach notes, AI prompts, and reference links to every video — all surfaced the moment you need them.',
+    feature3Title:        'Search everything',
+    feature3Desc:         'Find any saved video instantly by title, channel, tag, or domain — no more digging through playlists.',
+    ctaHeadline:          'Ready to build your library?',
     // ── How Lumina Works page ────────────────────────────────────────────────
     hiwHero:        'Lumina — Turn YouTube Into Your Personal University',
     hiwIntro1:      'We all spend hours on YouTube.',
