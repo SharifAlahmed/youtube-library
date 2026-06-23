@@ -63,7 +63,7 @@ export const translations = {
     statsSaved: 'لاحقاً',
     // ── Navigation ──────────────────────────────────────────
     libraryNav:   'المكتبة',
-    myPrompts:    'مقتطفاتي',
+    myPrompts:    'ملاحظاتي',
     collectionsNav: 'القوائم',
     howItWorksNav:  'كيف تعمل Lumina',
     // ── Landing page ─────────────────────────────────────────────────────────
@@ -272,7 +272,7 @@ export const translations = {
     statsSaved: 'Saved',
     // ── Navigation ──────────────────────────────────────────
     libraryNav:     'Library',
-    myPrompts:      'My Snippets',
+    myPrompts:      'My Notes',
     collectionsNav: 'Collections',
     howItWorksNav:  'How it Works',
     // ── Landing page ─────────────────────────────────────────────────────────
