@@ -137,6 +137,16 @@ export default function Header() {
                 </button>
               )}
 
+              {/* Language toggle */}
+              <button
+                onClick={toggleLang}
+                className="text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-200
+                           dark:border-gray-600 text-gray-700 dark:text-gray-300
+                           hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                {t.language}
+              </button>
+
               {/* Dark / light toggle */}
               <button
                 onClick={toggleTheme}

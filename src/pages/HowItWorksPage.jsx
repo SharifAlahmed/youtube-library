@@ -1,36 +1,18 @@
 import { useNavigate } from 'react-router-dom'
 import { useLibrary } from '../context/LibraryContext'
-
-const STEPS = [
-  {
-    num: '①',
-    icon: '🔗',
-    title: 'أضف أي فيديو يوتيوب',
-    desc: 'الصق الرابط، يُحفظ في مكتبتك مباشرة.',
-  },
-  {
-    num: '②',
-    icon: '✍️',
-    title: 'سجّل ما تعلّمته',
-    desc: 'اكتب درسك الأساسي، سؤالك، أو ما ستطبّقه — كلها في مكان واحد.',
-  },
-  {
-    num: '③',
-    icon: '📚',
-    title: 'ارجع لها متى تريد',
-    desc: 'مكتبة منظّمة، قابلة للبحث، كل شيء في مكانه.',
-  },
-  {
-    num: '④',
-    icon: '🚫',
-    title: 'بدون إعلانات',
-    desc: 'فيديوهاتك تُشغَّل داخل Lumina مباشرة — بدون مقاطعة، بدون تشتيت.',
-  },
-]
+import { useLang } from '../context/LanguageContext'
 
 export default function HowItWorksPage() {
   const { openAddModal } = useLibrary()
+  const { t } = useLang()
   const navigate = useNavigate()
+
+  const STEPS = [
+    { num: '①', icon: '🔗', title: t.hiwStep1Title, desc: t.hiwStep1Desc },
+    { num: '②', icon: '✍️', title: t.hiwStep2Title, desc: t.hiwStep2Desc },
+    { num: '③', icon: '📚', title: t.hiwStep3Title, desc: t.hiwStep3Desc },
+    { num: '④', icon: '🚫', title: t.hiwStep4Title, desc: t.hiwStep4Desc },
+  ]
 
   function handleStart() {
     openAddModal()
@@ -38,14 +20,14 @@ export default function HowItWorksPage() {
   }
 
   return (
-    <div dir="rtl" className="max-w-5xl mx-auto px-6 py-14">
+    <div dir={t.dir} className="max-w-5xl mx-auto px-6 py-14">
 
       {/* ── Hero ── */}
       <h1
         className="text-3xl font-extrabold text-center mb-5 leading-snug"
         style={{ color: 'var(--ink)' }}
       >
-        Lumina — حوّل يوتيوب لجامعتك الخاصة
+        {t.hiwHero}
       </h1>
 
       {/* ── Intro ── */}
@@ -53,11 +35,10 @@ export default function HowItWorksPage() {
         className="text-center mb-12 mx-auto max-w-xl"
         style={{ fontSize: '16px', lineHeight: '2', color: 'var(--muted)' }}
       >
-        كلنا نشاهد ساعات على يوتيوب.{' '}
-        لكن كم منها يتحوّل فعلاً لتطوّر؟{' '}
+        {t.hiwIntro1}{' '}
+        {t.hiwIntro2}{' '}
         <span style={{ color: 'var(--ink)', fontWeight: 500 }}>
-          Lumina تساعدك تبني مكتبة تعلّم شخصية من الفيديوهات اللي تختارها —
-          بدل ما تضيع في الـ Watch Later وما ترجع لها.
+          {t.hiwIntro3}
         </span>
       </p>
 
@@ -89,7 +70,7 @@ export default function HowItWorksPage() {
         className="text-center font-medium mb-10"
         style={{ fontSize: '17px', color: 'var(--ink)' }}
       >
-        لكل من يريد أن يتعلّم بقصد — لا أن يشاهد بدون أثر.
+        {t.hiwClosing}
       </p>
 
       {/* ── CTA ── */}
@@ -100,7 +81,7 @@ export default function HowItWorksPage() {
                      transition-opacity hover:opacity-90 focus:outline-none"
           style={{ background: 'var(--accent)' }}
         >
-          أضف أول فيديو الآن
+          {t.hiwCta}
         </button>
       </div>
 

@@ -1,5 +1,6 @@
 import { Navigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useLang } from '../context/LanguageContext'
 
 function FeatureCard({ icon, title, desc }) {
   return (
@@ -17,6 +18,7 @@ function FeatureCard({ icon, title, desc }) {
 
 export default function LandingPage() {
   const { session, loading } = useAuth()
+  const { t, toggleLang } = useLang()
 
   if (loading) return null
   if (session) return <Navigate to="/app" replace />
@@ -42,6 +44,14 @@ export default function LandingPage() {
           </div>
           {/* Actions */}
           <div className="flex items-center gap-3">
+            {/* Language toggle */}
+            <button
+              onClick={toggleLang}
+              className="text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-200
+                         text-gray-600 hover:bg-gray-100 transition-colors"
+            >
+              {t.language}
+            </button>
             <Link
               to="/login"
               className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
