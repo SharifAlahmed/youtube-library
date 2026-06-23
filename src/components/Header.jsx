@@ -12,96 +12,74 @@ const PLAN_BADGE = {
   lifetime: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
 }
 
+const YT_PATH = `M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501
+  s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805
+  31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502
+  9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0
+  .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z`
+
 export default function Header() {
   const { profile, signOut } = useAuth()
   const { t, toggleLang } = useLang()
   const { isDark, toggleTheme } = useTheme()
   const { openAddModal } = useLibrary()
   const [showUpgrade, setShowUpgrade] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
 
   const plan = profile?.plan ?? 'free'
   const planLabel = t[plan] ?? t.free
   const badgeClass = PLAN_BADGE[plan] ?? PLAN_BADGE.free
 
+  const closeMenu = () => setMenuOpen(false)
+
+  const desktopNavCls = ({ isActive }) =>
+    `text-sm font-medium px-3.5 py-1.5 rounded-full transition-all ${
+      isActive
+        ? 'bg-gray-900 dark:bg-primary-400 text-white dark:text-gray-900 shadow-sm'
+        : 'text-[var(--muted)] hover:bg-[var(--accent-tint)] hover:text-[var(--accent)]'
+    }`
+
+  const mobileNavCls = ({ isActive }) =>
+    `block w-full text-sm font-medium px-4 py-2.5 rounded-xl transition-all text-start ${
+      isActive
+        ? 'bg-gray-900 dark:bg-primary-400 text-white dark:text-gray-900'
+        : 'text-[var(--ink)] hover:bg-[var(--accent-tint)] hover:text-[var(--accent)]'
+    }`
+
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b border-[var(--border)]
-                         bg-[var(--card)]/90 backdrop-blur-md"
-              style={{ boxShadow: 'var(--shadow-card)' }}>
+      <header
+        className="sticky top-0 z-40 w-full border-b border-[var(--border)]
+                   bg-[var(--card)]/90 backdrop-blur-md relative"
+        style={{ boxShadow: 'var(--shadow-card)' }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 gap-3">
 
-            {/* ── Logo + Name + Nav ───────────────────────── */}
+            {/* ── Logo + inline nav (lg+) ───────────────────── */}
             <div className="flex items-center gap-3 shrink-0">
               <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center shadow-sm">
                 <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501
-                    s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805
-                    31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502
-                    9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0
-                    .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/>
+                  <path d={YT_PATH}/>
                 </svg>
               </div>
               <span className="text-lg font-bold text-gray-900 dark:text-white hidden sm:block">
                 {t.appName}
               </span>
-              <nav className="flex items-center gap-1 ms-1">
-                <NavLink
-                  to="/app"
-                  end
-                  className={({ isActive }) =>
-                    `text-sm font-medium px-3.5 py-1.5 rounded-full transition-all ${
-                      isActive
-                        ? 'bg-gray-900 dark:bg-primary-400 text-white dark:text-gray-900 shadow-sm'
-                        : 'text-[var(--muted)] hover:bg-[var(--accent-tint)] hover:text-[var(--accent)]'
-                    }`
-                  }
-                >
-                  {t.libraryNav}
-                </NavLink>
-                <NavLink
-                  to="/app/prompts"
-                  className={({ isActive }) =>
-                    `text-sm font-medium px-3.5 py-1.5 rounded-full transition-all ${
-                      isActive
-                        ? 'bg-gray-900 dark:bg-primary-400 text-white dark:text-gray-900 shadow-sm'
-                        : 'text-[var(--muted)] hover:bg-[var(--accent-tint)] hover:text-[var(--accent)]'
-                    }`
-                  }
-                >
-                  {t.myPrompts}
-                </NavLink>
-                <NavLink
-                  to="/app/collections"
-                  className={({ isActive }) =>
-                    `text-sm font-medium px-3.5 py-1.5 rounded-full transition-all ${
-                      isActive
-                        ? 'bg-gray-900 dark:bg-primary-400 text-white dark:text-gray-900 shadow-sm'
-                        : 'text-[var(--muted)] hover:bg-[var(--accent-tint)] hover:text-[var(--accent)]'
-                    }`
-                  }
-                >
-                  {t.collectionsNav}
-                </NavLink>
-                <NavLink
-                  to="/app/how"
-                  className={({ isActive }) =>
-                    `text-sm font-medium px-3.5 py-1.5 rounded-full transition-all ${
-                      isActive
-                        ? 'bg-gray-900 dark:bg-primary-400 text-white dark:text-gray-900 shadow-sm'
-                        : 'text-[var(--muted)] hover:bg-[var(--accent-tint)] hover:text-[var(--accent)]'
-                    }`
-                  }
-                >
-                  {t.howItWorksNav}
-                </NavLink>
+
+              {/* Nav links — only on lg+ */}
+              <nav className="hidden lg:flex items-center gap-1 ms-1">
+                <NavLink to="/app" end className={desktopNavCls}>{t.libraryNav}</NavLink>
+                <NavLink to="/app/prompts" className={desktopNavCls}>{t.myPrompts}</NavLink>
+                <NavLink to="/app/collections" className={desktopNavCls}>{t.collectionsNav}</NavLink>
+                <NavLink to="/app/how" className={desktopNavCls}>{t.howItWorksNav}</NavLink>
               </nav>
             </div>
 
             {/* ── Controls ─────────────────────────────────── */}
             <div className="flex items-center gap-2">
 
-              {/* Add Video — primary action */}
+              {/* Add Video — always visible */}
               <button
                 onClick={openAddModal}
                 className="inline-flex items-center gap-1.5 text-xs font-semibold
@@ -114,16 +92,16 @@ export default function Header() {
                 <span className="hidden sm:inline">{t.addVideo}</span>
               </button>
 
-              {/* Plan badge */}
-              <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${badgeClass}`}>
+              {/* Plan badge — lg+ only */}
+              <span className={`hidden lg:inline text-xs font-semibold px-2.5 py-1 rounded-full ${badgeClass}`}>
                 {planLabel}
               </span>
 
-              {/* Upgrade button — only for free users */}
+              {/* Upgrade — lg+ only */}
               {plan === 'free' && (
                 <button
                   onClick={() => setShowUpgrade(true)}
-                  className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold
+                  className="hidden lg:inline-flex items-center gap-1.5 text-xs font-semibold
                              px-3 py-1.5
                              bg-gray-900 hover:bg-gray-800 dark:bg-primary-100 dark:hover:bg-primary-200
                              text-white dark:text-gray-900
@@ -137,21 +115,22 @@ export default function Header() {
                 </button>
               )}
 
-              {/* Language toggle */}
+              {/* Language toggle — lg+ only */}
               <button
                 onClick={toggleLang}
-                className="text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-200
-                           dark:border-gray-600 text-gray-700 dark:text-gray-300
+                className="hidden lg:inline-flex text-xs font-medium px-3 py-1.5 rounded-lg
+                           border border-gray-200 dark:border-gray-600
+                           text-gray-700 dark:text-gray-300
                            hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
                 {t.language}
               </button>
 
-              {/* Dark / light toggle */}
+              {/* Dark / light toggle — lg+ only */}
               <button
                 onClick={toggleTheme}
                 title={isDark ? t.lightMode : t.darkMode}
-                className="p-2 rounded-lg text-gray-500 dark:text-gray-400
+                className="hidden lg:inline p-2 rounded-lg text-gray-500 dark:text-gray-400
                            hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
                 {isDark ? (
@@ -169,11 +148,11 @@ export default function Header() {
                 )}
               </button>
 
-              {/* Sign out */}
+              {/* Sign out — lg+ only */}
               <button
                 onClick={signOut}
                 title={t.logout}
-                className="p-2 rounded-lg text-gray-500 dark:text-gray-400
+                className="hidden lg:inline p-2 rounded-lg text-gray-500 dark:text-gray-400
                            hover:bg-red-50 dark:hover:bg-red-900/20
                            hover:text-red-600 dark:hover:text-red-400 transition-colors"
               >
@@ -184,9 +163,127 @@ export default function Header() {
                 </svg>
               </button>
 
+              {/* Hamburger — mobile/tablet only (< lg) */}
+              <button
+                onClick={() => setMenuOpen(o => !o)}
+                aria-label="Menu"
+                className="lg:hidden p-2 rounded-lg text-gray-500 dark:text-gray-400
+                           hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                {menuOpen ? (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M4 6h16M4 12h16M4 18h16"/>
+                  </svg>
+                )}
+              </button>
+
             </div>
           </div>
         </div>
+
+        {/* ── Mobile / tablet dropdown ── */}
+        {menuOpen && (
+          <div
+            className="lg:hidden absolute start-0 end-0 top-16 z-50
+                       bg-[var(--card)] border-b border-[var(--border)]"
+            style={{ boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }}
+          >
+            {/* Nav links */}
+            <nav className="px-4 pt-3 pb-2 space-y-1">
+              <NavLink to="/app" end className={mobileNavCls} onClick={closeMenu}>
+                {t.libraryNav}
+              </NavLink>
+              <NavLink to="/app/prompts" className={mobileNavCls} onClick={closeMenu}>
+                {t.myPrompts}
+              </NavLink>
+              <NavLink to="/app/collections" className={mobileNavCls} onClick={closeMenu}>
+                {t.collectionsNav}
+              </NavLink>
+              <NavLink to="/app/how" className={mobileNavCls} onClick={closeMenu}>
+                {t.howItWorksNav}
+              </NavLink>
+            </nav>
+
+            {/* Bottom strip: badge + secondary controls */}
+            <div className="px-4 py-3 border-t border-[var(--border)] flex items-center gap-2 flex-wrap">
+              {/* Plan badge */}
+              <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${badgeClass}`}>
+                {planLabel}
+              </span>
+
+              {/* Upgrade */}
+              {plan === 'free' && (
+                <button
+                  onClick={() => { setShowUpgrade(true); closeMenu() }}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold
+                             px-3 py-1.5
+                             bg-gray-900 hover:bg-gray-800 dark:bg-primary-100 dark:hover:bg-primary-200
+                             text-white dark:text-gray-900
+                             rounded-full transition-colors"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                  </svg>
+                  {t.upgrade}
+                </button>
+              )}
+
+              {/* Language + Dark + Logout */}
+              <div className="ms-auto flex items-center gap-1">
+                <button
+                  onClick={toggleLang}
+                  className="text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-200
+                             dark:border-gray-600 text-gray-700 dark:text-gray-300
+                             hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                >
+                  {t.language}
+                </button>
+
+                <button
+                  onClick={toggleTheme}
+                  title={isDark ? t.lightMode : t.darkMode}
+                  className="p-2 rounded-lg text-gray-500 dark:text-gray-400
+                             hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                >
+                  {isDark ? (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                        d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707
+                           M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707
+                           M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                        d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                    </svg>
+                  )}
+                </button>
+
+                <button
+                  onClick={signOut}
+                  title={t.logout}
+                  className="p-2 rounded-lg text-gray-500 dark:text-gray-400
+                             hover:bg-red-50 dark:hover:bg-red-900/20
+                             hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7
+                         a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </header>
 
       {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} />}
