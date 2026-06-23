@@ -24,7 +24,7 @@ export default function LandingPage() {
   if (session) return <Navigate to="/app" replace />
 
   return (
-    <div className="min-h-screen bg-white" dir="ltr">
+    <div className="min-h-screen bg-white" dir={t.dir}>
 
       {/* ── Nav ─────────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-40 w-full border-b border-gray-100 bg-white/80 backdrop-blur-md">
@@ -44,7 +44,6 @@ export default function LandingPage() {
           </div>
           {/* Actions */}
           <div className="flex items-center gap-3">
-            {/* Language toggle */}
             <button
               onClick={toggleLang}
               className="text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-200
@@ -56,14 +55,14 @@ export default function LandingPage() {
               to="/login"
               className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
             >
-              Log in
+              {t.landingLogin}
             </Link>
             <Link
               to="/login?mode=signup"
               className="text-sm font-semibold px-4 py-2 bg-primary-600 hover:bg-primary-700
                          text-white rounded-xl transition-colors"
             >
-              Start free
+              {t.landingCta}
             </Link>
           </div>
         </div>
@@ -85,17 +84,16 @@ export default function LandingPage() {
                 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0
                 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/>
             </svg>
-            Your personal YouTube library
+            {t.landingBadge}
           </span>
 
           <h1 className="text-5xl sm:text-6xl font-extrabold text-gray-900 leading-tight tracking-tight mb-6">
-            Build your own university<br className="hidden sm:block" />
-            <span className="text-primary-600"> from YouTube.</span>
+            {t.landingHeadline1}<br className="hidden sm:block" />
+            <span className="text-primary-600"> {t.landingHeadline2}</span>
           </h1>
 
           <p className="max-w-xl mx-auto text-lg text-gray-500 leading-relaxed mb-10">
-            YouTube is the world's largest free university — but it's scattered.
-            Lumina turns the chaos into one organized place to learn and create.
+            {t.landingSubtitle}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -104,14 +102,14 @@ export default function LandingPage() {
               className="px-7 py-3.5 bg-primary-600 hover:bg-primary-700 text-white
                          font-semibold rounded-2xl transition-colors text-base shadow-lg shadow-primary-200"
             >
-              Start free →
+              {t.landingCta}
             </Link>
             <Link
               to="/login"
               className="px-7 py-3.5 border border-gray-200 hover:border-gray-300
                          text-gray-700 font-semibold rounded-2xl transition-colors text-base"
             >
-              Log in
+              {t.landingLogin}
             </Link>
           </div>
         </div>
@@ -121,7 +119,7 @@ export default function LandingPage() {
       <section className="bg-gray-50 border-y border-gray-100">
         <div className="max-w-3xl mx-auto px-6 py-16 text-center">
           <p className="text-sm font-semibold uppercase tracking-widest text-gray-400 mb-4">
-            Why Lumina exists
+            {t.landingWhyTitle}
           </p>
           <p className="text-xl text-gray-700 leading-relaxed">
             I used to track videos in Notion docs, paste links into Excel sheets, and
@@ -190,7 +188,7 @@ export default function LandingPage() {
             className="inline-block px-8 py-3.5 bg-white hover:bg-gray-50 text-primary-700
                        font-semibold rounded-2xl transition-colors text-base shadow-lg"
           >
-            Start free →
+            {t.landingCta}
           </Link>
         </div>
       </section>

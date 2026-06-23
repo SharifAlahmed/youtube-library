@@ -66,6 +66,14 @@ export const translations = {
     myPrompts:    'مقتطفاتي',
     collectionsNav: 'القوائم',
     howItWorksNav:  'كيف تعمل Lumina',
+    // ── Landing page ─────────────────────────────────────────────────────────
+    landingBadge:     'مكتبتك الشخصية من يوتيوب',
+    landingHeadline1: 'ابنِ جامعتك الخاصة',
+    landingHeadline2: 'من يوتيوب.',
+    landingSubtitle:  'يوتيوب أكبر جامعة مجانية في العالم — لكنها مبعثرة. Lumina يحوّل الفوضى إلى مكان واحد منظّم للتعلّم والإنتاج.',
+    landingCta:       'ابدأ مجاناً ←',
+    landingLogin:     'تسجيل الدخول',
+    landingWhyTitle:  'لماذا بنينا Lumina',
     // ── How Lumina Works page ────────────────────────────────────────────────
     hiwHero:        'Lumina — حوّل يوتيوب لجامعتك الخاصة',
     hiwIntro1:      'كلنا نشاهد ساعات على يوتيوب.',
@@ -267,6 +275,14 @@ export const translations = {
     myPrompts:      'My Snippets',
     collectionsNav: 'Collections',
     howItWorksNav:  'How it Works',
+    // ── Landing page ─────────────────────────────────────────────────────────
+    landingBadge:     'Your personal YouTube library',
+    landingHeadline1: 'Build your own university',
+    landingHeadline2: 'from YouTube.',
+    landingSubtitle:  "YouTube is the world's largest free university — but it's scattered. Lumina turns the chaos into one organized place to learn and create.",
+    landingCta:       'Start free →',
+    landingLogin:     'Log in',
+    landingWhyTitle:  'Why Lumina exists',
     // ── How Lumina Works page ────────────────────────────────────────────────
     hiwHero:        'Lumina — Turn YouTube Into Your Personal University',
     hiwIntro1:      'We all spend hours on YouTube.',
