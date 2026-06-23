@@ -43,10 +43,13 @@ export default function HowItWorksPage() {
       </p>
 
       {/* ── Step cards — 4-up on lg, 2-up on sm, stacked on mobile ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-14">
+      {/* direction:ltr keeps ①→④ order in both LTR and RTL layouts */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-14"
+           style={{ direction: 'ltr' }}>
         {STEPS.map((step, i) => (
           <div
             key={i}
+            dir={t.dir}
             className="rounded-2xl p-6 text-center flex flex-col items-center gap-3"
             style={{
               background: 'var(--card)',
