@@ -131,6 +131,121 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ── Problem / Solution ──────────────────────────────────────────── */}
+      <section className="py-20">
+        <div className="max-w-5xl mx-auto px-6">
+          {/* Header */}
+          <p className="text-center text-xs font-bold uppercase tracking-widest text-primary-600 mb-3">
+            {t.landingProblemBadge}
+          </p>
+          <h2 className="text-center text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight mb-4">
+            {t.landingProblemHead}
+          </h2>
+          <p className="text-center text-lg text-gray-500 mb-12 max-w-2xl mx-auto">
+            {t.landingProblemSub}
+          </p>
+
+          {/* Before / After columns */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* ❌ Old way */}
+            <div className="rounded-2xl p-8 bg-gray-50 border border-gray-100">
+              <p className="flex items-center gap-2 font-bold text-gray-700 text-base mb-5">
+                <span className="text-xl">❌</span> {t.landingOldTitle}
+              </p>
+              <ul className="space-y-3">
+                {[t.landingOld1, t.landingOld2, t.landingOld3, t.landingOld4].map((item, i) => (
+                  <li key={i} className="flex items-start gap-3 text-sm text-gray-500 leading-relaxed">
+                    <span className="mt-0.5 shrink-0 text-red-400">✕</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* ✅ Lumina way */}
+            <div className="rounded-2xl p-8 bg-primary-50 border border-primary-100">
+              <p className="flex items-center gap-2 font-bold text-primary-800 text-base mb-5">
+                <span className="text-xl">✅</span> {t.landingNewTitle}
+              </p>
+              <ul className="space-y-3">
+                {[t.landingNew1, t.landingNew2, t.landingNew3, t.landingNew4].map((item, i) => (
+                  <li key={i} className="flex items-start gap-3 text-sm text-primary-800 leading-relaxed">
+                    <span className="mt-0.5 shrink-0 text-primary-500">✓</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── How It Works stepper ────────────────────────────────────────── */}
+      <section className="bg-gray-50 border-y border-gray-100 py-20">
+        <div className="max-w-4xl mx-auto px-6">
+          {/* Header */}
+          <p className="text-center text-xs font-bold uppercase tracking-widest text-primary-600 mb-3">
+            {t.landingHowBadge}
+          </p>
+          <h2 className="text-center text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight mb-16">
+            {t.landingHowHead}
+          </h2>
+
+          {/* Stepper */}
+          <div className="relative">
+            {/* connector line — desktop only */}
+            <div className="hidden sm:block absolute top-6 left-[calc(16.67%+24px)] right-[calc(16.67%+24px)] h-0.5 bg-primary-100" />
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-10">
+              {/* Step 1 */}
+              <div className="flex flex-col items-center text-center relative z-10">
+                <div className="w-12 h-12 rounded-full bg-primary-600 text-white flex items-center justify-center text-lg font-bold mb-4 shadow-md shadow-primary-200 shrink-0">
+                  1
+                </div>
+                <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-primary-100 mb-3">
+                  <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
+                  </svg>
+                </div>
+                <h3 className="font-bold text-gray-900 mb-2">{t.landingHow1Title}</h3>
+                <p className="text-sm text-gray-500 leading-relaxed">{t.landingHow1Desc}</p>
+              </div>
+
+              {/* Step 2 */}
+              <div className="flex flex-col items-center text-center relative z-10">
+                <div className="w-12 h-12 rounded-full bg-primary-600 text-white flex items-center justify-center text-lg font-bold mb-4 shadow-md shadow-primary-200 shrink-0">
+                  2
+                </div>
+                <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-primary-100 mb-3">
+                  <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                  </svg>
+                </div>
+                <h3 className="font-bold text-gray-900 mb-2">{t.landingHow2Title}</h3>
+                <p className="text-sm text-gray-500 leading-relaxed">{t.landingHow2Desc}</p>
+              </div>
+
+              {/* Step 3 */}
+              <div className="flex flex-col items-center text-center relative z-10">
+                <div className="w-12 h-12 rounded-full bg-primary-600 text-white flex items-center justify-center text-lg font-bold mb-4 shadow-md shadow-primary-200 shrink-0">
+                  3
+                </div>
+                <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-primary-100 mb-3">
+                  <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                  </svg>
+                </div>
+                <h3 className="font-bold text-gray-900 mb-2">{t.landingHow3Title}</h3>
+                <p className="text-sm text-gray-500 leading-relaxed">{t.landingHow3Desc}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── Features ────────────────────────────────────────────────────── */}
       <section className="max-w-5xl mx-auto px-6 py-20">
         <p className="text-center text-sm font-semibold uppercase tracking-widest text-gray-400 mb-3">
