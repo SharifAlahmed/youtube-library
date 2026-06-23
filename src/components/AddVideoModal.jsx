@@ -459,6 +459,7 @@ export default function AddVideoModal({ onClose, video: initialVideo = null }) {
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
               {t.tagsLabel}
+              <span className="text-red-500 ms-0.5">*</span>
             </label>
             <div className="relative">
               <div className={`
@@ -504,6 +505,9 @@ export default function AddVideoModal({ onClose, video: initialVideo = null }) {
                 }}
               />
             </div>
+            <p className="mt-1.5 text-xs text-gray-400 dark:text-gray-500">
+              Add multiple tags separated by commas — e.g. productivity, learning, ai
+            </p>
           </div>
 
           {/* Intent */}
