@@ -40,7 +40,7 @@ export default function LandingPage() {
                   .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/>
               </svg>
             </div>
-            <span className="text-lg font-bold text-gray-900 tracking-tight">Lumina</span>
+            <span className="text-lg font-bold text-gray-900 tracking-tight">Luminaverse</span>
           </div>
           {/* Actions */}
           <div className="flex items-center gap-3">
@@ -158,7 +158,7 @@ export default function LandingPage() {
               </ul>
             </div>
 
-            {/* ✅ Lumina way */}
+            {/* ✅ Luminaverse way */}
             <div className="rounded-2xl p-8 bg-primary-50 border border-primary-100">
               <p className="flex items-center gap-2 font-bold text-primary-800 text-base mb-5">
                 <span className="text-xl">✅</span> {t.landingNewTitle}
@@ -317,9 +317,9 @@ export default function LandingPage() {
                   .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/>
               </svg>
             </div>
-            <span className="text-sm font-semibold text-gray-700">Lumina</span>
+            <span className="text-sm font-semibold text-gray-700">Luminaverse</span>
           </div>
-          <p className="text-xs text-gray-400" dir="ltr">© 2026 Lumina. All rights reserved.</p>
+          <p className="text-xs text-gray-400" dir="ltr">© 2026 Luminaverse. All rights reserved.</p>
         </div>
       </footer>
 
