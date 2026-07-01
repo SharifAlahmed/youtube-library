@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Luminaverse">
+  <defs>
+    <radialGradient id="lv-core" cx="38%" cy="34%" r="72%">
+      <stop offset="0" stop-color="#D6F7E7"/>
+      <stop offset="0.42" stop-color="#54CBA0"/>
+      <stop offset="1" stop-color="#1B9A71"/>
+    </radialGradient>
+    <radialGradient id="lv-halo" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#1D9E75" stop-opacity="0.20"/>
+      <stop offset="0.65" stop-color="#1D9E75" stop-opacity="0.05"/>
+      <stop offset="1" stop-color="#1D9E75" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="lv-star" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#E6FCF2" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#7FDCB6" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- aura -->
+  <circle cx="50" cy="50" r="40" fill="url(#lv-halo)"/>
+  <!-- open orbit (the universe) -->
+  <ellipse cx="50" cy="50" rx="40" ry="15" transform="rotate(-22 50 50)"
+           fill="none" stroke="#1D9E75" stroke-width="2.4" stroke-opacity="0.55"
+           vector-effect="non-scaling-stroke"/>
+  <!-- luminous core (the light) -->
+  <circle cx="50" cy="50" r="20" fill="url(#lv-core)"/>
+  <circle cx="50" cy="50" r="20" fill="none" stroke="#ffffff" stroke-opacity="0.18" stroke-width="1"/>
+  <!-- the reached star (the possible) -->
+  <circle cx="76" cy="33" r="9" fill="url(#lv-star)"/>
+  <circle cx="76" cy="33" r="4.6" fill="#EAFCF4"/>
+  <circle cx="74.6" cy="31.6" r="1.6" fill="#ffffff"/>
+</svg>
