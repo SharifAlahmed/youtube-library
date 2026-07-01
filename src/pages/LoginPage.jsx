@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LanguageContext'
 import { useTheme } from '../context/ThemeContext'
+import LuminaverseIcon from '../components/LuminaverseIcon'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -196,15 +197,8 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-primary-600 rounded-2xl flex items-center justify-center
-                          mx-auto mb-4 shadow-lg shadow-primary-200 dark:shadow-primary-950">
-            <svg className="w-9 h-9 text-white" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501
-                s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805
-                31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502
-                9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0
-                .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/>
-            </svg>
+          <div className="w-16 h-16 flex items-center justify-center mx-auto mb-4">
+            <LuminaverseIcon className="w-16 h-16" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t.appName}</h1>
         </div>

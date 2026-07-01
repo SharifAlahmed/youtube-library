@@ -1,6 +1,7 @@
 import { Navigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LanguageContext'
+import LuminaverseIcon from '../components/LuminaverseIcon'
 
 function FeatureCard({ icon, title, desc }) {
   return (
@@ -31,16 +32,8 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center shadow-sm">
-              <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501
-                  s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805
-                  31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502
-                  9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0
-                  .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/>
-              </svg>
-            </div>
-            <span className="text-lg font-bold text-gray-900 tracking-tight">Luminaverse</span>
+            <LuminaverseIcon className="w-8 h-8" />
+            <span className="text-lg font-bold text-gray-900 tracking-tight">LuminaVerse</span>
           </div>
           {/* Actions */}
           <div className="flex items-center gap-3">
@@ -77,13 +70,7 @@ export default function LandingPage() {
         <div className="relative max-w-5xl mx-auto px-6 pt-24 pb-20 text-center">
           <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest
                            text-primary-600 bg-primary-50 px-3 py-1 rounded-full mb-6">
-            <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501
-                s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805
-                31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502
-                9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0
-                .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/>
-            </svg>
+            <LuminaverseIcon className="w-3.5 h-3.5" />
             {t.landingBadge}
           </span>
 
@@ -308,18 +295,10 @@ export default function LandingPage() {
       <footer className="border-t border-gray-100">
         <div className="max-w-5xl mx-auto px-6 py-8 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-primary-600 rounded-md flex items-center justify-center">
-              <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501
-                  s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805
-                  31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502
-                  9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0
-                  .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/>
-              </svg>
-            </div>
-            <span className="text-sm font-semibold text-gray-700">Luminaverse</span>
+            <LuminaverseIcon className="w-6 h-6" />
+            <span className="text-sm font-semibold text-gray-700">LuminaVerse</span>
           </div>
-          <p className="text-xs text-gray-400" dir="ltr">© 2026 Luminaverse. All rights reserved.</p>
+          <p className="text-xs text-gray-400" dir="ltr">© 2026 LuminaVerse. All rights reserved.</p>
         </div>
       </footer>
 

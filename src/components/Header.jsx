@@ -5,18 +5,13 @@ import { useLang } from '../context/LanguageContext'
 import { useTheme } from '../context/ThemeContext'
 import { useLibrary } from '../context/LibraryContext'
 import UpgradeModal from './UpgradeModal'
+import LuminaverseIcon from './LuminaverseIcon'
 
 const PLAN_BADGE = {
   free:     'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300',
   monthly:  'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
   lifetime: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
 }
-
-const YT_PATH = `M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501
-  s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805
-  31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502
-  9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0
-  .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z`
 
 export default function Header() {
   const { profile, signOut } = useAuth()
@@ -58,11 +53,7 @@ export default function Header() {
 
             {/* ── Logo + inline nav (lg+) ───────────────────── */}
             <div className="flex items-center gap-3 shrink-0">
-              <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center shadow-sm">
-                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d={YT_PATH}/>
-                </svg>
-              </div>
+              <LuminaverseIcon className="w-8 h-8" />
               <span className="text-lg font-bold text-gray-900 dark:text-white hidden sm:block">
                 {t.appName}
               </span>
