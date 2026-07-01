@@ -111,6 +111,11 @@ export const translations = {
     feature3Title:        'ابحث في كل شيء',
     feature3Desc:         'اعثر على أي فيديو محفوظ فوراً بالعنوان أو القناة أو الوسم — بلا تنقيب في القوائم.',
     ctaHeadline:          'هل أنت مستعد لبناء مكتبتك؟',
+    // ── Footer — legal ────────────────────────────────────────────────────────
+    footerPrivacy:    'سياسة الخصوصية',
+    footerTerms:      'شروط الاستخدام',
+    footerAbout:      'عن الخدمة',
+    footerDisclaimer: 'YouTube علامة تجارية لشركة Google LLC. LuminaVerse خدمة مستقلة غير تابعة لـ Google أو YouTube ولا معتمدة أو مموّلة منهما.',
     // ── How LuminaVerse Works page ────────────────────────────────────────────────
     hiwHero:        'LuminaVerse — حوّل يوتيوب لجامعتك الخاصة',
     hiwIntro1:      'كلنا نشاهد ساعات على يوتيوب.',
@@ -357,6 +362,11 @@ export const translations = {
     feature3Title:        'Search everything',
     feature3Desc:         'Find any saved video instantly by title, channel, tag, or domain — no more digging through playlists.',
     ctaHeadline:          'Ready to build your library?',
+    // ── Footer — legal ────────────────────────────────────────────────────────
+    footerPrivacy:    'Privacy Policy',
+    footerTerms:      'Terms of Use',
+    footerAbout:      'About',
+    footerDisclaimer: 'YouTube is a trademark of Google LLC. LuminaVerse is independent and not affiliated with, endorsed by, or sponsored by Google or YouTube.',
     // ── How LuminaVerse Works page ────────────────────────────────────────────────
     hiwHero:        'LuminaVerse — Turn YouTube Into Your Personal University',
     hiwIntro1:      'We all spend hours on YouTube.',
