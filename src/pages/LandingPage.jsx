@@ -18,11 +18,11 @@ function FeatureCard({ icon, title, desc }) {
 }
 
 export default function LandingPage() {
-  const { session, loading } = useAuth()
+  const { session, loading, isRecovering } = useAuth()
   const { t, toggleLang } = useLang()
 
   if (loading) return null
-  if (session) return <Navigate to="/app" replace />
+  if (session && !isRecovering) return <Navigate to="/app" replace />
 
   return (
     <div className="min-h-screen bg-white" dir={t.dir}>

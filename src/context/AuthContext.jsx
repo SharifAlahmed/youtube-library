@@ -7,6 +7,7 @@ export function AuthProvider({ children }) {
   const [session, setSession] = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [isRecovering, setIsRecovering] = useState(false)
 
   const fetchProfile = useCallback(async (userId) => {
     if (!userId) { setProfile(null); return }
@@ -35,6 +36,9 @@ export function AuthProvider({ children }) {
       } else if (event === 'SIGNED_OUT') {
         setProfile(null)
         setLoading(false)
+        setIsRecovering(false)
+      } else if (event === 'PASSWORD_RECOVERY') {
+        setIsRecovering(true)
       }
       // TOKEN_REFRESHED: setSession above is enough — no fetchProfile, no loading change
     })
@@ -49,7 +53,7 @@ export function AuthProvider({ children }) {
   const refetchProfile = () => fetchProfile(session?.user?.id)
 
   return (
-    <AuthContext.Provider value={{ session, profile, loading, refetchProfile, signOut }}>
+    <AuthContext.Provider value={{ session, profile, loading, refetchProfile, signOut, isRecovering, setIsRecovering }}>
       {children}
     </AuthContext.Provider>
   )

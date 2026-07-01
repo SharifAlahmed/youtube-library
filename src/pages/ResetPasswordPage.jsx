@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LanguageContext'
 import { useTheme } from '../context/ThemeContext'
 import LuminaverseIcon from '../components/LuminaverseIcon'
+
+const LINK_WAIT_MS = 4000
 
 function EyeIcon({ open }) {
   return open ? (
@@ -27,24 +30,24 @@ function EyeIcon({ open }) {
 }
 
 export default function ResetPasswordPage() {
+  const { isRecovering, setIsRecovering, signOut } = useAuth()
   const { t, toggleLang } = useLang()
   const { isDark, toggleTheme } = useTheme()
   const navigate = useNavigate()
 
-  const [ready, setReady]                   = useState(false)
-  const [password, setPassword]             = useState('')
+  const [linkInvalid, setLinkInvalid]         = useState(false)
+  const [password, setPassword]               = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [showPw, setShowPw]                 = useState(false)
-  const [loading, setLoading]               = useState(false)
-  const [error, setError]                   = useState('')
-  const [success, setSuccess]               = useState(false)
+  const [showPw, setShowPw]                   = useState(false)
+  const [loading, setLoading]                 = useState(false)
+  const [error, setError]                     = useState('')
 
+  // If no PASSWORD_RECOVERY event arrives in time, the link is expired/invalid.
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') setReady(true)
-    })
-    return () => subscription.unsubscribe()
-  }, [])
+    if (isRecovering) { setLinkInvalid(false); return }
+    const timer = setTimeout(() => setLinkInvalid(true), LINK_WAIT_MS)
+    return () => clearTimeout(timer)
+  }, [isRecovering])
 
   const handleUpdate = async (e) => {
     e.preventDefault()
@@ -53,13 +56,14 @@ export default function ResetPasswordPage() {
     if (password !== confirmPassword) { setError(t.passwordsMismatch); return }
     setLoading(true)
     const { error: err } = await supabase.auth.updateUser({ password })
-    setLoading(false)
     if (err) {
+      setLoading(false)
       setError(err.message)
-    } else {
-      setSuccess(true)
-      setTimeout(() => navigate('/login'), 3000)
+      return
     }
+    await signOut()
+    setIsRecovering(false)
+    navigate('/login', { replace: true, state: { passwordUpdated: true } })
   }
 
   return (
@@ -116,7 +120,7 @@ export default function ResetPasswordPage() {
           </h2>
 
           {/* Waiting for recovery token */}
-          {!ready && !success && (
+          {!isRecovering && !linkInvalid && (
             <div className="text-center py-6">
               <div className="w-8 h-8 border-2 border-primary-600 border-t-transparent
                               rounded-full animate-spin mx-auto mb-4" />
@@ -130,26 +134,32 @@ export default function ResetPasswordPage() {
             </div>
           )}
 
-          {/* Success state */}
-          {success && (
+          {/* Expired / invalid recovery link */}
+          {!isRecovering && linkInvalid && (
             <div className="text-center py-6">
-              <div className="w-14 h-14 bg-green-100 dark:bg-green-900/30 rounded-full
-                              flex items-center justify-center mx-auto mb-4">
-                <svg className="w-7 h-7 text-green-600 dark:text-green-400"
-                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M5 13l4 4L19 7"/>
-                </svg>
-              </div>
-              <p className="text-green-700 dark:text-green-400 font-semibold mb-2">
-                {t.passwordUpdated}
+              <p className="text-sm text-red-600 dark:text-red-400 mb-5">
+                {t.resetLinkInvalid}
               </p>
-              <p className="text-sm text-gray-400">{t.loading}</p>
+              <button
+                onClick={() => navigate('/login?mode=forgot')}
+                className="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white
+                           rounded-xl font-medium transition-colors"
+              >
+                {t.requestNewLink}
+              </button>
+              <p className="text-center text-sm mt-4">
+                <button
+                  onClick={() => navigate('/login')}
+                  className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+                >
+                  {t.backToLogin}
+                </button>
+              </p>
             </div>
           )}
 
           {/* Reset form */}
-          {ready && !success && (
+          {isRecovering && (
             <form onSubmit={handleUpdate} className="space-y-4">
               {/* New password */}
               <div>

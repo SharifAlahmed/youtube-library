@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Navigate, useSearchParams, useNavigate } from 'react-router-dom'
+import { Navigate, useSearchParams, useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LanguageContext'
@@ -53,27 +53,31 @@ function Spinner() {
 }
 
 export default function LoginPage() {
-  const { session } = useAuth()
+  const { session, isRecovering } = useAuth()
   const { t, toggleLang } = useLang()
   const { isDark, toggleTheme } = useTheme()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const location = useLocation()
 
   // mode: 'login' | 'signup' | 'forgot'
-  const [mode, setMode]           = useState(() =>
-    searchParams.get('mode') === 'signup' ? 'signup' : 'login'
-  )
+  const [mode, setMode]           = useState(() => {
+    const m = searchParams.get('mode')
+    return m === 'signup' || m === 'forgot' ? m : 'login'
+  })
   const [email, setEmail]             = useState('')
   const [password, setPassword]       = useState('')
   const [confirmPw, setConfirmPw]     = useState('')
   const [loading, setLoading]         = useState(false)
   const [error, setError]             = useState('')
   const [errorType, setErrorType]     = useState(null)
-  const [info, setInfo]               = useState('')
+  const [info, setInfo]               = useState(() =>
+    location.state?.passwordUpdated ? t.passwordUpdatedLoginPrompt : ''
+  )
   const [showPw, setShowPw]           = useState(false)
   const [showConfirmPw, setShowConfirmPw] = useState(false)
 
-  if (session) return <Navigate to="/app" replace />
+  if (session && !isRecovering) return <Navigate to="/app" replace />
 
   const clearMessages = () => { setError(''); setErrorType(null); setInfo('') }
 

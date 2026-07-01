@@ -2,9 +2,9 @@ import { Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 export default function ProtectedRoute({ children }) {
-  const { session, loading } = useAuth()
+  const { session, loading, isRecovering } = useAuth()
 
-  console.log('[AUTH] ProtectedRoute — loading:', loading, '| session:', !!session)
+  console.log('[AUTH] ProtectedRoute — loading:', loading, '| session:', !!session, '| isRecovering:', isRecovering)
 
   // Never redirect while auth state is still being determined
   if (loading) {
@@ -17,6 +17,10 @@ export default function ProtectedRoute({ children }) {
       </div>
     )
   }
+
+  // A password-recovery session must never grant access to the app —
+  // send it back to finish setting a new password first.
+  if (isRecovering) return <Navigate to="/reset-password" replace />
 
   if (!session) return <Navigate to="/login" replace />
 
