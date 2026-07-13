@@ -13,7 +13,7 @@ export function AuthProvider({ children }) {
     if (!userId) { setProfile(null); return }
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, display_name, plan, plan_expires_at, preferred_domains')
+      .select('id, display_name, plan, plan_expires_at, preferred_domains, show_tags')
       .eq('id', userId)
       .single()
     if (!error && data) setProfile(data)
@@ -52,8 +52,27 @@ export function AuthProvider({ children }) {
 
   const refetchProfile = () => fetchProfile(session?.user?.id)
 
+  // Optimistic update of profiles.show_tags — reverts on error.
+  const updateShowTags = async (value) => {
+    const userId = session?.user?.id
+    if (!userId) return { error: new Error('Not signed in') }
+    const prevProfile = profile
+    setProfile(p => (p ? { ...p, show_tags: value } : p))
+    const { error } = await supabase
+      .from('profiles')
+      .update({ show_tags: value })
+      .eq('id', userId)
+    if (error) {
+      setProfile(prevProfile) // revert
+      return { error }
+    }
+    return { error: null }
+  }
+
+  const showTags = profile?.show_tags ?? false
+
   return (
-    <AuthContext.Provider value={{ session, profile, loading, refetchProfile, signOut, isRecovering, setIsRecovering }}>
+    <AuthContext.Provider value={{ session, profile, loading, showTags, updateShowTags, refetchProfile, signOut, isRecovering, setIsRecovering }}>
       {children}
     </AuthContext.Provider>
   )

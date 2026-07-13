@@ -83,7 +83,7 @@ function ThumbPreview({ src, title, youtubeId }) {
 // ── Main ─────────────────────────────────────────────────────────────────────
 // video prop = null → add mode; video prop = object → edit mode
 export default function AddVideoModal({ onClose, video: initialVideo = null }) {
-  const { session } = useAuth()
+  const { session, showTags } = useAuth()
   const { t } = useLang()
   const { triggerRefresh } = useLibrary()
 
@@ -109,6 +109,11 @@ export default function AddVideoModal({ onClose, video: initialVideo = null }) {
     Array.isArray(initialVideo?.tags) ? initialVideo.tags : []
   )
   const [tagInput, setTagInput] = useState('')
+  // Local reveal for THIS modal only (does not change the global show_tags setting).
+  // Auto-revealed in edit mode when the video already has tags.
+  const [tagsRevealed, setTagsRevealed] = useState(
+    () => Array.isArray(initialVideo?.tags) && initialVideo.tags.length > 0
+  )
 
   // Intent + notes (notes not edited here per spec; intent is)
   const [intent, setIntent]     = useState(initialVideo?.intent ?? '')
@@ -455,11 +460,24 @@ export default function AddVideoModal({ onClose, video: initialVideo = null }) {
             </div>
           </div>
 
-          {/* Tags + autosuggest */}
+          {/* Tags + autosuggest — hidden unless show_tags is on or revealed locally */}
+          {!showTags && !tagsRevealed && (
+            <button
+              type="button"
+              onClick={() => setTagsRevealed(true)}
+              className="inline-flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500
+                         hover:text-primary-600 dark:hover:text-primary-400 transition-colors self-start"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/>
+              </svg>
+              {t.addTagsOptional}
+            </button>
+          )}
+          {(showTags || tagsRevealed) && (
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
               {t.tagsLabel}
-              <span className="text-red-500 ms-0.5">*</span>
             </label>
             <div className="relative">
               <div className={`
@@ -509,6 +527,7 @@ export default function AddVideoModal({ onClose, video: initialVideo = null }) {
               Add multiple tags separated by commas — e.g. productivity, learning, ai
             </p>
           </div>
+          )}
 
           {/* Intent */}
           <div>

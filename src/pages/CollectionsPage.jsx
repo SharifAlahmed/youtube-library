@@ -80,10 +80,12 @@ function TagInput({ tags, setTags, placeholder }) {
 }
 
 // ── CollectionFormModal (create & edit) ───────────────────────────────────────
-function CollectionFormModal({ heading, initial, onSubmit, onClose, t }) {
+function CollectionFormModal({ heading, initial, onSubmit, onClose, t, showTags }) {
   const [name, setName]       = useState(initial?.name ?? '')
   const [icon, setIcon]       = useState(initial?.icon ?? '')
   const [tags, setTags]       = useState(toArr(initial?.tags))
+  // Local reveal for THIS modal only — doesn't change the global setting
+  const [tagsRevealed, setTagsRevealed] = useState(() => toArr(initial?.tags).length > 0)
   const [saving, setSaving]   = useState(false)
   const [saveError, setSaveError] = useState('')
 
@@ -163,13 +165,28 @@ function CollectionFormModal({ heading, initial, onSubmit, onClose, t }) {
             />
           </div>
 
-          {/* Tags */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-              {t.tagsLabel}
-            </label>
-            <TagInput tags={tags} setTags={setTags} placeholder={t.tagsPlaceholder} />
-          </div>
+          {/* Tags — hidden unless show_tags is on or revealed locally */}
+          {!showTags && !tagsRevealed && (
+            <button
+              type="button"
+              onClick={() => setTagsRevealed(true)}
+              className="inline-flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500
+                         hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/>
+              </svg>
+              {t.addTagsOptional}
+            </button>
+          )}
+          {(showTags || tagsRevealed) && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                {t.tagsLabel}
+              </label>
+              <TagInput tags={tags} setTags={setTags} placeholder={t.tagsPlaceholder} />
+            </div>
+          )}
         </div>
 
         {/* Error banner */}
@@ -498,7 +515,7 @@ function CollectionVideoCard({ video, onPlay, onToggleWatched, onRemove, t }) {
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function CollectionsPage() {
-  const { session } = useAuth()
+  const { session, showTags } = useAuth()
   const { t }       = useLang()
   const uid = session?.user?.id
 
@@ -787,7 +804,7 @@ export default function CollectionsPage() {
                   <h1 className="text-2xl font-bold text-gray-900 dark:text-white truncate">
                     {selectedCol.name}
                   </h1>
-                  {toArr(selectedCol.tags).length > 0 && (
+                  {showTags && toArr(selectedCol.tags).length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mt-1.5">
                       {toArr(selectedCol.tags).map(tag => (
                         <span key={tag}
@@ -968,6 +985,7 @@ export default function CollectionsPage() {
           onSubmit={handleCreate}
           onClose={() => setShowCreate(false)}
           t={t}
+          showTags={showTags}
         />
       )}
 
@@ -978,6 +996,7 @@ export default function CollectionsPage() {
           onSubmit={handleEdit}
           onClose={() => setEditTarget(null)}
           t={t}
+          showTags={showTags}
         />
       )}
 

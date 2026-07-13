@@ -13,8 +13,38 @@ const PLAN_BADGE = {
   lifetime: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
 }
 
+// Small pill switch: label + on/off track. RTL-safe (logical inset props).
+function ShowTagsToggle({ label, checked, onChange, className = '' }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      onClick={onChange}
+      title={label}
+      className={`inline-flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-lg
+                  border border-gray-200 dark:border-gray-600
+                  text-gray-700 dark:text-gray-300
+                  hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${className}`}
+    >
+      <span>🏷️ {label}</span>
+      <span
+        className={`relative inline-block rounded-full transition-colors shrink-0 ${
+          checked ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'
+        }`}
+        style={{ width: 32, height: 18 }}
+      >
+        <span
+          className="absolute rounded-full bg-white shadow transition-all"
+          style={{ width: 14, height: 14, top: 2, insetInlineStart: checked ? 16 : 2 }}
+        />
+      </span>
+    </button>
+  )
+}
+
 export default function Header() {
-  const { profile, signOut } = useAuth()
+  const { profile, signOut, showTags, updateShowTags } = useAuth()
   const { t, toggleLang } = useLang()
   const { isDark, toggleTheme } = useTheme()
   const { openAddModal } = useLibrary()
@@ -26,6 +56,9 @@ export default function Header() {
   const badgeClass = PLAN_BADGE[plan] ?? PLAN_BADGE.free
 
   const closeMenu = () => setMenuOpen(false)
+
+  // Optimistic in AuthContext; reverts automatically on error.
+  const handleToggleTags = () => updateShowTags(!showTags)
 
   const desktopNavCls = ({ isActive }) =>
     `text-sm font-medium px-3.5 py-1.5 rounded-full transition-all ${
@@ -105,6 +138,14 @@ export default function Header() {
                   {t.upgrade}
                 </button>
               )}
+
+              {/* Show tags toggle — lg+ only */}
+              <ShowTagsToggle
+                label={t.showTagsSetting}
+                checked={showTags}
+                onChange={handleToggleTags}
+                className="hidden lg:inline-flex"
+              />
 
               {/* Language toggle — lg+ only */}
               <button
@@ -225,6 +266,13 @@ export default function Header() {
                   {t.upgrade}
                 </button>
               )}
+
+              {/* Show tags toggle — mobile */}
+              <ShowTagsToggle
+                label={t.showTagsSetting}
+                checked={showTags}
+                onChange={handleToggleTags}
+              />
 
               {/* Language + Dark + Logout */}
               <div className="ms-auto flex items-center gap-1">

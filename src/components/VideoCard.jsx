@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useLang } from '../context/LanguageContext'
+import { useAuth } from '../context/AuthContext'
 import VideoPlayerModal from './VideoPlayerModal'
 import LuminaverseIcon from './LuminaverseIcon'
 
@@ -54,6 +55,7 @@ function Thumbnail({ src, title }) {
 // ── Main component ───────────────────────────────────────────────────────────
 export default function VideoCard({ video, onToggleWatched, onToggleSaved, onDelete, onEdit }) {
   const { t } = useLang()
+  const { showTags } = useAuth()
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [busy, setBusy] = useState(false)
   const [showPlayer, setShowPlayer] = useState(false)
@@ -196,8 +198,8 @@ export default function VideoCard({ video, onToggleWatched, onToggleSaved, onDel
             )}
           </div>
 
-          {/* Tags */}
-          {tags.length > 0 && (
+          {/* Tags — only when the user has tags enabled (UI-level, data stays in DB) */}
+          {showTags && tags.length > 0 && (
             <div className="flex flex-wrap gap-1">
               {tags.slice(0, 4).map(tag => (
                 <span

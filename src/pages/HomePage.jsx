@@ -138,7 +138,7 @@ const FILTERS = ['all', 'unwatched', 'watched', 'saved']
 export default function HomePage() {
   const { t } = useLang()
   const { refreshKey, openEditModal } = useLibrary()
-  const { session } = useAuth()
+  const { session, showTags } = useAuth()
 
   const [videos,    setVideos]    = useState([])
   const [loadState, setLoadState] = useState('loading')
@@ -208,8 +208,8 @@ export default function HomePage() {
       if (activeFilter === 'unwatched' && v.watch_status !== 'unwatched') return false
       if (activeFilter === 'watched'   && v.watch_status !== 'watched')   return false
       if (activeFilter === 'saved'     && !v.saved_for_later)             return false
-      // Tags (OR within)
-      if (selectedTags.size > 0 && !normTags(v.tags).some(t => selectedTags.has(t))) return false
+      // Tags (OR within) — ignored when tags UI is hidden
+      if (showTags && selectedTags.size > 0 && !normTags(v.tags).some(t => selectedTags.has(t))) return false
       // Channels (OR within)
       if (selectedChannels.size > 0 && !selectedChannels.has(v.channel ?? '')) return false
       // Domains (OR within)
@@ -224,7 +224,7 @@ export default function HomePage() {
       }
       return true
     })
-  }, [videos, activeFilter, selectedTags, selectedChannels, selectedDomains, search])
+  }, [videos, activeFilter, selectedTags, selectedChannels, selectedDomains, search, showTags])
 
   // ── Status pill counts (from ALL videos) ─────────────────────────────────
   const filterCounts = useMemo(() => ({
@@ -276,7 +276,7 @@ export default function HomePage() {
   }
 
   // ── Sidebar panel ────────────────────────────────────────────────────────
-  const hasFacets = tagCounts.length > 0 || channelCounts.length > 0 || domainCounts.length > 0
+  const hasFacets = (showTags && tagCounts.length > 0) || channelCounts.length > 0 || domainCounts.length > 0
 
   const SidebarPanel = () => (
     <div
@@ -301,13 +301,15 @@ export default function HomePage() {
       )}
 
       <div className="px-3 pb-2 pt-1 space-y-0">
-        <FilterGroup
-          title={t.tagsTitle}
-          icon="🏷️"
-          items={tagCounts}
-          selected={selectedTags}
-          onToggle={v => toggleSet(setSelectedTags, v)}
-        />
+        {showTags && (
+          <FilterGroup
+            title={t.tagsTitle}
+            icon="🏷️"
+            items={tagCounts}
+            selected={selectedTags}
+            onToggle={v => toggleSet(setSelectedTags, v)}
+          />
+        )}
         <FilterGroup
           title={t.channelsFilter}
           icon="📺"
