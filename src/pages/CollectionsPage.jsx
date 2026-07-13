@@ -627,7 +627,7 @@ export default function CollectionsPage() {
   const handleCreate = async ({ name, icon, tags }) => {
     const { data, error } = await supabase
       .from('collections')
-      .insert({ user_id: uid, name, icon: icon || null, tags: tags.length ? tags : null })
+      .insert({ user_id: uid, name, icon: icon || null, tags: tags ?? [] })
       .select('id, name, icon, tags, created_at')
       .single()
     if (error) {
@@ -645,7 +645,7 @@ export default function CollectionsPage() {
     if (!editTarget) return
     const { data, error } = await supabase
       .from('collections')
-      .update({ name, icon: icon || null, tags: tags.length ? tags : null })
+      .update({ name, icon: icon || null, tags: tags ?? [] })
       .eq('id', editTarget.id).eq('user_id', uid)
       .select('id, name, icon, tags, created_at')
       .single()
