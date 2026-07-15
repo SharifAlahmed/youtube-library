@@ -170,8 +170,12 @@ function CollectionFormModal({ heading, initial, onSubmit, onClose, t, showTags 
             <button
               type="button"
               onClick={() => setTagsRevealed(true)}
-              className="inline-flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500
-                         hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-medium self-start
+                         px-2.5 py-1 rounded-lg
+                         text-[#1D9E75] dark:text-[#2ec58d]
+                         border border-[#1D9E75]/25 dark:border-[#1D9E75]/35
+                         hover:bg-[#1D9E75]/10 dark:hover:bg-[#1D9E75]/20
+                         transition-colors"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/>
