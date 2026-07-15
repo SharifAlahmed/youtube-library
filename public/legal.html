@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>سياسة الخصوصية — LuminaVerse</title>
+  <link rel="icon" type="image/svg+xml" href="/luminaverse-icon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Cairo', sans-serif;
+      color: #1f2937;
+      line-height: 1.9;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: #f9fafb;
+    }
+    html[lang="en"] body { font-family: 'Inter', 'Cairo', sans-serif; }
+
+    a { color: #1D9E75; }
+    a:hover { text-decoration: underline; }
+
+    h1 { font-size: 1.75rem; font-weight: 700; color: #111827; margin-bottom: .25rem; }
+    h2 { font-size: 1.15rem; font-weight: 600; margin-top: 2.25rem; margin-bottom: .5rem; color: #111827; }
+    p  { margin-bottom: .75rem; }
+    .updated { color: #6b7280; font-size: .875rem; margin-bottom: 2.5rem; }
+
+    /* ── STICKY NAV ──────────────────────────────────────────────────── */
+    .site-nav {
+      position: sticky; top: 0; z-index: 50;
+      background: #15332a;
+      box-shadow: 0 1px 8px rgba(0,0,0,.25);
+    }
+
+    .nav-top {
+      padding: .6rem 1.5rem;
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    }
+    .site-nav .brand {
+      color: #fff; font-weight: 700; font-size: .95rem;
+      text-decoration: none; white-space: nowrap; flex-shrink: 0;
+    }
+    .site-nav .brand:hover { opacity: .9; text-decoration: none; }
+
+    .lang-btn {
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.28);
+      color: #fff; border-radius: .45rem; padding: .28rem .7rem;
+      font-size: .75rem; font-weight: 600; cursor: pointer; white-space: nowrap;
+      font-family: inherit; flex-shrink: 0; transition: background .15s;
+    }
+    .lang-btn:hover { background: rgba(255,255,255,.22); }
+
+    /* ── TAB BAR ─────────────────────────────────────────────────────── */
+    .tabs-bar {
+      display: flex; align-items: center; gap: .2rem;
+      padding: 0 1rem .55rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .tabs-bar::-webkit-scrollbar { display: none; }
+
+    .tab-btn {
+      flex-shrink: 0;
+      padding: .35rem .85rem;
+      border-radius: .45rem;
+      border: none;
+      background: none;
+      font-family: inherit;
+      font-size: .78rem; font-weight: 500;
+      color: rgba(255,255,255,.6);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background .15s, color .15s;
+    }
+    .tab-btn:hover { background: rgba(255,255,255,.12); color: #fff; }
+    .tab-btn.active {
+      background: rgba(255,255,255,.18);
+      color: #6ee7b7;
+      font-weight: 600;
+    }
+
+    /* ── MAIN / TAB PANELS ───────────────────────────────────────────── */
+    main { flex: 1; }
+    .tab-panel { max-width: 760px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; width: 100%; }
+
+    /* ── FOOTER ──────────────────────────────────────────────────────── */
+    .site-footer {
+      background: #15332a;
+      color: rgba(255,255,255,.65);
+      padding: 1.5rem 1.5rem 1rem;
+      font-size: .75rem; line-height: 1.7; text-align: center;
+    }
+    .footer-links {
+      display: flex; flex-wrap: wrap; justify-content: center;
+      gap: .2rem .7rem; margin-bottom: .85rem;
+    }
+    .footer-links a { color: #6ee7b7; text-decoration: none; }
+    .footer-links a:hover { text-decoration: underline; }
+    .footer-copy { margin-bottom: .4rem; direction: ltr; }
+    .footer-disclaimer { color: rgba(255,255,255,.38); font-size: .7rem; max-width: 600px; margin: 0 auto; }
+
+    /* ── BILINGUAL VISIBILITY ────────────────────────────────────────── */
+    .lang-en { display: none; }
+    html[lang="en"] .lang-ar { display: none; }
+    html[lang="en"] .lang-en { display: revert; }
+    span.lang-en { display: none; }
+    html[lang="en"] span.lang-ar { display: none; }
+    html[lang="en"] span.lang-en { display: inline; }
+
+    /* ── FAQ STYLES ──────────────────────────────────────────────────── */
+    .page-badge {
+      display: inline-block;
+      background: rgba(29,158,117,.1); color: #1D9E75;
+      font-size: .75rem; font-weight: 700; letter-spacing: .04em;
+      padding: .25rem .75rem; border-radius: 999px;
+      margin-bottom: 1rem;
+    }
+    .page-sub { color: #6b7280; font-size: .925rem; margin-bottom: 2.5rem; }
+
+    .faq-list { list-style: none; }
+    .faq-item {
+      border-bottom: 1px solid #e5e7eb;
+      background: #fff;
+      border-radius: 0;
+    }
+    .faq-item:first-child { border-top: 1px solid #e5e7eb; border-radius: .75rem .75rem 0 0; }
+    .faq-item:last-child  { border-radius: 0 0 .75rem .75rem; }
+    .faq-item:first-child:last-child { border-radius: .75rem; }
+
+    .faq-btn {
+      width: 100%; display: flex; align-items: center; justify-content: space-between;
+      padding: 1.1rem 1.25rem; gap: 1rem;
+      background: none; border: none; cursor: pointer;
+      font-family: inherit; font-size: .975rem; font-weight: 600;
+      color: #111827; text-align: start; line-height: 1.5;
+      transition: color .15s;
+    }
+    .faq-btn:hover { color: #1D9E75; }
+    .faq-item.open .faq-btn { color: #1D9E75; }
+
+    .faq-chevron {
+      width: 18px; height: 18px; flex-shrink: 0;
+      color: #1D9E75; transition: transform .25s ease;
+    }
+    .faq-item.open .faq-chevron { transform: rotate(180deg); }
+
+    .faq-answer { max-height: 0; overflow: hidden; transition: max-height .3s ease; }
+    .faq-item.open .faq-answer { max-height: 2000px; }
+
+    .faq-answer-inner {
+      padding: 0 1.25rem 1.25rem;
+      color: #374151; font-size: .9rem; line-height: 1.85;
+    }
+    .faq-answer-inner p  { margin-bottom: .65rem; }
+    .faq-answer-inner p:last-child { margin-bottom: 0; }
+    .faq-answer-inner ul { padding-inline-start: 1.4rem; margin-bottom: .65rem; }
+    .faq-answer-inner li { margin-bottom: .35rem; }
+    .faq-answer-inner strong { color: #111827; }
+
+    .highlight-box {
+      background: rgba(29,158,117,.07);
+      border-inline-start: 3px solid #1D9E75;
+      border-radius: .5rem;
+      padding: .85rem 1rem;
+      margin: .75rem 0;
+    }
+
+    @media (max-width: 560px) {
+      h1 { font-size: 1.4rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── NAV ────────────────────────────────────────────────────────── -->
+  <nav class="site-nav" aria-label="Site navigation">
+    <div class="nav-top">
+      <a href="/" class="brand">LuminaVerse</a>
+      <button class="lang-btn" id="langToggle" aria-label="Switch language">English</button>
+    </div>
+    <div class="tabs-bar" role="tablist" aria-label="Legal sections">
+      <button class="tab-btn active" data-tab="privacy" role="tab" aria-selected="true">
+        <span class="lang-ar">السياسة</span><span class="lang-en">Privacy</span>
+      </button>
+      <button class="tab-btn" data-tab="terms" role="tab" aria-selected="false">
+        <span class="lang-ar">الشروط</span><span class="lang-en">Terms</span>
+      </button>
+      <button class="tab-btn" data-tab="faq" role="tab" aria-selected="false">
+        <span class="lang-ar">الأسئلة الشائعة</span><span class="lang-en">FAQ</span>
+      </button>
+      <button class="tab-btn" data-tab="about" role="tab" aria-selected="false">
+        <span class="lang-ar">عنّا</span><span class="lang-en">About</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ── CONTENT ────────────────────────────────────────────────────── -->
+  <main>
+
+    <!-- ╔══════════════════════════════════════╗ -->
+    <!-- ║  PRIVACY                             ║ -->
+    <!-- ╚══════════════════════════════════════╝ -->
+    <div id="tab-privacy" class="tab-panel" role="tabpanel">
+
+      <div class="lang-ar">
+        <h1>سياسة الخصوصية</h1>
+        <p class="updated">آخر تحديث: 2026</p>
+
+        <p>
+          توضّح هذه السياسة كيف تتعامل LuminaVerse ("نحن") مع بياناتك عند استخدام التطبيق.
+          LuminaVerse أداة شخصية لحفظ فيديوهات يوتيوب وتدوين ملاحظاتك وأسئلتك وخطواتك التالية بجانبها.
+        </p>
+
+        <h2>البيانات التي نجمعها</h2>
+        <p>
+          البريد الإلكتروني عند إنشاء الحساب (أو عبر تسجيل الدخول بحساب Google)،
+          وبيانات فيديوهات يوتيوب العامة التي تحفظها (العنوان، القناة، الصورة المصغّرة، الرابط)،
+          والمحتوى الذي تكتبه بنفسك (الملاحظات، الأسئلة، القوائم/المجموعات).
+        </p>
+
+        <h2>كيف نستخدم بياناتك</h2>
+        <p>
+          فقط لتشغيل الخدمة: عرض مكتبتك، حفظ ملاحظاتك، تسجيل الدخول والحفاظ على جلستك.
+          لا نبيع بياناتك لأي طرف ثالث، ولا نستخدمها لأغراض إعلانية خارجية.
+        </p>
+
+        <h2>التخزين والجهات الخارجية</h2>
+        <p>
+          نستخدم <strong>Supabase</strong> لتخزين الحساب والبيانات وتشغيل المصادقة.
+          نستخدم واجهة يوتيوب العامة لجلب عنوان/قناة/صورة الفيديو عند إضافته. لسنا تابعين لـ Google أو YouTube.
+        </p>
+
+        <h2>ملفات تعريف الارتباط والتخزين المحلي</h2>
+        <p>
+          نستخدم التخزين المحلي في متصفحك (localStorage) لحفظ تفضيلاتك (اللغة، الوضع الليلي/النهاري)
+          وجلسة الدخول — وليس لأي تتبّع إعلاني.
+        </p>
+
+        <h2>حذف الحساب والبيانات</h2>
+        <p>يمكنك طلب حذف حسابك وكل بياناتك في أي وقت بالتواصل معنا عبر البريد أدناه.</p>
+
+        <h2>الأطفال</h2>
+        <p>الخدمة غير موجّهة للأطفال دون 13 عاماً.</p>
+
+        <h2>تغييرات على هذه السياسة</h2>
+        <p>قد نُحدّث هذه الصفحة من وقت لآخر. سيظهر تاريخ آخر تحديث أعلى الصفحة.</p>
+
+        <h2>تواصل معنا</h2>
+        <p>لأي استفسار حول الخصوصية: <a href="mailto:support@luminaverse.app">support@luminaverse.app</a></p>
+      </div>
+
+      <div class="lang-en">
+        <h1>Privacy Policy</h1>
+        <p class="updated">Last updated: 2026</p>
+
+        <p>
+          This policy explains how LuminaVerse ("we") handles your data when you use the app.
+          LuminaVerse is a personal tool for saving YouTube videos and writing your notes,
+          questions, and next steps alongside them.
+        </p>
+
+        <h2>What we collect</h2>
+        <p>
+          Your email when creating an account (or via Google sign-in), public YouTube video
+          data you save (title, channel, thumbnail, link), and content you write yourself
+          (notes, questions, lists/collections).
+        </p>
+
+        <h2>How we use your data</h2>
+        <p>
+          Only to run the service: display your library, save your notes, log you in and
+          maintain your session. We don't sell your data to any third party or use it for
+          external advertising purposes.
+        </p>
+
+        <h2>Storage &amp; third parties</h2>
+        <p>
+          We use <strong>Supabase</strong> for account storage, data, and authentication.
+          We use the public YouTube interface to fetch video title/channel/thumbnail when
+          you add a video. We are not affiliated with Google or YouTube.
+        </p>
+
+        <h2>Cookies &amp; local storage</h2>
+        <p>
+          We use your browser's local storage (localStorage) to save your preferences
+          (language, dark/light mode) and login session — not for any advertising tracking.
+        </p>
+
+        <h2>Account &amp; data deletion</h2>
+        <p>
+          You can request deletion of your account and all your data at any time by
+          contacting us at the email below.
+        </p>
+
+        <h2>Children</h2>
+        <p>The service is not directed at children under 13.</p>
+
+        <h2>Changes to this policy</h2>
+        <p>We may update this page from time to time. The last update date will appear at the top of the page.</p>
+
+        <h2>Contact us</h2>
+        <p>For any privacy questions: <a href="mailto:support@luminaverse.app">support@luminaverse.app</a></p>
+      </div>
+
+    </div><!-- /tab-privacy -->
+
+    <!-- ╔══════════════════════════════════════╗ -->
+    <!-- ║  TERMS                               ║ -->
+    <!-- ╚══════════════════════════════════════╝ -->
+    <div id="tab-terms" class="tab-panel" role="tabpanel" hidden>
+
+      <div class="lang-ar">
+        <h1>شروط الاستخدام</h1>
+        <p class="updated">آخر تحديث: 2026</p>
+
+        <p>باستخدامك LuminaVerse فإنك توافق على هذه الشروط. إن لم توافق، الرجاء عدم استخدام الخدمة.</p>
+
+        <h2>وصف الخدمة</h2>
+        <p>
+          LuminaVerse أداة شخصية لحفظ فيديوهات يوتيوب مع ملاحظاتك وأسئلتك وخطواتك التالية،
+          لبناء مكتبة تعلّم بحثيّة خاصة بك.
+        </p>
+
+        <h2>مسؤولية الحساب</h2>
+        <p>أنت مسؤول عن الحفاظ على سرّية بيانات دخولك، وعن أي نشاط يحدث ضمن حسابك.</p>
+
+        <h2>الاستخدام المقبول</h2>
+        <p>
+          يُمنع استخدام الخدمة لأي غرض غير قانوني، أو محاولة اختراقها، أو استخراج بياناتها آلياً (scraping)
+          بشكل يضرّ بالخدمة أو بمستخدمين آخرين.
+        </p>
+
+        <h2>الملكية الفكرية</h2>
+        <p>
+          ملاحظاتك ومحتواك المكتوب يبقى ملكك بالكامل. علامة "LuminaVerse" وشعارها ملك لنا.
+          فيديوهات يوتيوب المعروضة داخل التطبيق ملك لأصحابها ولمنصة YouTube المملوكة لشركة Google LLC —
+          LuminaVerse خدمة مستقلة غير تابعة لهما ولا معتمدة أو مموّلة منهما.
+        </p>
+
+        <h2>الخطط المدفوعة</h2>
+        <p>
+          قد تتضمن الخدمة خططاً مجانية ومدفوعة بمزايا مختلفة. تفاصيل كل خطة ومزاياها تظهر داخل التطبيق.
+        </p>
+
+        <h2>إخلاء المسؤولية</h2>
+        <p>تُقدَّم الخدمة "كما هي" بدون أي ضمانات، ولا نضمن عدم انقطاعها أو خلوّها من الأخطاء.</p>
+
+        <h2>إنهاء الحساب</h2>
+        <p>يمكنك إغلاق حسابك في أي وقت. نحتفظ بالحق في تعليق أو إنهاء أي حساب يخالف هذه الشروط.</p>
+
+        <h2>تغييرات على هذه الشروط</h2>
+        <p>قد نُحدّث هذه الشروط من وقت لآخر. سيظهر تاريخ آخر تحديث أعلى الصفحة.</p>
+
+        <h2>تواصل معنا</h2>
+        <p>لأي استفسار: <a href="mailto:support@luminaverse.app">support@luminaverse.app</a></p>
+      </div>
+
+      <div class="lang-en">
+        <h1>Terms of Use</h1>
+        <p class="updated">Last updated: 2026</p>
+
+        <p>By using LuminaVerse you agree to these terms. If you don't agree, please don't use the service.</p>
+
+        <h2>Service description</h2>
+        <p>
+          LuminaVerse is a personal tool for saving YouTube videos with your notes, questions,
+          and next steps, to build your own personal searchable learning library.
+        </p>
+
+        <h2>Account responsibility</h2>
+        <p>You are responsible for keeping your login credentials confidential and for any activity that occurs under your account.</p>
+
+        <h2>Acceptable use</h2>
+        <p>
+          You may not use the service for any unlawful purpose, attempt to breach it, or
+          extract its data automatically (scraping) in a way that harms the service or
+          other users.
+        </p>
+
+        <h2>Intellectual property</h2>
+        <p>
+          Your notes and written content remain entirely yours. The "LuminaVerse" brand
+          and logo are ours. YouTube videos displayed within the app belong to their owners
+          and to the YouTube platform owned by Google LLC — LuminaVerse is an independent
+          service not affiliated with them, not endorsed or funded by them.
+        </p>
+
+        <h2>Paid plans</h2>
+        <p>
+          The service may include free and paid plans with different features. Details of
+          each plan and its features appear within the app.
+        </p>
+
+        <h2>Disclaimer</h2>
+        <p>The service is provided "as is" without any warranties, and we don't guarantee it will be uninterrupted or error-free.</p>
+
+        <h2>Account termination</h2>
+        <p>You can close your account at any time. We reserve the right to suspend or terminate any account that violates these terms.</p>
+
+        <h2>Changes to these terms</h2>
+        <p>We may update these terms from time to time. The last update date will appear at the top of the page.</p>
+
+        <h2>Contact us</h2>
+        <p>For any questions: <a href="mailto:support@luminaverse.app">support@luminaverse.app</a></p>
+      </div>
+
+    </div><!-- /tab-terms -->
+
+    <!-- ╔══════════════════════════════════════╗ -->
+    <!-- ║  FAQ                                 ║ -->
+    <!-- ╚══════════════════════════════════════╝ -->
+    <div id="tab-faq" class="tab-panel" role="tabpanel" hidden>
+
+      <div class="page-badge">
+        <span class="lang-ar">الأسئلة الشائعة</span>
+        <span class="lang-en">FAQ</span>
+      </div>
+
+      <h1 class="lang-ar">كل ما تريد معرفته عن LuminaVerse</h1>
+      <h1 class="lang-en">Everything you need to know about LuminaVerse</h1>
+
+      <p class="page-sub lang-ar">لم تجد إجابتك؟ راسلنا على <a href="mailto:support@luminaverse.app">support@luminaverse.app</a></p>
+      <p class="page-sub lang-en">Didn't find your answer? Email us at <a href="mailto:support@luminaverse.app">support@luminaverse.app</a></p>
+
+      <ul class="faq-list" role="list">
+
+        <!-- Q1 -->
+        <li class="faq-item" role="listitem">
+          <button class="faq-btn" aria-expanded="false">
+            <span class="lang-ar">ما هو LuminaVerse؟</span>
+            <span class="lang-en">What is LuminaVerse?</span>
+            <svg class="faq-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="faq-answer" role="region">
+            <div class="faq-answer-inner">
+              <p class="lang-ar">
+                منصة تحوّل فيديوهات يوتيوب من استهلاك سلبي إلى تعلم نشط — ملاحظتك،
+                سؤالك، ما ستطبقه، كلها في مكان واحد. يعمل على الكمبيوتر والجوال.
+              </p>
+              <p class="lang-en">
+                A platform that transforms YouTube videos from passive consumption into
+                active learning — your notes, your questions, what you'll apply, all in one
+                place. Works on desktop and mobile.
+              </p>
+            </div>
+          </div>
+        </li>
+
+        <!-- Q2 -->
+        <li class="faq-item" role="listitem">
+          <button class="faq-btn" aria-expanded="false">
+            <span class="lang-ar">ما الذي يجعل LuminaVerse مختلفاً؟</span>
+            <span class="lang-en">What makes LuminaVerse different?</span>
+            <svg class="faq-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="faq-answer" role="region">
+            <div class="faq-answer-inner">
+              <div class="lang-ar">
+                <p>
+                  أدوات مثل Notion تحتاج وقتاً لبنائها من الصفر. وحفظ الروابط في المتصفح؟
+                  لن تعود إليها أبداً. LuminaVerse مبني على فكرة واحدة: التعلم يحدث عندما
+                  تجيب، لا عندما تشاهد.
+                </p>
+                <p>كل فيديو تضيفه يمر بثلاثة أسئلة مصمّمة بعناية:</p>
+                <ul>
+                  <li><strong>ما أهم فكرة؟ (Key Takeaway)</strong> — يُجبرك على الفلترة: من كل ما سمعته، ما الشيء الواحد الذي يستحق أن تحتفظ به؟ هذا يحوّل ساعة مشاهدة إلى جملة واحدة قوية.</li>
+                  <li><strong>ما سؤالي؟ (My Question)</strong> — يفتح باب التفكير النقدي: بدل أن تقبل كل ما يُقال، تسأل. والسؤال الجيد أقوى من عشر ملاحظات.</li>
+                  <li><strong>ما الذي سأطبقه؟ (What I'll Apply)</strong> — يربط المعرفة بالفعل: إذا لم تقرر ماذا ستفعل مختلفاً بعد المشاهدة، فلم تتعلم — شاهدت فقط.</li>
+                </ul>
+                <div class="highlight-box">
+                  <p>هذه الأسئلة الثلاثة ليست حقولاً عشوائية — هي نظام تعلم مصغّر يتكرر مع كل فيديو. بمرور الوقت، مكتبتك تتحول من أرشيف روابط إلى سجل قرارات ورؤى قابلة للبحث والمراجعة.</p>
+                </div>
+              </div>
+              <div class="lang-en">
+                <p>
+                  Tools like Notion take time to build from scratch. And saving bookmarks?
+                  You'll never go back to them. LuminaVerse is built on one idea: learning
+                  happens when you answer, not when you watch.
+                </p>
+                <p>Every video you add goes through three carefully designed questions:</p>
+                <ul>
+                  <li><strong>What's the key idea? (Key Takeaway)</strong> — Forces you to filter: out of everything you heard, what's the one thing worth keeping? This turns an hour of watching into one powerful sentence.</li>
+                  <li><strong>What's my question? (My Question)</strong> — Opens the door to critical thinking: instead of accepting everything, you question it. A good question is more powerful than ten notes.</li>
+                  <li><strong>What will I apply? (What I'll Apply)</strong> — Connects knowledge to action: if you didn't decide what you'll do differently after watching, you didn't learn — you just watched.</li>
+                </ul>
+                <div class="highlight-box">
+                  <p>These three questions aren't random fields — they're a micro-learning system that repeats with every video. Over time, your library transforms from a link archive into a searchable record of decisions and insights.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </li>
+
+        <!-- Q3 -->
+        <li class="faq-item" role="listitem">
+          <button class="faq-btn" aria-expanded="false">
+            <span class="lang-ar">لماذا أحتاج أداة منفصلة للتعلم من يوتيوب؟</span>
+            <span class="lang-en">Why do I need a separate tool for learning from YouTube?</span>
+            <svg class="faq-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="faq-answer" role="region">
+            <div class="faq-answer-inner">
+              <div class="lang-ar">
+                <p>
+                  لأن المشكلة ليست في المشاهدة بل في ما بعدها. أنت تنسى معظم ما تشاهده
+                  خلال أسبوع إذا لم تعالجه بفعل ذهني. الكتابة في دفتر تساعد، لكنها غير قابلة
+                  للبحث ولا مرتبطة بالفيديو الأصلي.
+                </p>
+                <p>
+                  LuminaVerse يحل هذا بتصميم بسيط: الفيديو + أفكارك في مكان واحد، والأسئلة
+                  الثلاثة تعمل كفلتر طبيعي يمنعك من تخزين كل شيء ويُجبرك على اختيار ما يهم
+                  فعلاً.
+                </p>
+                <div class="highlight-box">
+                  <p>النتيجة: مكتبة شخصية كل فيديو فيها يحمل قرارك أنت — ماذا أخذت، ماذا شككت فيه، وماذا ستفعل. هذا هو الفرق بين مستهلك محتوى ومتعلم يبني نظاماً.</p>
+                </div>
+              </div>
+              <div class="lang-en">
+                <p>
+                  Because the problem isn't watching — it's what happens after. You forget
+                  most of what you watch within a week if you don't process it actively.
+                  Writing in a notebook helps, but it's not searchable and not connected to
+                  the original video.
+                </p>
+                <p>
+                  LuminaVerse solves this with simple design: your video + your thoughts in
+                  one place, and the three questions act as a natural filter that prevents you
+                  from storing everything and forces you to choose what truly matters.
+                </p>
+                <div class="highlight-box">
+                  <p>The result: a personal library where every video carries your decision — what you took, what you questioned, and what you'll do. That's the difference between a content consumer and a learner building a system.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </li>
+
+        <!-- Q4 -->
+        <li class="faq-item" role="listitem">
+          <button class="faq-btn" aria-expanded="false">
+            <span class="lang-ar">من يستخدم LuminaVerse؟</span>
+            <span class="lang-en">Who uses LuminaVerse?</span>
+            <svg class="faq-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="faq-answer" role="region">
+            <div class="faq-answer-inner">
+              <ul class="lang-ar">
+                <li><strong>رواد أعمال وقادة</strong> — تعلم سريع قابل للتطبيق، ساعاتهم غالية</li>
+                <li><strong>طلاب ومتعلمون</strong> — تحويل يوتيوب من تشتت إلى مصدر منظم</li>
+                <li><strong>فرق ومؤسسات</strong> — بناء ثقافة تعلم مستمر بدون تعقيد</li>
+                <li><strong>صنّاع محتوى</strong> — مستودع منظم للأفكار والمراجع</li>
+                <li><strong>باحثون وأكاديميون</strong> — تعليق وتتبع مصادر وربط أفكار</li>
+              </ul>
+              <ul class="lang-en">
+                <li><strong>Entrepreneurs &amp; Leaders</strong> — Fast, applicable learning; their time is expensive</li>
+                <li><strong>Students &amp; Learners</strong> — Turn YouTube from distraction into organized resource</li>
+                <li><strong>Teams &amp; Organizations</strong> — Build continuous learning culture without complexity</li>
+                <li><strong>Content Creators</strong> — Organized repository for ideas and references</li>
+                <li><strong>Researchers &amp; Academics</strong> — Annotate, track sources, connect ideas</li>
+              </ul>
+            </div>
+          </div>
+        </li>
+
+        <!-- Q5 -->
+        <li class="faq-item" role="listitem">
+          <button class="faq-btn" aria-expanded="false">
+            <span class="lang-ar">كيف أضيف فيديو وأبدأ التعلم منه؟</span>
+            <span class="lang-en">How do I add a video and start learning?</span>
+            <svg class="faq-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="faq-answer" role="region">
+            <div class="faq-answer-inner">
+              <div class="lang-ar">
+                <p>في 30 ثانية:</p>
+                <ol style="padding-inline-start:1.4rem;margin-bottom:.5rem">
+                  <li>الصق رابط الفيديو من يوتيوب</li>
+                  <li>اضغط Fetch — البيانات تُجلب تلقائياً</li>
+                  <li>اكتب ملاحظتك، سؤالك، وما ستطبقه</li>
+                  <li>اضغط حفظ — انتهى!</li>
+                </ol>
+              </div>
+              <div class="lang-en">
+                <p>In 30 seconds:</p>
+                <ol style="padding-inline-start:1.4rem;margin-bottom:.5rem">
+                  <li>Paste the YouTube video link</li>
+                  <li>Click Fetch — data is pulled automatically</li>
+                  <li>Write your takeaway, question, and what you'll apply</li>
+                  <li>Click Save — done!</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </li>
+
+        <!-- Q6 -->
+        <li class="faq-item" role="listitem">
+          <button class="faq-btn" aria-expanded="false">
+            <span class="lang-ar">هل LuminaVerse مجاني؟</span>
+            <span class="lang-en">Is LuminaVerse free?</span>
+            <svg class="faq-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="faq-answer" role="region">
+            <div class="faq-answer-inner">
+              <p class="lang-ar">
+                نعم، المنصة حالياً مجانية بالكامل في مرحلة البيتا. مستقبلاً ستتوفر خطط
+                مجانية ومدفوعة بميزات متقدمة.
+              </p>
+              <p class="lang-en">
+                Yes, the platform is completely free during beta. In the future, free and
+                paid plans with advanced features will be available.
+              </p>
+            </div>
+          </div>
+        </li>
+
+        <!-- Q7 -->
+        <li class="faq-item" role="listitem">
+          <button class="faq-btn" aria-expanded="false">
+            <span class="lang-ar">ما هي الوسوم (Tags) وهل أحتاجها؟</span>
+            <span class="lang-en">What are Tags and do I need them?</span>
+            <svg class="faq-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="faq-answer" role="region">
+            <div class="faq-answer-inner">
+              <p class="lang-ar">
+                ميزة اختيارية لتنظيم مكتبتك — تفعّلها متى أردت من الإعدادات. معظم
+                المستخدمين يبدأون بدونها ويضيفونها لاحقاً عندما تكبر مكتبتهم. لا تقلق
+                بشأنها في البداية.
+              </p>
+              <p class="lang-en">
+                An optional feature for organizing your library — enable it anytime from
+                settings. Most users start without tags and add them later as their library
+                grows. Don't worry about them at first.
+              </p>
+            </div>
+          </div>
+        </li>
+
+        <!-- Q8 -->
+        <li class="faq-item" role="listitem">
+          <button class="faq-btn" aria-expanded="false">
+            <span class="lang-ar">هل بياناتي وملاحظاتي آمنة؟</span>
+            <span class="lang-en">Are my data and notes safe?</span>
+            <svg class="faq-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="faq-answer" role="region">
+            <div class="faq-answer-inner">
+              <p class="lang-ar">
+                ملاحظاتك ملكك أنت. بياناتك مشفرة، لا نبيعها، ولا نستخدمها للإعلانات.
+                التفاصيل الكاملة في
+                <a href="#privacy">سياسة الخصوصية</a>.
+              </p>
+              <p class="lang-en">
+                Your notes belong to you. Your data is encrypted, we don't sell it, and
+                we don't use it for ads. Full details in our
+                <a href="#privacy">Privacy Policy</a>.
+              </p>
+            </div>
+          </div>
+        </li>
+
+      </ul>
+    </div><!-- /tab-faq -->
+
+    <!-- ╔══════════════════════════════════════╗ -->
+    <!-- ║  ABOUT                               ║ -->
+    <!-- ╚══════════════════════════════════════╝ -->
+    <div id="tab-about" class="tab-panel" role="tabpanel" hidden>
+
+      <div class="lang-ar">
+        <h1>عن LuminaVerse</h1>
+
+        <p>
+          يوتيوب أكبر جامعة مجانية في العالم — لكنها مبعثرة. كنّا نتتبّع الفيديوهات في Notion،
+          وننسخ الروابط في Excel، ونرمي القوائم في Drive — ثم نُضيّعها على أي حال.
+        </p>
+
+        <p>
+          بنينا LuminaVerse لنعطي كل فيديو مهم بيتاً دائماً وقابلاً للبحث: مع ملاحظاتك وأفكارك
+          والروابط المرتبطة — كلها في مكان واحد. الصق رابط يوتيوب، سجّل ما تعلّمته، وارجع له
+          متى شئت بدل أن يضيع في قائمة "مشاهدة لاحقاً" ولا تعود إليه أبداً.
+        </p>
+
+        <h2>ما نحن</h2>
+        <p>
+          LuminaVerse خدمة مستقلة لبناء مكتبة تعلّم شخصية من فيديوهات يوتيوب.
+          <strong>YouTube علامة تجارية لشركة Google LLC، وLuminaVerse غير تابعة لها ولا معتمدة أو مموّلة منها.</strong>
+        </p>
+
+        <h2>تواصل معنا</h2>
+        <p><a href="mailto:support@luminaverse.app">support@luminaverse.app</a></p>
+      </div>
+
+      <div class="lang-en">
+        <h1>About LuminaVerse</h1>
+
+        <p>
+          YouTube is the world's largest free university — but it's scattered. We used to
+          track videos in Notion, copy links into Excel, throw playlists into Drive — then
+          lose them anyway.
+        </p>
+
+        <p>
+          We built LuminaVerse to give every important video a permanent, searchable home:
+          with your notes, ideas, and related links — all in one place. Paste a YouTube link,
+          record what you learned, and come back to it whenever you want instead of losing it
+          in a Watch Later list you never return to.
+        </p>
+
+        <h2>What we are</h2>
+        <p>
+          LuminaVerse is an independent service for building a personal learning library from
+          YouTube videos. <strong>YouTube is a trademark of Google LLC, and LuminaVerse is not
+          affiliated with, endorsed, or funded by them.</strong>
+        </p>
+
+        <h2>Contact us</h2>
+        <p><a href="mailto:support@luminaverse.app">support@luminaverse.app</a></p>
+      </div>
+
+    </div><!-- /tab-about -->
+
+  </main>
+
+  <!-- ── FOOTER ──────────────────────────────────────────────────────── -->
+  <footer class="site-footer">
+    <div class="footer-links">
+      <a href="#privacy">
+        <span class="lang-ar">سياسة الخصوصية</span><span class="lang-en">Privacy Policy</span>
+      </a>
+      <a href="#terms">
+        <span class="lang-ar">شروط الاستخدام</span><span class="lang-en">Terms of Use</span>
+      </a>
+      <a href="#faq">
+        <span class="lang-ar">الأسئلة الشائعة</span><span class="lang-en">FAQ</span>
+      </a>
+      <a href="#about">
+        <span class="lang-ar">عنّا</span><span class="lang-en">About</span>
+      </a>
+    </div>
+    <p class="footer-copy lang-ar">© 2026 يونيكس للتجارة والتسويق. جميع الحقوق محفوظة.</p>
+    <p class="footer-copy lang-en">© 2026 Unix Trading and Marketing. All rights reserved.</p>
+    <p class="footer-disclaimer lang-ar">
+      YouTube هي علامة تجارية مسجلة لشركة Google LLC. LuminaVerse خدمة مستقلة وغير تابعة أو معتمدة من Google أو YouTube.
+    </p>
+    <p class="footer-disclaimer lang-en">
+      YouTube is a registered trademark of Google LLC. LuminaVerse is an independent service not affiliated with or endorsed by Google or YouTube.
+    </p>
+  </footer>
+
+  <script>
+    const html    = document.documentElement
+    const langBtn = document.getElementById('langToggle')
+
+    const TABS = ['privacy', 'terms', 'faq', 'about']
+    const TITLE_AR = { privacy: 'سياسة الخصوصية', terms: 'شروط الاستخدام', faq: 'الأسئلة الشائعة', about: 'عن LuminaVerse' }
+    const TITLE_EN = { privacy: 'Privacy Policy',   terms: 'Terms of Use',        faq: 'FAQ',                 about: 'About' }
+
+    // ── Language ──────────────────────────────────────────────────────
+    function setLang(lang) {
+      html.setAttribute('lang', lang)
+      html.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr')
+      langBtn.textContent = lang === 'ar' ? 'English' : 'العربية'
+      try { localStorage.setItem('lv-static-lang', lang) } catch(e) {}
+      updateTitle()
+    }
+
+    langBtn.addEventListener('click', () => setLang(html.lang === 'ar' ? 'en' : 'ar'))
+
+    // ── Tabs ──────────────────────────────────────────────────────────
+    function getTabFromHash() {
+      const h = location.hash.slice(1)
+      return TABS.includes(h) ? h : 'privacy'
+    }
+
+    function updateTitle() {
+      const id   = getTabFromHash()
+      const lang = html.lang
+      document.title = (lang === 'ar' ? TITLE_AR[id] : TITLE_EN[id]) + ' — LuminaVerse'
+    }
+
+    function activateTab(id) {
+      if (!TABS.includes(id)) id = 'privacy'
+      TABS.forEach(t => { document.getElementById('tab-' + t).hidden = t !== id })
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        const active = btn.dataset.tab === id
+        btn.classList.toggle('active', active)
+        btn.setAttribute('aria-selected', String(active))
+      })
+      document.title = (html.lang === 'ar' ? TITLE_AR[id] : TITLE_EN[id]) + ' — LuminaVerse'
+    }
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.dataset.tab
+        if (location.hash === '#' + tab) { activateTab(tab) }
+        else { location.hash = tab }
+      })
+    })
+
+    window.addEventListener('hashchange', () => activateTab(getTabFromHash()))
+
+    // ── Accordion ─────────────────────────────────────────────────────
+    document.querySelectorAll('.faq-btn').forEach(faqBtn => {
+      faqBtn.addEventListener('click', () => {
+        const item    = faqBtn.closest('.faq-item')
+        const wasOpen = item.classList.contains('open')
+        document.querySelectorAll('.faq-item.open').forEach(el => {
+          el.classList.remove('open')
+          el.querySelector('.faq-btn').setAttribute('aria-expanded', 'false')
+        })
+        if (!wasOpen) {
+          item.classList.add('open')
+          faqBtn.setAttribute('aria-expanded', 'true')
+        }
+      })
+    })
+
+    // ── Init ──────────────────────────────────────────────────────────
+    try { const s = localStorage.getItem('lv-static-lang'); if (s === 'en') setLang('en') } catch(e) {}
+    activateTab(getTabFromHash())
+  </script>
+
+</body>
+</html>

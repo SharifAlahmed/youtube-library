@@ -1,10 +1,10 @@
 import { useLang } from '../context/LanguageContext'
 
 const LINKS = [
-  { key: 'footerPrivacy', href: '/privacy-policy.html' },
-  { key: 'footerTerms',   href: '/terms-of-use.html'  },
-  { key: 'footerFaq',     href: '/faq.html'            },
-  { key: 'footerAbout',   href: '/about-us.html'       },
+  { key: 'footerPrivacy', href: '/legal.html#privacy' },
+  { key: 'footerTerms',   href: '/legal.html#terms'   },
+  { key: 'footerFaq',     href: '/legal.html#faq'     },
+  { key: 'footerAbout',   href: '/legal.html#about'   },
 ]
 
 export default function Footer() {

@@ -513,18 +513,6 @@ export default function HomePage() {
 
         </div>
       </div>
-
-      {/* ── Legal links ───────────────────────────────────────────── */}
-      <div className="flex items-center justify-center gap-3 text-xs text-[var(--muted)] pt-4">
-        <a href="/privacy-policy.html" target="_blank" rel="noopener"
-           className="hover:text-[var(--accent)] transition-colors">{t.footerPrivacy}</a>
-        <span>·</span>
-        <a href="/terms-of-use.html" target="_blank" rel="noopener"
-           className="hover:text-[var(--accent)] transition-colors">{t.footerTerms}</a>
-        <span>·</span>
-        <a href="/about-us.html" target="_blank" rel="noopener"
-           className="hover:text-[var(--accent)] transition-colors">{t.footerAbout}</a>
-      </div>
     </div>
   )
 }
