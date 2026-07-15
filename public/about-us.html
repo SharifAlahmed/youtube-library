@@ -7,41 +7,125 @@
   <link rel="icon" type="image/svg+xml" href="/luminaverse-icon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
-    body { font-family: 'Cairo', sans-serif; max-width: 760px; margin: 0 auto; padding: 3rem 1.5rem 5rem; color: #1f2937; line-height: 1.9; }
-    a { color: #16A34A; }
-    h1 { font-size: 1.75rem; margin-bottom: .25rem; }
-    h2 { font-size: 1.2rem; margin-top: 2.25rem; color: #111827; }
-    .updated { color: #6b7280; font-size: .875rem; margin-bottom: 2.5rem; }
-    .back { display: inline-block; margin-bottom: 2rem; font-size: .875rem; }
-    footer { margin-top: 3.5rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb; font-size: .8rem; color: #9ca3af; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Cairo', sans-serif; color: #1f2937; line-height: 1.9; min-height: 100vh; display: flex; flex-direction: column; background: #f9fafb; }
+    a { color: #1D9E75; }
+    a:hover { text-decoration: underline; }
+    main { flex: 1; max-width: 760px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; width: 100%; }
+    h1 { font-size: 1.75rem; font-weight: 700; color: #111827; margin-bottom: 1rem; }
+    h2 { font-size: 1.15rem; font-weight: 600; margin-top: 2.25rem; margin-bottom: .5rem; color: #111827; }
+    p { margin-bottom: .75rem; }
+
+    .site-nav { position: sticky; top: 0; z-index: 50; background: #15332a; padding: .7rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; box-shadow: 0 1px 8px rgba(0,0,0,.25); }
+    .site-nav .brand { color: #fff; font-weight: 700; font-size: .95rem; text-decoration: none; white-space: nowrap; flex-shrink: 0; }
+    .site-nav .brand:hover { opacity: .9; text-decoration: none; }
+    .nav-links { display: flex; gap: .15rem; flex-wrap: wrap; align-items: center; }
+    .nav-links a { color: rgba(255,255,255,.75); font-size: .78rem; font-weight: 500; padding: .3rem .6rem; border-radius: .45rem; transition: background .15s, color .15s; white-space: nowrap; text-decoration: none; }
+    .nav-links a:hover { background: rgba(255,255,255,.15); color: #fff; }
+    .nav-links a.active { background: rgba(255,255,255,.18); color: #fff; }
+    .lang-btn { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.28); color: #fff; border-radius: .45rem; padding: .28rem .7rem; font-size: .75rem; font-weight: 600; cursor: pointer; white-space: nowrap; font-family: inherit; flex-shrink: 0; transition: background .15s; }
+    .lang-btn:hover { background: rgba(255,255,255,.22); }
+
+    .site-footer { background: #15332a; color: rgba(255,255,255,.65); padding: 1.5rem 1.5rem 1rem; font-size: .75rem; line-height: 1.7; text-align: center; }
+    .footer-links { display: flex; flex-wrap: wrap; justify-content: center; gap: .2rem .7rem; margin-bottom: .85rem; }
+    .footer-links a { color: #6ee7b7; text-decoration: none; }
+    .footer-links a:hover { text-decoration: underline; }
+    .footer-copy { margin-bottom: .4rem; direction: ltr; }
+    .footer-disclaimer { color: rgba(255,255,255,.38); font-size: .7rem; max-width: 600px; margin: 0 auto; }
+
+    .lang-en { display: none; }
+    html[lang="en"] .lang-ar { display: none; }
+    html[lang="en"] .lang-en { display: revert; }
+    span.lang-en { display: none; }
+    html[lang="en"] span.lang-ar { display: none; }
+    html[lang="en"] span.lang-en { display: inline; }
+
+    @media (max-width: 560px) { .nav-links { display: none; } h1 { font-size: 1.4rem; } }
   </style>
 </head>
 <body>
-  <a class="back" href="/">← العودة إلى LuminaVerse</a>
-  <h1>عن LuminaVerse</h1>
 
-  <p>
-    يوتيوب أكبر جامعة مجانية في العالم — لكنها مبعثرة. كنّا نتتبّع الفيديوهات في Notion،
-    وننسخ الروابط في Excel، ونرمي القوائم في Drive — ثم نُضيّعها على أي حال.
-  </p>
+  <nav class="site-nav" aria-label="Site navigation">
+    <a href="/" class="brand">LuminaVerse</a>
+    <div class="nav-links">
+      <a href="/privacy-policy.html" target="_blank" rel="noopener noreferrer">
+        <span class="lang-ar">الخصوصية</span><span class="lang-en">Privacy</span>
+      </a>
+      <a href="/terms-of-use.html" target="_blank" rel="noopener noreferrer">
+        <span class="lang-ar">الشروط</span><span class="lang-en">Terms</span>
+      </a>
+      <a href="/faq.html" target="_blank" rel="noopener noreferrer">
+        <span class="lang-ar">الأسئلة الشائعة</span><span class="lang-en">FAQ</span>
+      </a>
+      <a href="/about-us.html" class="active">
+        <span class="lang-ar">عنّنا</span><span class="lang-en">About</span>
+      </a>
+    </div>
+    <button class="lang-btn" id="langToggle" aria-label="Switch language">English</button>
+  </nav>
 
-  <p>
-    بنينا LuminaVerse لنعطي كل فيديو مهم بيتاً دائماً وقابلاً للبحث: مع ملاحظاتك وأفكارك
-    والروابط المرتبطة — كلها في مكان واحد. الصق رابط يوتيوب، سجّل ما تعلّمته، وارجع له
-    متى شئت بدل أن يضيع في قائمة "مشاهدة لاحقاً" ولا تعود إليه أبداً.
-  </p>
+  <main>
+    <h1>عن LuminaVerse</h1>
 
-  <h2>ما نحن</h2>
-  <p>
-    LuminaVerse خدمة مستقلة لبناء مكتبة تعلّم شخصية من فيديوهات يوتيوب.
-    <strong>YouTube علامة تجارية لشركة Google LLC، وLuminaVerse غير تابعة لها ولا معتمدة أو مموّلة منها.</strong>
-  </p>
+    <p>
+      يوتيوب أكبر جامعة مجانية في العالم — لكنها مبعثرة. كنّا نتتبّع الفيديوهات في Notion،
+      وننسخ الروابط في Excel، ونرمي القوائم في Drive — ثم نُضيّعها على أي حال.
+    </p>
 
-  <h2>تواصل معنا</h2>
-  <p><a href="mailto:support@luminaverse.app">support@luminaverse.app</a></p>
+    <p>
+      بنينا LuminaVerse لنعطي كل فيديو مهم بيتاً دائماً وقابلاً للبحث: مع ملاحظاتك وأفكارك
+      والروابط المرتبطة — كلها في مكان واحد. الصق رابط يوتيوب، سجّل ما تعلّمته، وارجع له
+      متى شئت بدل أن يضيع في قائمة "مشاهدة لاحقاً" ولا تعود إليه أبداً.
+    </p>
 
-  <footer>© 2026 LuminaVerse</footer>
+    <h2>ما نحن</h2>
+    <p>
+      LuminaVerse خدمة مستقلة لبناء مكتبة تعلّم شخصية من فيديوهات يوتيوب.
+      <strong>YouTube علامة تجارية لشركة Google LLC، وLuminaVerse غير تابعة لها ولا معتمدة أو مموّلة منها.</strong>
+    </p>
+
+    <h2>تواصل معنا</h2>
+    <p><a href="mailto:support@luminaverse.app">support@luminaverse.app</a></p>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-links">
+      <a href="/privacy-policy.html" target="_blank" rel="noopener noreferrer">
+        <span class="lang-ar">سياسة الخصوصية</span><span class="lang-en">Privacy Policy</span>
+      </a>
+      <a href="/terms-of-use.html" target="_blank" rel="noopener noreferrer">
+        <span class="lang-ar">شروط الاستخدام</span><span class="lang-en">Terms of Use</span>
+      </a>
+      <a href="/faq.html" target="_blank" rel="noopener noreferrer">
+        <span class="lang-ar">الأسئلة الشائعة</span><span class="lang-en">FAQ</span>
+      </a>
+      <a href="/about-us.html">
+        <span class="lang-ar">عنّنا</span><span class="lang-en">About</span>
+      </a>
+    </div>
+    <p class="footer-copy lang-ar">© 2026 يونيكس للتجارة والتسويق. جميع الحقوق محفوظة.</p>
+    <p class="footer-copy lang-en">© 2026 Unix Trading and Marketing. All rights reserved.</p>
+    <p class="footer-disclaimer lang-ar">
+      YouTube هي علامة تجارية مسجلة لشركة Google LLC. LuminaVerse خدمة مستقلة وغير تابعة أو معتمدة من Google أو YouTube.
+    </p>
+    <p class="footer-disclaimer lang-en">
+      YouTube is a registered trademark of Google LLC. LuminaVerse is an independent service not affiliated with or endorsed by Google or YouTube.
+    </p>
+  </footer>
+
+  <script>
+    const html = document.documentElement
+    const btn  = document.getElementById('langToggle')
+    function setLang(lang) {
+      html.setAttribute('lang', lang)
+      html.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr')
+      btn.textContent = lang === 'ar' ? 'English' : 'العربية'
+      try { localStorage.setItem('lv-static-lang', lang) } catch(e) {}
+    }
+    btn.addEventListener('click', () => setLang(html.getAttribute('lang') === 'ar' ? 'en' : 'ar'))
+    try { const s = localStorage.getItem('lv-static-lang'); if (s === 'en') setLang('en') } catch(e) {}
+  </script>
 </body>
 </html>

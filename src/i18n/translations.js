@@ -114,8 +114,10 @@ export const translations = {
     // ── Footer — legal ────────────────────────────────────────────────────────
     footerPrivacy:    'سياسة الخصوصية',
     footerTerms:      'شروط الاستخدام',
+    footerFaq:        'الأسئلة الشائعة',
     footerAbout:      'عن الخدمة',
-    footerDisclaimer: 'YouTube علامة تجارية لشركة Google LLC. LuminaVerse خدمة مستقلة غير تابعة لـ Google أو YouTube ولا معتمدة أو مموّلة منهما.',
+    footerCopyright:  '© 2026 يونيكس للتجارة والتسويق. جميع الحقوق محفوظة.',
+    footerDisclaimer: 'YouTube هي علامة تجارية مسجلة لشركة Google LLC. LuminaVerse خدمة مستقلة وغير تابعة أو معتمدة من Google أو YouTube.',
     // ── How LuminaVerse Works page ────────────────────────────────────────────────
     hiwHero:        'LuminaVerse — حوّل يوتيوب لجامعتك الخاصة',
     hiwIntro1:      'كلنا نشاهد ساعات على يوتيوب.',
@@ -367,8 +369,10 @@ export const translations = {
     // ── Footer — legal ────────────────────────────────────────────────────────
     footerPrivacy:    'Privacy Policy',
     footerTerms:      'Terms of Use',
+    footerFaq:        'FAQ',
     footerAbout:      'About',
-    footerDisclaimer: 'YouTube is a trademark of Google LLC. LuminaVerse is independent and not affiliated with, endorsed by, or sponsored by Google or YouTube.',
+    footerCopyright:  '© 2026 Unix Trading and Marketing. All rights reserved.',
+    footerDisclaimer: 'YouTube is a registered trademark of Google LLC. LuminaVerse is an independent service not affiliated with or endorsed by Google or YouTube.',
     // ── How LuminaVerse Works page ────────────────────────────────────────────────
     hiwHero:        'LuminaVerse — Turn YouTube Into Your Personal University',
     hiwIntro1:      'We all spend hours on YouTube.',

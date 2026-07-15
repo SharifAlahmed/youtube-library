@@ -5,6 +5,7 @@ import { AuthProvider }     from './context/AuthContext'
 import { LibraryProvider, useLibrary } from './context/LibraryContext'
 import ProtectedRoute  from './components/ProtectedRoute'
 import Header          from './components/Header'
+import Footer          from './components/Footer'
 import AddVideoModal   from './components/AddVideoModal'
 import LandingPage        from './pages/LandingPage'
 import LoginPage          from './pages/LoginPage'
@@ -17,14 +18,17 @@ import ResetPasswordPage  from './pages/ResetPasswordPage'
 function AppShell() {
   const { showAddModal, closeAddModal, editVideo, closeEditModal } = useLibrary()
   return (
-    <div className="min-h-screen transition-colors duration-200" style={{ background: 'var(--bg)' }}>
+    <div className="min-h-screen flex flex-col transition-colors duration-200" style={{ background: 'var(--bg)' }}>
       <Header />
-      <Routes>
-        <Route index element={<HomePage />} />
-        <Route path="prompts" element={<PromptsPage />} />
-        <Route path="collections" element={<CollectionsPage />} />
-        <Route path="how" element={<HowItWorksPage />} />
-      </Routes>
+      <div className="flex-1">
+        <Routes>
+          <Route index element={<HomePage />} />
+          <Route path="prompts" element={<PromptsPage />} />
+          <Route path="collections" element={<CollectionsPage />} />
+          <Route path="how" element={<HowItWorksPage />} />
+        </Routes>
+      </div>
+      <Footer />
       {showAddModal && <AddVideoModal onClose={closeAddModal} />}
       {editVideo   && <AddVideoModal video={editVideo} onClose={closeEditModal} />}
     </div>
