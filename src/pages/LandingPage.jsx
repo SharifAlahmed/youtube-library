@@ -2,6 +2,7 @@ import { Navigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LanguageContext'
 import LuminaverseIcon from '../components/LuminaverseIcon'
+import Footer from '../components/Footer'
 
 function FeatureCard({ icon, title, desc }) {
   return (
@@ -291,29 +292,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Footer ──────────────────────────────────────────────────────── */}
-      <footer className="border-t border-gray-100">
-        <div className="max-w-5xl mx-auto px-6 py-8">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-2">
-              <LuminaverseIcon className="w-6 h-6" />
-              <span className="text-sm font-semibold text-gray-700">LuminaVerse</span>
-            </div>
-            <div className="flex items-center gap-4 text-xs text-gray-500">
-              <a href="/privacy-policy.html" target="_blank" rel="noopener"
-                 className="hover:text-gray-700 transition-colors">{t.footerPrivacy}</a>
-              <a href="/terms-of-use.html" target="_blank" rel="noopener"
-                 className="hover:text-gray-700 transition-colors">{t.footerTerms}</a>
-              <a href="/about-us.html" target="_blank" rel="noopener"
-                 className="hover:text-gray-700 transition-colors">{t.footerAbout}</a>
-            </div>
-          </div>
-          <p className="text-xs text-gray-400 leading-relaxed max-w-2xl mt-4">
-            {t.footerDisclaimer}
-          </p>
-          <p className="text-xs text-gray-400 mt-2" dir="ltr">© 2026 LuminaVerse</p>
-        </div>
-      </footer>
+      <Footer />
 
     </div>
   )
