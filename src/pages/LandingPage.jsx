@@ -5,6 +5,112 @@ import LuminaverseIcon from '../components/LuminaverseIcon'
 import Footer from '../components/Footer'
 import Reveal from '../components/Reveal'
 
+/* ── Inline SVG helpers ─────────────────────────────────────────────────── */
+function IconPlay()     { return <svg viewBox="0 0 24 24" fill="#0F6E56" className="w-5 h-5"><path d="M8 5v14l11-7z"/></svg> }
+function IconBulb()     { return <svg viewBox="0 0 24 24" fill="none" stroke="#085041" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5"><path d="M9.663 17h4.673M12 3v1m6.364 1.636-.707.707M21 12h-1M4 12H3m3.343-5.657-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg> }
+function IconQuestion()  { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5 text-gray-400"><path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> }
+function IconTarget()    { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5 text-gray-400"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> }
+function IconCheck()     { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5"><path d="M5 13l4 4L19 7"/></svg> }
+
+/* ── Hero product mockup card ───────────────────────────────────────────── */
+function MockupCard({ t }) {
+  return (
+    <div
+      className="lv-hero-item w-full lg:max-w-[420px]"
+      style={{ '--lv-delay': '450ms' }}
+    >
+      <div
+        className="lv-card-float bg-white rounded-2xl overflow-hidden"
+        style={{
+          border: '1px solid #d8e7df',
+          boxShadow: '0 4px 32px rgba(15,110,86,0.10), 0 1px 4px rgba(15,110,86,0.06)',
+        }}
+      >
+
+        {/* Header: thumbnail + title + channel */}
+        <div className="flex items-start gap-3 px-4 pt-4 pb-3.5"
+             style={{ borderBottom: '1px solid #e8f4ef' }}>
+          <div
+            className="w-[68px] h-[48px] rounded-xl flex items-center justify-center shrink-0"
+            style={{ background: '#E1F5EE' }}
+          >
+            <IconPlay />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-gray-900 leading-snug line-clamp-2">
+              {t.mockupTitle}
+            </p>
+            <p className="text-[11px] text-gray-400 mt-1">{t.mockupChannel}</p>
+          </div>
+        </div>
+
+        {/* Field blocks */}
+        <div className="px-4 pt-3.5 pb-3 space-y-2.5">
+
+          {/* Key takeaway — highlighted */}
+          <div className="rounded-xl px-3 py-2.5" style={{ background: '#E1F5EE' }}>
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <IconBulb />
+              <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: '#085041' }}>
+                {t.mockupLabelTakeaway}
+              </span>
+            </div>
+            <p className="text-xs leading-relaxed" style={{ color: '#0F6E56' }}>
+              {t.mockupTakeaway}
+            </p>
+          </div>
+
+          {/* My question */}
+          <div className="rounded-xl px-3 py-2.5 bg-gray-50" style={{ border: '1px solid #f0f0f0' }}>
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <IconQuestion />
+              <span className="text-[10px] font-bold uppercase tracking-wide text-gray-400">
+                {t.mockupLabelQuestion}
+              </span>
+            </div>
+            <p className="text-xs text-gray-600 leading-relaxed">{t.mockupQuestion}</p>
+          </div>
+
+          {/* What I'll apply */}
+          <div className="rounded-xl px-3 py-2.5 bg-gray-50" style={{ border: '1px solid #f0f0f0' }}>
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <IconTarget />
+              <span className="text-[10px] font-bold uppercase tracking-wide text-gray-400">
+                {t.mockupLabelApply}
+              </span>
+            </div>
+            <p className="text-xs text-gray-600 leading-relaxed">{t.mockupApply}</p>
+          </div>
+
+        </div>
+
+        {/* Footer: tags + saved */}
+        <div className="px-4 pb-4 flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5">
+            {[t.mockupTag1, t.mockupTag2].map(tag => (
+              <span
+                key={tag}
+                className="text-[10px] font-medium px-2 py-0.5 rounded-full"
+                style={{ background: '#E1F5EE', color: '#0F6E56' }}
+              >
+                #{tag}
+              </span>
+            ))}
+          </div>
+          <div
+            className="flex items-center gap-1 text-[11px] font-semibold shrink-0"
+            style={{ color: '#0F6E56' }}
+          >
+            <IconCheck />
+            {t.mockupSaved}
+          </div>
+        </div>
+
+      </div>
+    </div>
+  )
+}
+
 function FeatureCard({ icon, title, desc }) {
   return (
     <div className="flex gap-4 p-6 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
@@ -73,49 +179,61 @@ export default function LandingPage() {
           <div className="lv-stars" />
         </div>
 
-        <div className="relative max-w-5xl mx-auto px-6 pt-24 pb-20 text-center">
-          <span
-            className="lv-hero-item inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest
-                       text-primary-600 bg-primary-50 px-3 py-1 rounded-full mb-6"
-            style={{ '--lv-delay': '0ms' }}
-          >
-            <LuminaverseIcon className="w-3.5 h-3.5" />
-            {t.landingBadge}
-          </span>
+        <div className="relative max-w-5xl mx-auto px-6 pt-20 pb-20">
+          <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-14">
 
-          <h1
-            className="lv-hero-item text-5xl sm:text-6xl font-extrabold text-gray-900 leading-tight tracking-tight mb-6"
-            style={{ '--lv-delay': '110ms' }}
-          >
-            {t.landingHeadline1}<br className="hidden sm:block" />
-            <span className="text-primary-600"> {t.landingHeadline2}</span>
-          </h1>
+            {/* ── Text column ── */}
+            <div className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-start">
+              <span
+                className="lv-hero-item inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest
+                           text-primary-600 bg-primary-50 px-3 py-1 rounded-full mb-6"
+                style={{ '--lv-delay': '0ms' }}
+              >
+                <LuminaverseIcon className="w-3.5 h-3.5" />
+                {t.landingBadge}
+              </span>
 
-          <p
-            className="lv-hero-item max-w-xl mx-auto text-lg text-gray-500 leading-relaxed mb-10"
-            style={{ '--lv-delay': '220ms' }}
-          >
-            {t.landingSubtitle}
-          </p>
+              <h1
+                className="lv-hero-item text-4xl sm:text-5xl lg:text-5xl font-extrabold text-gray-900 leading-tight tracking-tight mb-6"
+                style={{ '--lv-delay': '110ms' }}
+              >
+                {t.landingHeadline1}<br />
+                <span className="text-primary-600">{t.landingHeadline2}</span>
+              </h1>
 
-          <div
-            className="lv-hero-item flex flex-col sm:flex-row gap-3 justify-center"
-            style={{ '--lv-delay': '330ms' }}
-          >
-            <Link
-              to="/login?mode=signup"
-              className="px-7 py-3.5 bg-primary-600 hover:bg-primary-700 text-white
-                         font-semibold rounded-2xl transition-colors text-base shadow-lg shadow-primary-200"
-            >
-              {t.landingCta}
-            </Link>
-            <Link
-              to="/login"
-              className="px-7 py-3.5 border border-gray-200 hover:border-gray-300
-                         text-gray-700 font-semibold rounded-2xl transition-colors text-base"
-            >
-              {t.landingLogin}
-            </Link>
+              <p
+                className="lv-hero-item text-lg text-gray-500 leading-relaxed mb-10 max-w-md"
+                style={{ '--lv-delay': '220ms' }}
+              >
+                {t.landingSubtitle}
+              </p>
+
+              <div
+                className="lv-hero-item flex flex-col sm:flex-row gap-3 justify-center lg:justify-start"
+                style={{ '--lv-delay': '330ms' }}
+              >
+                <Link
+                  to="/login?mode=signup"
+                  className="px-7 py-3.5 bg-primary-600 hover:bg-primary-700 text-white
+                             font-semibold rounded-2xl transition-colors text-base shadow-lg shadow-primary-200"
+                >
+                  {t.landingCta}
+                </Link>
+                <Link
+                  to="/login"
+                  className="px-7 py-3.5 border border-gray-200 hover:border-gray-300
+                             text-gray-700 font-semibold rounded-2xl transition-colors text-base"
+                >
+                  {t.landingLogin}
+                </Link>
+              </div>
+            </div>
+
+            {/* ── Mockup card column ── */}
+            <div className="w-full max-w-[420px] lg:w-[400px] xl:w-[420px] shrink-0">
+              <MockupCard t={t} />
+            </div>
+
           </div>
         </div>
       </section>

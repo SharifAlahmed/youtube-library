@@ -148,3 +148,23 @@ html.dark {
   30%       { transform: translate(16px, 26px); }
   60%       { transform: translate(-24px, -8px); }
 }
+
+/* Hero mockup card — float + resting tilt */
+.lv-card-float {
+  --lv-tilt: -1.5deg; /* LTR default */
+  transform: rotate(var(--lv-tilt)) translateY(0px);
+}
+[dir="rtl"] .lv-card-float {
+  --lv-tilt: 1.5deg;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .lv-card-float {
+    animation: lv-float 6s ease-in-out infinite;
+  }
+}
+
+@keyframes lv-float {
+  0%, 100% { transform: rotate(var(--lv-tilt)) translateY(0px);  }
+  50%       { transform: rotate(var(--lv-tilt)) translateY(-6px); }
+}
