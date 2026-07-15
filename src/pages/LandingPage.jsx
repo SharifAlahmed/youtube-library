@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LanguageContext'
 import LuminaverseIcon from '../components/LuminaverseIcon'
 import Footer from '../components/Footer'
+import Reveal from '../components/Reveal'
 
 function FeatureCard({ icon, title, desc }) {
   return (
@@ -64,27 +65,43 @@ export default function LandingPage() {
 
       {/* ── Hero ────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden">
-        {/* gradient blobs */}
-        <div className="absolute -top-32 -left-32 w-96 h-96 bg-primary-100 rounded-full blur-3xl opacity-60 pointer-events-none" />
-        <div className="absolute top-10 -right-24 w-72 h-72 bg-violet-100 rounded-full blur-3xl opacity-50 pointer-events-none" />
+        {/* Ambient animated orbs + star-field (CSS keyframes, transform only) */}
+        <div aria-hidden="true" className="pointer-events-none select-none">
+          <div className="lv-orb lv-orb-1" />
+          <div className="lv-orb lv-orb-2" />
+          <div className="lv-orb lv-orb-3" />
+          <div className="lv-stars" />
+        </div>
 
         <div className="relative max-w-5xl mx-auto px-6 pt-24 pb-20 text-center">
-          <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest
-                           text-primary-600 bg-primary-50 px-3 py-1 rounded-full mb-6">
+          <span
+            className="lv-hero-item inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest
+                       text-primary-600 bg-primary-50 px-3 py-1 rounded-full mb-6"
+            style={{ '--lv-delay': '0ms' }}
+          >
             <LuminaverseIcon className="w-3.5 h-3.5" />
             {t.landingBadge}
           </span>
 
-          <h1 className="text-5xl sm:text-6xl font-extrabold text-gray-900 leading-tight tracking-tight mb-6">
+          <h1
+            className="lv-hero-item text-5xl sm:text-6xl font-extrabold text-gray-900 leading-tight tracking-tight mb-6"
+            style={{ '--lv-delay': '110ms' }}
+          >
             {t.landingHeadline1}<br className="hidden sm:block" />
             <span className="text-primary-600"> {t.landingHeadline2}</span>
           </h1>
 
-          <p className="max-w-xl mx-auto text-lg text-gray-500 leading-relaxed mb-10">
+          <p
+            className="lv-hero-item max-w-xl mx-auto text-lg text-gray-500 leading-relaxed mb-10"
+            style={{ '--lv-delay': '220ms' }}
+          >
             {t.landingSubtitle}
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <div
+            className="lv-hero-item flex flex-col sm:flex-row gap-3 justify-center"
+            style={{ '--lv-delay': '330ms' }}
+          >
             <Link
               to="/login?mode=signup"
               className="px-7 py-3.5 bg-primary-600 hover:bg-primary-700 text-white
@@ -105,14 +122,16 @@ export default function LandingPage() {
 
       {/* ── Founder story ───────────────────────────────────────────────── */}
       <section className="bg-gray-50 border-y border-gray-100">
-        <div className="max-w-3xl mx-auto px-6 py-16 text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest text-gray-400 mb-4">
-            {t.landingWhyTitle}
-          </p>
-          <p className="text-xl text-gray-700 leading-relaxed">
-            {t.whyBody}
-          </p>
-        </div>
+        <Reveal>
+          <div className="max-w-3xl mx-auto px-6 py-16 text-center">
+            <p className="text-sm font-semibold uppercase tracking-widest text-gray-400 mb-4">
+              {t.landingWhyTitle}
+            </p>
+            <p className="text-xl text-gray-700 leading-relaxed">
+              {t.whyBody}
+            </p>
+          </div>
+        </Reveal>
       </section>
 
       {/* ── Problem / Solution ──────────────────────────────────────────── */}
@@ -240,59 +259,69 @@ export default function LandingPage() {
         </h2>
 
         <div className="grid sm:grid-cols-3 gap-5">
-          <FeatureCard
-            icon={
-              <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M12 4v16m8-8H4"/>
-              </svg>
-            }
-            title={t.feature1Title}
-            desc={t.feature1Desc}
-          />
-          <FeatureCard
-            icon={
-              <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-              </svg>
-            }
-            title={t.feature2Title}
-            desc={t.feature2Desc}
-          />
-          <FeatureCard
-            icon={
-              <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-              </svg>
-            }
-            title={t.feature3Title}
-            desc={t.feature3Desc}
-          />
+          <Reveal delay={0}>
+            <FeatureCard
+              icon={
+                <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M12 4v16m8-8H4"/>
+                </svg>
+              }
+              title={t.feature1Title}
+              desc={t.feature1Desc}
+            />
+          </Reveal>
+          <Reveal delay={120}>
+            <FeatureCard
+              icon={
+                <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+              }
+              title={t.feature2Title}
+              desc={t.feature2Desc}
+            />
+          </Reveal>
+          <Reveal delay={240}>
+            <FeatureCard
+              icon={
+                <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+              }
+              title={t.feature3Title}
+              desc={t.feature3Desc}
+            />
+          </Reveal>
         </div>
       </section>
 
       {/* ── CTA ─────────────────────────────────────────────────────────── */}
       <section className="bg-primary-600">
-        <div className="max-w-3xl mx-auto px-6 py-16 text-center">
-          <h2 className="text-3xl font-bold text-white mb-3">
-            {t.ctaHeadline}
-          </h2>
-          <p className="text-primary-200 mb-8 text-base" dir="ltr" style={{ textAlign: 'center' }}>
-            Free to start. No credit card required.
-          </p>
-          <Link
-            to="/login?mode=signup"
-            className="inline-block px-8 py-3.5 bg-white hover:bg-gray-50 text-primary-700
-                       font-semibold rounded-2xl transition-colors text-base shadow-lg"
-          >
-            {t.landingCta}
-          </Link>
-        </div>
+        <Reveal>
+          <div className="max-w-3xl mx-auto px-6 py-16 text-center">
+            <h2 className="text-3xl font-bold text-white mb-3">
+              {t.ctaHeadline}
+            </h2>
+            <p className="text-primary-200 mb-8 text-base" dir="ltr" style={{ textAlign: 'center' }}>
+              Free to start. No credit card required.
+            </p>
+            <Link
+              to="/login?mode=signup"
+              className="inline-block px-8 py-3.5 bg-white hover:bg-gray-50 text-primary-700
+                         font-semibold rounded-2xl transition-colors text-base shadow-lg"
+            >
+              {t.landingCta}
+            </Link>
+          </div>
+        </Reveal>
       </section>
 
-      <Footer />
+      <Reveal className="w-full">
+        <Footer />
+      </Reveal>
 
     </div>
   )
