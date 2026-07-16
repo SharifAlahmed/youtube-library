@@ -47,15 +47,21 @@
     }
     .site-nav .brand:hover { opacity: .9; text-decoration: none; }
 
-    .lang-btn {
-      background: #1D9E75;
-      border: 1px solid #1D9E75;
-      color: #fff; border-radius: 6px; padding: 4px 14px;
-      font-size: .75rem; font-weight: 600; cursor: pointer; white-space: nowrap;
-      font-family: inherit; flex-shrink: 0; transition: background .15s, border-color .15s;
-      margin-inline-start: .6rem;
+    .brand-block {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: start; /* respects writing-mode: left in LTR, right in RTL */
+      gap: .12rem;
     }
-    .lang-btn:hover { background: #178c66; border-color: #178c66; }
+    .lang-link {
+      background: none; border: none; padding: 0;
+      display: inline-flex; align-items: center; gap: .3rem;
+      font-family: inherit; font-size: 13px; font-weight: 500;
+      color: #1D9E75; cursor: pointer; text-decoration: none;
+      line-height: 1.4; transition: opacity .15s;
+    }
+    .lang-link:hover { text-decoration: underline; }
+    .lang-link svg { width: 14px; height: 14px; flex-shrink: 0; }
 
     /* ── TAB BAR ─────────────────────────────────────────────────────── */
     .tabs-bar {
@@ -182,7 +188,19 @@
   <!-- ── NAV ────────────────────────────────────────────────────────── -->
   <nav class="site-nav" aria-label="Site navigation">
     <div class="nav-top">
-      <a href="/" class="brand">LuminaVerse</a>
+      <div class="brand-block">
+        <a href="/" class="brand">LuminaVerse</a>
+        <button class="lang-link" id="langToggle" aria-label="Switch language">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+               aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="2" y1="12" x2="22" y2="12"/>
+            <path d="M12 2c-2.76 2.73-4.34 6.47-4.34 9.5s1.58 6.77 4.34 9.5M12 2c2.76 2.73 4.34 6.47 4.34 9.5S14.76 18.77 12 21.5"/>
+          </svg>
+          <span class="lang-link-text">English</span>
+        </button>
+      </div>
     </div>
     <div class="tabs-bar" role="tablist" aria-label="Legal sections">
       <button class="tab-btn active" data-tab="privacy" role="tab" aria-selected="true">
@@ -197,7 +215,6 @@
       <button class="tab-btn" data-tab="about" role="tab" aria-selected="false">
         <span class="lang-ar">عنّا</span><span class="lang-en">About</span>
       </button>
-      <button class="lang-btn" id="langToggle" aria-label="Switch language">English</button>
     </div>
   </nav>
 
@@ -784,7 +801,7 @@
     function setLang(lang) {
       html.setAttribute('lang', lang)
       html.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr')
-      langBtn.textContent = lang === 'ar' ? 'English' : 'العربية'
+      langBtn.querySelector('.lang-link-text').textContent = lang === 'ar' ? 'English' : 'العربية'
       try { localStorage.setItem('lv-static-lang', lang) } catch(e) {}
       updateTitle()
     }
