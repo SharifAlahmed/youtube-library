@@ -64,12 +64,12 @@ function LearnSection({ icon, title, hint, children, helpTip }) {
   return (
     <div className="space-y-2.5">
       <div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 rtl:flex-row-reverse">
           <span className="text-sm leading-none">{icon}</span>
           <span className="text-sm font-semibold text-gray-100">{title}</span>
           {helpTip && <HelpTip tip={helpTip} dark />}
         </div>
-        {hint && <p className="text-xs text-gray-500 mt-0.5 ms-6">{hint}</p>}
+        {hint && <p className="text-xs text-gray-500 mt-0.5 ms-6 rtl:text-right">{hint}</p>}
       </div>
       {children}
     </div>

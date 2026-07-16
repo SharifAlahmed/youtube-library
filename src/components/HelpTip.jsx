@@ -1,7 +1,10 @@
 import { useState } from 'react'
+import { useLang } from '../context/LanguageContext'
 
 export default function HelpTip({ tip, dark = false }) {
   const [show, setShow] = useState(false)
+  const { lang } = useLang()
+  const triggerChar = lang === 'ar' ? '؟' : '?'
 
   return (
     <span className="relative inline-flex items-center shrink-0">
@@ -22,7 +25,7 @@ export default function HelpTip({ tip, dark = false }) {
           }
         `}
       >
-        ?
+        {triggerChar}
       </button>
       {show && (
         <span
