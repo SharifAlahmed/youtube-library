@@ -188,7 +188,7 @@ export const translations = {
     manualEntryHint: 'يمكنك ملءا add الب٢انت يدوياً',
     videoTitleLabel: 'العنوان',
     videoTitlePlaceholder: 'أدخل عنوان امفيديو',
-    channelLabel: 'امقناة',
+    channelLabel: 'القناة',
     channelPlaceholder: 'اسم القناة',
     domainLabel: 'المجال',
     domainPlaceholder: 'مثال: برمجة، تصميم...',
