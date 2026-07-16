@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LanguageContext'
 import { useLibrary } from '../context/LibraryContext'
 import UpgradeModal from './UpgradeModal'
+import HelpTip from './HelpTip'
 
 // ── Normalization ─────────────────────────────────────────────────────────────
 function normTag(s) { return s.trim().toLowerCase() }
@@ -438,8 +439,9 @@ export default function AddVideoModal({ onClose, video: initialVideo = null }) {
 
           {/* Domain + autosuggest */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
               {t.domainLabel}
+              <HelpTip tip={t.helpTipDomain} />
             </label>
             <div className="relative">
               <input

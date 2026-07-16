@@ -94,13 +94,18 @@ export default function VideoCard({ video, onToggleWatched, onToggleSaved, onDel
           group relative flex flex-col rounded-2xl overflow-hidden
           bg-[var(--card)]
           transition-all duration-200
-          hover:-translate-y-0.5
+          motion-safe:hover:-translate-y-[2px]
           ${isWatched ? 'opacity-75 hover:opacity-100' : ''}
         `}
         style={{
           border: '1px solid var(--border)',
           boxShadow: 'var(--shadow-card)',
         }}
+        onMouseEnter={e => {
+          if (window.matchMedia('(prefers-reduced-motion: no-preference)').matches)
+            e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,.12), 0 1px 4px rgba(0,0,0,.08)'
+        }}
+        onMouseLeave={e => { e.currentTarget.style.boxShadow = 'var(--shadow-card)' }}
       >
 
         {/* ── Thumbnail ── */}
@@ -153,7 +158,7 @@ export default function VideoCard({ video, onToggleWatched, onToggleSaved, onDel
 
         {/* ── Body ── */}
         <div className="flex flex-col flex-1 gap-1.5"
-             style={{ padding: '12px 12px 10px' }}>
+             style={{ padding: '10px 10px 8px' }}>
 
           {/* Title */}
           <h3
@@ -274,15 +279,18 @@ export default function VideoCard({ video, onToggleWatched, onToggleSaved, onDel
                   title={t.deleteVideo}
                   className="flex items-center justify-center
                              hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500
-                             transition-colors disabled:opacity-50"
+                             active:scale-[0.92] transition-all disabled:opacity-40"
                   style={{
-                    width: '32px',
-                    height: '32px',
+                    width: '30px',
+                    height: '30px',
                     borderRadius: '6px',
                     color: 'var(--muted)',
+                    opacity: 0.7,
                   }}
+                  onMouseEnter={e => { e.currentTarget.style.opacity = '1' }}
+                  onMouseLeave={e => { e.currentTarget.style.opacity = '0.7' }}
                 >
-                  <svg className="w-[15px] h-[15px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-[14px] h-[14px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
                       d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                   </svg>
@@ -296,15 +304,18 @@ export default function VideoCard({ video, onToggleWatched, onToggleSaved, onDel
                     title={t.editVideo}
                     className="flex items-center justify-center
                                hover:bg-[var(--accent-tint)] hover:text-[var(--accent)]
-                               transition-colors disabled:opacity-50"
+                               active:scale-[0.92] transition-all disabled:opacity-40"
                     style={{
-                      width: '32px',
-                      height: '32px',
+                      width: '30px',
+                      height: '30px',
                       borderRadius: '6px',
                       color: 'var(--muted)',
+                      opacity: 0.7,
                     }}
+                    onMouseEnter={e => { e.currentTarget.style.opacity = '1' }}
+                    onMouseLeave={e => { e.currentTarget.style.opacity = '0.7' }}
                   >
-                    <svg className="w-[15px] h-[15px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-[14px] h-[14px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
                         d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                     </svg>
@@ -316,16 +327,19 @@ export default function VideoCard({ video, onToggleWatched, onToggleSaved, onDel
                   onClick={(e) => { e.stopPropagation(); run(onToggleSaved) }}
                   disabled={busy}
                   title={isSaved ? t.removeSaved : t.saveForLater}
-                  className="flex items-center justify-center transition-colors disabled:opacity-50"
+                  className="flex items-center justify-center active:scale-[0.92] transition-all disabled:opacity-40"
                   style={{
-                    width: '32px',
-                    height: '32px',
+                    width: '30px',
+                    height: '30px',
                     borderRadius: '6px',
                     background: isSaved ? 'rgba(245,158,11,0.1)' : 'transparent',
-                    color: isSaved ? 'rgb(217,119,6)' : 'rgb(104,111,125)',
+                    color: isSaved ? 'rgb(217,119,6)' : 'var(--muted)',
+                    opacity: isSaved ? 1 : 0.7,
                   }}
+                  onMouseEnter={e => { e.currentTarget.style.opacity = '1' }}
+                  onMouseLeave={e => { if (!isSaved) e.currentTarget.style.opacity = '0.7' }}
                 >
-                  <svg className="w-[15px] h-[15px]"
+                  <svg className="w-[14px] h-[14px]"
                        fill={isSaved ? 'currentColor' : 'none'}
                        stroke="currentColor"
                        strokeWidth={isSaved ? 0 : 1.75}
@@ -340,16 +354,19 @@ export default function VideoCard({ video, onToggleWatched, onToggleSaved, onDel
                   onClick={(e) => { e.stopPropagation(); run(onToggleWatched) }}
                   disabled={busy}
                   title={isWatched ? t.markUnwatched : t.markWatched}
-                  className="flex items-center justify-center transition-colors disabled:opacity-50"
+                  className="flex items-center justify-center active:scale-[0.92] transition-all disabled:opacity-40"
                   style={{
-                    width: '32px',
-                    height: '32px',
+                    width: '30px',
+                    height: '30px',
                     borderRadius: '6px',
                     background: isWatched ? 'var(--accent-tint)' : 'transparent',
                     color: isWatched ? 'var(--success)' : 'var(--muted)',
+                    opacity: isWatched ? 1 : 0.7,
                   }}
+                  onMouseEnter={e => { e.currentTarget.style.opacity = '1' }}
+                  onMouseLeave={e => { if (!isWatched) e.currentTarget.style.opacity = '0.7' }}
                 >
-                  <svg className="w-[15px] h-[15px]"
+                  <svg className="w-[14px] h-[14px]"
                        fill="none"
                        stroke="currentColor"
                        strokeWidth={isWatched ? 2.5 : 1.75}

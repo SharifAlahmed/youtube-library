@@ -6,6 +6,7 @@ import { useTheme } from '../context/ThemeContext'
 import { useLibrary } from '../context/LibraryContext'
 import UpgradeModal from './UpgradeModal'
 import LuminaverseIcon from './LuminaverseIcon'
+import HelpTip from './HelpTip'
 
 const PLAN_BADGE = {
   free:     'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300',
@@ -103,12 +104,12 @@ export default function Header() {
             {/* ── Controls ─────────────────────────────────── */}
             <div className="flex items-center gap-2">
 
-              {/* Add Video — always visible */}
+              {/* Add Video — always visible, primary CTA */}
               <button
                 onClick={openAddModal}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold
-                           px-3 py-2 bg-primary-600 hover:bg-primary-700 text-white
-                           rounded-lg transition-colors"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold
+                           px-4 py-2 bg-primary-600 hover:bg-primary-500 active:bg-primary-700 text-white
+                           rounded-lg transition-colors shadow-sm"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4"/>
@@ -127,8 +128,9 @@ export default function Header() {
                   onClick={() => setShowUpgrade(true)}
                   className="hidden lg:inline-flex items-center gap-1.5 text-xs font-semibold
                              px-3 py-1.5
-                             bg-gray-900 hover:bg-gray-800 dark:bg-primary-100 dark:hover:bg-primary-200
-                             text-white dark:text-gray-900
+                             border border-gray-300 dark:border-gray-600
+                             text-gray-600 dark:text-gray-400
+                             hover:bg-gray-100 dark:hover:bg-gray-700
                              rounded-full transition-colors"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -140,12 +142,14 @@ export default function Header() {
               )}
 
               {/* Show tags toggle — lg+ only */}
-              <ShowTagsToggle
-                label={t.showTagsSetting}
-                checked={showTags}
-                onChange={handleToggleTags}
-                className="hidden lg:inline-flex"
-              />
+              <div className="hidden lg:inline-flex items-center gap-1">
+                <ShowTagsToggle
+                  label={t.showTagsSetting}
+                  checked={showTags}
+                  onChange={handleToggleTags}
+                />
+                <HelpTip tip={t.helpTipTags} />
+              </div>
 
               {/* Language toggle — lg+ only */}
               <button
@@ -255,8 +259,9 @@ export default function Header() {
                   onClick={() => { setShowUpgrade(true); closeMenu() }}
                   className="inline-flex items-center gap-1.5 text-xs font-semibold
                              px-3 py-1.5
-                             bg-gray-900 hover:bg-gray-800 dark:bg-primary-100 dark:hover:bg-primary-200
-                             text-white dark:text-gray-900
+                             border border-gray-300 dark:border-gray-600
+                             text-gray-600 dark:text-gray-400
+                             hover:bg-gray-100 dark:hover:bg-gray-700
                              rounded-full transition-colors"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -268,11 +273,14 @@ export default function Header() {
               )}
 
               {/* Show tags toggle — mobile */}
-              <ShowTagsToggle
-                label={t.showTagsSetting}
-                checked={showTags}
-                onChange={handleToggleTags}
-              />
+              <div className="inline-flex items-center gap-1">
+                <ShowTagsToggle
+                  label={t.showTagsSetting}
+                  checked={showTags}
+                  onChange={handleToggleTags}
+                />
+                <HelpTip tip={t.helpTipTags} />
+              </div>
 
               {/* Language + Dark + Logout */}
               <div className="ms-auto flex items-center gap-1">

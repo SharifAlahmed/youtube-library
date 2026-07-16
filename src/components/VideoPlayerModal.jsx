@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useLang } from '../context/LanguageContext'
 import { useAuth } from '../context/AuthContext'
+import HelpTip from './HelpTip'
 
 const TABS = ['learn', 'prompts', 'links']
 
@@ -59,13 +60,14 @@ function AddRowBtn({ onClick, label }) {
   )
 }
 
-function LearnSection({ icon, title, hint, children }) {
+function LearnSection({ icon, title, hint, children, helpTip }) {
   return (
     <div className="space-y-2.5">
       <div>
         <div className="flex items-center gap-2">
           <span className="text-sm leading-none">{icon}</span>
           <span className="text-sm font-semibold text-gray-100">{title}</span>
+          {helpTip && <HelpTip tip={helpTip} dark />}
         </div>
         {hint && <p className="text-xs text-gray-500 mt-0.5 ms-6">{hint}</p>}
       </div>
@@ -333,7 +335,7 @@ export default function VideoPlayerModal({ video, onClose, onEdit }) {
                 <div className="space-y-5">
 
                   {/* 1. Key Takeaways */}
-                  <LearnSection icon="💡" title={t.learnTakeaways} hint={t.learnTakeawaysHint}>
+                  <LearnSection icon="💡" title={t.learnTakeaways} hint={t.learnTakeawaysHint} helpTip={t.helpTipTakeaway}>
                     <textarea
                       value={takeaways}
                       onChange={e => { setTakeaways(e.target.value); markLearnDirty() }}
@@ -344,7 +346,7 @@ export default function VideoPlayerModal({ video, onClose, onEdit }) {
                   </LearnSection>
 
                   {/* 2. My Question */}
-                  <LearnSection icon="❓" title={t.learnQuestion} hint={t.learnQuestionHint}>
+                  <LearnSection icon="❓" title={t.learnQuestion} hint={t.learnQuestionHint} helpTip={t.helpTipQuestion}>
                     <textarea
                       value={question}
                       onChange={e => { setQuestion(e.target.value); markLearnDirty() }}
@@ -355,7 +357,7 @@ export default function VideoPlayerModal({ video, onClose, onEdit }) {
                   </LearnSection>
 
                   {/* 3. What I'll Apply */}
-                  <LearnSection icon="⚡" title={t.learnApply} hint={t.learnApplyHint}>
+                  <LearnSection icon="⚡" title={t.learnApply} hint={t.learnApplyHint} helpTip={t.helpTipApply}>
                     <textarea
                       value={apply}
                       onChange={e => { setApply(e.target.value); markLearnDirty() }}

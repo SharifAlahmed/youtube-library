@@ -24,18 +24,18 @@ function toggleSet(setter, value) {
 function StatCard({ label, value, icon, iconBg, accentValue = false }) {
   return (
     <div
-      className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 sm:p-5"
+      className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-3"
       style={{ boxShadow: 'var(--shadow-card)' }}
     >
-      <div className="flex items-start gap-3">
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-[18px] leading-none ${iconBg}`}>
+      <div className="flex items-center gap-2.5">
+        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-[14px] leading-none ${iconBg}`}>
           {icon}
         </div>
         <div>
-          <p className={`text-2xl font-bold leading-tight ${accentValue ? 'text-[var(--accent)]' : 'text-[var(--ink)]'}`}>
+          <p className={`text-xl font-bold leading-tight ${accentValue ? 'text-[var(--accent)]' : 'text-[var(--ink)]'}`}>
             {value}
           </p>
-          <p className="text-[12px] text-[var(--muted)] mt-0.5">{label}</p>
+          <p className="text-[11px] text-[var(--muted)] mt-0.5">{label}</p>
         </div>
       </div>
     </div>
@@ -330,10 +330,10 @@ export default function HomePage() {
 
   // ── Render ───────────────────────────────────────────────────────────────
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
       {/* ── Stats ─────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <StatCard label={t.statsTotal}     value={stats.total}     icon="🎬"
           iconBg="bg-gray-100 dark:bg-gray-800/80"/>
         <StatCard label={t.statsWatched}   value={stats.watched}   icon="✓"
