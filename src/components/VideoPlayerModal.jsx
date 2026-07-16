@@ -61,15 +61,27 @@ function AddRowBtn({ onClick, label }) {
 }
 
 function LearnSection({ icon, title, hint, children, helpTip }) {
+  const { t } = useLang()
+  const isRTL = t.dir === 'rtl'
   return (
     <div className="space-y-2.5">
       <div>
-        <div className="flex items-center gap-2 rtl:flex-row-reverse">
+        <div
+          className="flex items-center gap-2"
+          style={isRTL ? { flexDirection: 'row-reverse' } : undefined}
+        >
           <span className="text-sm leading-none">{icon}</span>
           <span className="text-sm font-semibold text-gray-100">{title}</span>
           {helpTip && <HelpTip tip={helpTip} dark />}
         </div>
-        {hint && <p className="text-xs text-gray-500 mt-0.5 ms-6 rtl:text-right">{hint}</p>}
+        {hint && (
+          <p
+            className="text-xs text-gray-500 mt-0.5 ms-6"
+            style={isRTL ? { textAlign: 'right' } : undefined}
+          >
+            {hint}
+          </p>
+        )}
       </div>
       {children}
     </div>
