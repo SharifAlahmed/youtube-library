@@ -290,6 +290,7 @@ export const translations = {
     statsCompleted:       'مكتمل',
     emptyCollectionHint:  'أضف أول فيديو لبدء رحلة التعلم',
     notesTooltip:         'عدد الملاحظات',
+    linksTooltip:         'الروابط المرفقة',
   },
 
   en: {
@@ -583,5 +584,6 @@ export const translations = {
     statsCompleted:       'Completed',
     emptyCollectionHint:  'Add your first video to start the journey',
     notesTooltip:         'Notes',
+    linksTooltip:         'Saved links',
   },
 }

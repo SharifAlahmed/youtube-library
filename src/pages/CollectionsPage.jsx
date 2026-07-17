@@ -162,6 +162,7 @@ function ChecklistRow({ video, idx, isNextUp, onToggle, onRemove, onPlay, t }) {
   const [confirmRm, setConfirmRm] = useState(false)
   const completed  = !!video.completed_at
   const notesCount = extractNotes(video).length
+  const linksCount = toArr(video.links).length
 
   return (
     <div
@@ -258,6 +259,21 @@ function ChecklistRow({ video, idx, isNextUp, onToggle, onRemove, onPlay, t }) {
           </>
         ) : (
           <>
+            {/* Links count — hidden when 0 */}
+            {linksCount > 0 && (
+              <span
+                title={t.linksTooltip}
+                className="flex items-center gap-0.5 text-xs tabular-nums"
+                style={{ color: 'var(--muted)' }}
+              >
+                <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
+                    d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101
+                       m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                </svg>
+                {linksCount}
+              </span>
+            )}
             {/* Notes count — hidden when 0 */}
             {notesCount > 0 && (
               <span
@@ -273,8 +289,9 @@ function ChecklistRow({ video, idx, isNextUp, onToggle, onRemove, onPlay, t }) {
                 {notesCount}
               </span>
             )}
+            {/* Position — always 1-based, never bare 0 */}
             <span className="text-xs tabular-nums" style={{ color: 'var(--muted)' }}>
-              {video.position ?? idx + 1}
+              #{idx + 1}
             </span>
             <button
               onClick={() => setConfirmRm(true)}
@@ -785,7 +802,7 @@ export default function CollectionsPage() {
 
       const { data: videos, error: vErr } = await supabase
         .from('videos')
-        .select('id, title, channel, thumbnail_url, youtube_id, watch_status, learning, notes')
+        .select('id, title, channel, thumbnail_url, youtube_id, watch_status, learning, notes, links')
         .in('id', videoIds)
         .eq('user_id', uid)
       if (vErr) throw new Error(vErr.message)
