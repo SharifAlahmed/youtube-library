@@ -8,15 +8,48 @@ import LuminaverseIcon from '../components/LuminaverseIcon'
 // ── Constants ─────────────────────────────────────────────────────────────────
 const EMOJI_PRESETS = ['📚', '🎯', '💡', '🔥', '⭐', '🎬', '🚀', '🎓', '💻', '🎨', '🏆', '🔖']
 
-// ── Shared helpers ────────────────────────────────────────────────────────────
+const CONFETTI = [
+  { color: '#1D9E75', w: 8,  h: 5,  top: 12, left: 18, delay: 0 },
+  { color: '#4ADE80', w: 6,  h: 6,  top: 8,  left: 75, delay: 0.08 },
+  { color: '#E1F5EE', w: 10, h: 4,  top: 20, left: 50, delay: 0.04 },
+  { color: '#86EFAC', w: 5,  h: 8,  top: 5,  left: 35, delay: 0.12 },
+  { color: '#1D9E75', w: 7,  h: 5,  top: 15, left: 85, delay: 0.06 },
+  { color: '#6EE7B7', w: 6,  h: 6,  top: 10, left: 62, delay: 0.10 },
+]
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
 function toArr(raw) { return Array.isArray(raw) ? raw : [] }
+
+function relativeTime(dateStr, t) {
+  if (!dateStr) return ''
+  const days = Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000)
+  if (days === 0) return t.completedToday
+  if (days === 1) return t.completedYesterday
+  return (t.completedNDaysAgo ?? '').replace('{n}', days)
+}
+
+function extractNotes(video) {
+  const learning = (video.learning && typeof video.learning === 'object') ? video.learning : {}
+  const result = []
+  if (typeof learning.takeaways === 'string' && learning.takeaways.trim())
+    result.push({ text: learning.takeaways.trim(), videoTitle: video.title, videoId: video.id })
+  if (typeof video.notes === 'string' && video.notes.trim())
+    result.push({ text: video.notes.trim(), videoTitle: video.title, videoId: video.id })
+  return result
+}
+
+function calcProgress(videos) {
+  const total     = videos.length
+  const completed = videos.filter(v => !!v.completed_at).length
+  const pct       = total > 0 ? Math.round((completed / total) * 100) : 0
+  return { total, completed, pct }
+}
 
 // ── MiniThumb ─────────────────────────────────────────────────────────────────
 function MiniThumb({ src, title, youtubeId }) {
   const [err, setErr] = useState(false)
   const fallback = youtubeId ? `https://img.youtube.com/vi/${youtubeId}/default.jpg` : null
   const imgSrc = !err && src ? src : fallback
-
   if (!imgSrc || (err && !fallback)) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-700">
@@ -37,16 +70,14 @@ function Spinner({ size = 'w-5 h-5' }) {
   )
 }
 
-// ── TagInput (shared between both modals) ─────────────────────────────────────
+// ── TagInput ──────────────────────────────────────────────────────────────────
 function TagInput({ tags, setTags, placeholder }) {
   const [input, setInput] = useState('')
-
   const commit = (raw) => {
     raw.split(',').map(s => s.trim()).filter(Boolean).forEach(tag => {
       setTags(prev => prev.includes(tag) ? prev : [...prev, tag])
     })
   }
-
   return (
     <div className="flex flex-wrap gap-1.5 px-3 py-2.5 rounded-xl border border-[var(--border)]
                     bg-[var(--bg)] focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-transparent">
@@ -79,23 +110,276 @@ function TagInput({ tags, setTags, placeholder }) {
   )
 }
 
-// ── CollectionFormModal (create & edit) ───────────────────────────────────────
+// ── ChecklistRow ──────────────────────────────────────────────────────────────
+function ChecklistRow({ video, idx, isNextUp, onToggle, onRemove, onPlay, t }) {
+  const [confirmRm, setConfirmRm] = useState(false)
+  const completed = !!video.completed_at
+
+  return (
+    <div
+      className="group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors"
+      style={isNextUp ? { background: 'var(--accent-tint)' } : undefined}
+    >
+      {/* Completion circle */}
+      <button
+        type="button"
+        onClick={() => onToggle(video)}
+        title={completed ? t.markUncomplete : t.markComplete}
+        className="shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center
+                   transition-all motion-safe:hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary-400"
+        style={{
+          borderColor: completed ? '#1D9E75' : 'var(--border)',
+          background:  completed ? '#1D9E75' : 'transparent',
+        }}
+      >
+        {completed && (
+          <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"/>
+          </svg>
+        )}
+      </button>
+
+      {/* Thumbnail */}
+      <button
+        type="button"
+        onClick={onPlay}
+        className="shrink-0 w-16 h-9 rounded-lg overflow-hidden relative focus:outline-none"
+      >
+        <MiniThumb src={video.thumbnail_url} title={video.title} youtubeId={video.youtube_id} />
+        {isNextUp && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+            <div className="w-5 h-5 rounded-full bg-white/90 flex items-center justify-center shadow-sm">
+              <svg className="w-2.5 h-2.5 text-gray-900" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+            </div>
+          </div>
+        )}
+      </button>
+
+      {/* Title + meta */}
+      <div className="flex-1 min-w-0">
+        <button type="button" onClick={onPlay} className="text-start w-full group/title">
+          <p
+            className={`text-sm font-medium leading-snug transition-colors ${
+              completed ? '' : 'group-hover/title:text-[var(--accent)]'
+            }`}
+            style={{
+              color: completed ? 'var(--muted)' : 'var(--ink)',
+              textDecoration: completed ? 'line-through' : 'none',
+            }}
+          >
+            {video.title || '—'}
+          </p>
+        </button>
+        {completed && video.completed_at && (
+          <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>
+            {relativeTime(video.completed_at, t)}
+          </p>
+        )}
+        {!completed && isNextUp && (
+          <span
+            className="inline-flex items-center gap-0.5 text-[11px] font-semibold mt-0.5"
+            style={{ color: '#1D9E75' }}
+          >
+            <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+            {t.nextUp}
+          </span>
+        )}
+      </div>
+
+      {/* End: position + remove */}
+      <div className="shrink-0 ms-auto flex items-center gap-2">
+        {confirmRm ? (
+          <>
+            <button
+              onClick={() => { onRemove(); setConfirmRm(false) }}
+              className="text-[11px] bg-red-600 hover:bg-red-700 text-white
+                         px-2 py-0.5 rounded font-medium transition-colors"
+            >
+              {t.confirmDelete}
+            </button>
+            <button
+              onClick={() => setConfirmRm(false)}
+              className="text-[11px] text-[var(--muted)] hover:text-[var(--ink)] transition-colors"
+            >
+              {t.cancel}
+            </button>
+          </>
+        ) : (
+          <>
+            <span className="text-xs tabular-nums" style={{ color: 'var(--muted)' }}>
+              {video.position ?? idx + 1}
+            </span>
+            <button
+              onClick={() => setConfirmRm(true)}
+              title={t.removeFromCollection}
+              className="opacity-0 group-hover:opacity-40 hover:!opacity-100
+                         p-1 rounded transition-all
+                         hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+              style={{ color: 'var(--muted)' }}
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ── JourneyNotes ──────────────────────────────────────────────────────────────
+function JourneyNotes({ notes, t }) {
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2">
+        <h2 className="text-base font-bold" style={{ color: 'var(--ink)' }}>{t.journeyNotes}</h2>
+        <span
+          className="text-xs font-semibold px-2 py-0.5 rounded-full"
+          style={{ background: 'var(--accent-tint)', color: 'var(--accent)' }}
+        >
+          {notes.length}
+        </span>
+      </div>
+      {notes.length === 0 ? (
+        <div className="py-8 text-center rounded-2xl border border-dashed border-[var(--border)]">
+          <div className="text-3xl mb-2">📝</div>
+          <p className="text-sm" style={{ color: 'var(--muted)' }}>{t.noJourneyNotes}</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {notes.map((note, i) => (
+            <div
+              key={`${note.videoId}-${i}`}
+              className="rounded-xl px-4 py-3"
+              style={{
+                background: 'var(--card)',
+                border: '1px solid var(--border)',
+                boxShadow: 'var(--shadow-card)',
+              }}
+            >
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--ink)' }}>{note.text}</p>
+              <p className="text-xs mt-1.5" style={{ color: 'var(--muted)' }}>
+                {t.noteSource}{note.videoTitle}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── CompletedBanner ───────────────────────────────────────────────────────────
+function CompletedBanner({ stats, t }) {
+  const statsStr = (t.celebStats ?? '')
+    .replace('{n}', stats.n)
+    .replace('{notes}', stats.notes)
+    .replace('{days}', stats.days)
+  return (
+    <div
+      className="rounded-2xl px-4 py-3 flex items-center gap-3"
+      style={{ background: 'var(--accent-tint)', border: '1px solid var(--accent-soft)' }}
+    >
+      <div className="text-2xl shrink-0">🎓</div>
+      <div className="min-w-0">
+        <p className="text-sm font-bold" style={{ color: 'var(--accent)' }}>
+          {t.completedBannerTitle}
+        </p>
+        <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>{statsStr}</p>
+      </div>
+    </div>
+  )
+}
+
+// ── CelebrationModal ──────────────────────────────────────────────────────────
+function CelebrationModal({ collectionName, stats, t, onDismiss }) {
+  const title    = (t.celebTitle    ?? '').replace('{title}', collectionName)
+  const statsStr = (t.celebStats    ?? '')
+    .replace('{n}',     stats.n)
+    .replace('{notes}', stats.notes)
+    .replace('{days}',  stats.days)
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      onClick={onDismiss}
+    >
+      <style>{`
+        @keyframes lvCelebrateIn {
+          from { transform: scale(0.82) translateY(16px); opacity: 0; }
+          to   { transform: scale(1)    translateY(0);    opacity: 1; }
+        }
+        @keyframes lvConfettiFloat {
+          from { transform: translateY(0)    rotate(0deg);   opacity: 1; }
+          to   { transform: translateY(-56px) rotate(200deg); opacity: 0; }
+        }
+        @media (prefers-reduced-motion: no-preference) {
+          .lv-celebrate-in   { animation: lvCelebrateIn   0.4s cubic-bezier(0.34,1.56,0.64,1) both; }
+          .lv-confetti-piece { animation: lvConfettiFloat 0.9s ease-out both; }
+        }
+      `}</style>
+
+      <div
+        className="lv-celebrate-in relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl
+                   max-w-sm w-full p-7 text-center overflow-hidden"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Confetti */}
+        {CONFETTI.map((c, i) => (
+          <div
+            key={i}
+            className="lv-confetti-piece absolute pointer-events-none rounded-sm"
+            style={{
+              width: c.w, height: c.h,
+              top: `${c.top}%`, left: `${c.left}%`,
+              background: c.color,
+              animationDelay: `${c.delay}s`,
+            }}
+          />
+        ))}
+
+        <div className="text-5xl mb-3">🎓</div>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{title}</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">{statsStr}</p>
+
+        <div
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold mb-6"
+          style={{ background: 'var(--accent-tint)', color: 'var(--accent)' }}
+        >
+          {t.celebBadge}
+        </div>
+
+        <button
+          onClick={onDismiss}
+          className="w-full py-3 rounded-xl font-semibold text-sm text-white
+                     bg-primary-600 hover:bg-primary-700 active:bg-primary-800 transition-colors"
+        >
+          {t.celebDismiss}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ── CollectionFormModal ───────────────────────────────────────────────────────
 function CollectionFormModal({ heading, initial, onSubmit, onClose, t, showTags }) {
-  const [name, setName]       = useState(initial?.name ?? '')
-  const [icon, setIcon]       = useState(initial?.icon ?? '')
-  const [tags, setTags]       = useState(toArr(initial?.tags))
-  // Local reveal for THIS modal only — doesn't change the global setting
+  const [name, setName]     = useState(initial?.name ?? '')
+  const [icon, setIcon]     = useState(initial?.icon ?? '')
+  const [tags, setTags]     = useState(toArr(initial?.tags))
   const [tagsRevealed, setTagsRevealed] = useState(() => toArr(initial?.tags).length > 0)
-  const [saving, setSaving]   = useState(false)
+  const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
 
   const handleSubmit = async () => {
     if (!name.trim()) return
-    setSaving(true)
-    setSaveError('')
+    setSaving(true); setSaveError('')
     try {
       await onSubmit({ name: name.trim(), icon: icon.trim(), tags })
-      // parent closes modal on success — don't setSaving(false) here to avoid unmounted-component warning
     } catch (err) {
       setSaveError(err.message ?? t.errGeneric)
       setSaving(false)
@@ -108,7 +392,6 @@ function CollectionFormModal({ heading, initial, onSubmit, onClose, t, showTags 
       onClick={e => e.target === e.currentTarget && onClose()}
     >
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md">
-        {/* Header */}
         <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-gray-100 dark:border-gray-700">
           <h2 className="text-lg font-bold text-gray-900 dark:text-white">{heading}</h2>
           <button onClick={onClose}
@@ -119,9 +402,7 @@ function CollectionFormModal({ heading, initial, onSubmit, onClose, t, showTags 
           </button>
         </div>
 
-        {/* Body */}
         <div className="px-6 py-5 space-y-4">
-          {/* Emoji presets */}
           <div>
             <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t.collectionIcon}</p>
             <div className="flex flex-wrap gap-2 mb-2">
@@ -131,52 +412,35 @@ function CollectionFormModal({ heading, initial, onSubmit, onClose, t, showTags 
                     icon === e
                       ? 'bg-primary-100 dark:bg-primary-900/40 ring-2 ring-primary-500'
                       : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
-                  }`}
-                >
+                  }`}>
                   {e}
                 </button>
               ))}
             </div>
-            <input
-              type="text"
-              value={icon}
-              onChange={e => setIcon(e.target.value)}
+            <input type="text" value={icon} onChange={e => setIcon(e.target.value)}
               placeholder={t.collectionIconPlaceholder}
               className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-600
                          bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white text-sm
-                         focus:outline-none focus:ring-2 focus:ring-primary-500"
-            />
+                         focus:outline-none focus:ring-2 focus:ring-primary-500"/>
           </div>
 
-          {/* Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
               {t.collectionName}<span className="text-red-500 ms-0.5">*</span>
             </label>
-            <input
-              type="text"
-              value={name}
-              onChange={e => setName(e.target.value)}
+            <input type="text" value={name} onChange={e => setName(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSubmit()}
               placeholder={t.collectionNamePlaceholder}
               className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600
                          bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white text-sm
-                         focus:outline-none focus:ring-2 focus:ring-primary-500"
-            />
+                         focus:outline-none focus:ring-2 focus:ring-primary-500"/>
           </div>
 
-          {/* Tags — hidden unless show_tags is on or revealed locally */}
           {!showTags && !tagsRevealed && (
-            <button
-              type="button"
-              onClick={() => setTagsRevealed(true)}
+            <button type="button" onClick={() => setTagsRevealed(true)}
               className="inline-flex items-center gap-1.5 text-xs font-medium self-start
-                         px-2.5 py-1 rounded-lg
-                         text-[#1D9E75] dark:text-[#2ec58d]
-                         border border-[#1D9E75]/25 dark:border-[#1D9E75]/35
-                         hover:bg-[#1D9E75]/10 dark:hover:bg-[#1D9E75]/20
-                         transition-colors"
-            >
+                         px-2.5 py-1 rounded-lg text-[#1D9E75] dark:text-[#2ec58d]
+                         border border-[#1D9E75]/25 hover:bg-[#1D9E75]/10 transition-colors">
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/>
               </svg>
@@ -193,7 +457,6 @@ function CollectionFormModal({ heading, initial, onSubmit, onClose, t, showTags 
           )}
         </div>
 
-        {/* Error banner */}
         {saveError && (
           <div className="mx-6 mb-2 px-3 py-2 rounded-xl text-sm text-red-600 dark:text-red-400
                           bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30">
@@ -201,21 +464,17 @@ function CollectionFormModal({ heading, initial, onSubmit, onClose, t, showTags 
           </div>
         )}
 
-        {/* Footer */}
         <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-700 flex gap-3">
           <button onClick={onClose}
             className="flex-1 py-3 border border-gray-200 dark:border-gray-600 rounded-xl font-medium text-sm
                        text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
             {t.cancel}
           </button>
-          <button
-            onClick={handleSubmit}
-            disabled={saving}
+          <button onClick={handleSubmit} disabled={saving}
             className="flex-1 py-3 rounded-xl font-semibold text-sm transition-colors
                        bg-primary-600 hover:bg-primary-700 text-white
                        disabled:opacity-60 disabled:cursor-not-allowed
-                       flex items-center justify-center gap-2"
-          >
+                       flex items-center justify-center gap-2">
             {saving && <Spinner size="w-4 h-4" />}
             {initial ? t.save : t.createCollection}
           </button>
@@ -237,8 +496,7 @@ function AddVideosModal({ existingVideoIds, uid, onAdd, onClose, t }) {
 
   useEffect(() => {
     async function load() {
-      const { data } = await supabase
-        .from('videos')
+      const { data } = await supabase.from('videos')
         .select('id, title, channel, thumbnail_url, youtube_id')
         .eq('user_id', uid)
         .order('created_at', { ascending: false })
@@ -258,22 +516,14 @@ function AddVideosModal({ existingVideoIds, uid, onAdd, onClose, t }) {
   }, [allVideos, search])
 
   const toggle = (id) => setSelected(prev => {
-    const n = new Set(prev)
-    n.has(id) ? n.delete(id) : n.add(id)
-    return n
+    const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n
   })
 
   const handleAdd = async () => {
     if (selected.size === 0) return
-    setSaving(true)
-    setAddError('')
-    try {
-      await onAdd([...selected])
-      onClose()
-    } catch (err) {
-      setAddError(err.message ?? t.errGeneric)
-      setSaving(false)
-    }
+    setSaving(true); setAddError('')
+    try { await onAdd([...selected]); onClose() }
+    catch (err) { setAddError(err.message ?? t.errGeneric); setSaving(false) }
   }
 
   return (
@@ -282,7 +532,6 @@ function AddVideosModal({ existingVideoIds, uid, onAdd, onClose, t }) {
       onClick={e => e.target === e.currentTarget && onClose()}
     >
       <div className="bg-white dark:bg-gray-800 w-full sm:max-w-lg rounded-t-3xl sm:rounded-2xl shadow-2xl max-h-[80dvh] flex flex-col">
-        {/* Header */}
         <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-gray-100 dark:border-gray-700 shrink-0">
           <div>
             <h2 className="text-lg font-bold text-gray-900 dark:text-white">{t.addVideosToCollection}</h2>
@@ -300,7 +549,6 @@ function AddVideosModal({ existingVideoIds, uid, onAdd, onClose, t }) {
           </button>
         </div>
 
-        {/* Search */}
         <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 shrink-0">
           <div className="relative">
             <div className="absolute inset-y-0 start-3 flex items-center pointer-events-none text-gray-400">
@@ -309,19 +557,14 @@ function AddVideosModal({ existingVideoIds, uid, onAdd, onClose, t }) {
                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
               </svg>
             </div>
-            <input
-              type="text"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
+            <input type="text" value={search} onChange={e => setSearch(e.target.value)}
               placeholder={t.searchPlaceholder}
               className="w-full ps-9 pe-3 py-2 rounded-xl border border-gray-200 dark:border-gray-600
                          bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white
-                         placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
-            />
+                         placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"/>
           </div>
         </div>
 
-        {/* Video list */}
         <div className="flex-1 overflow-y-auto">
           {loading ? (
             <div className="flex justify-center py-12"><Spinner /></div>
@@ -332,17 +575,11 @@ function AddVideosModal({ existingVideoIds, uid, onAdd, onClose, t }) {
           ) : (
             <div className="divide-y divide-gray-100 dark:divide-gray-700">
               {filtered.map(video => (
-                <label
-                  key={video.id}
+                <label key={video.id}
                   className="flex items-center gap-3 px-4 py-3
-                             hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selected.has(video.id)}
-                    onChange={() => toggle(video.id)}
-                    className="w-4 h-4 rounded text-primary-600 border-gray-300 dark:border-gray-600 focus:ring-primary-500"
-                  />
+                             hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors">
+                  <input type="checkbox" checked={selected.has(video.id)} onChange={() => toggle(video.id)}
+                    className="w-4 h-4 rounded text-primary-600 border-gray-300 dark:border-gray-600 focus:ring-primary-500"/>
                   <div className="w-16 h-9 rounded-lg overflow-hidden shrink-0">
                     <MiniThumb src={video.thumbnail_url} title={video.title} youtubeId={video.youtube_id}/>
                   </div>
@@ -358,7 +595,6 @@ function AddVideosModal({ existingVideoIds, uid, onAdd, onClose, t }) {
           )}
         </div>
 
-        {/* Error banner */}
         {addError && (
           <div className="mx-4 mb-2 px-3 py-2 rounded-xl text-sm text-red-600 dark:text-red-400
                           bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 shrink-0">
@@ -366,21 +602,17 @@ function AddVideosModal({ existingVideoIds, uid, onAdd, onClose, t }) {
           </div>
         )}
 
-        {/* Footer */}
         <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-700 flex gap-3 shrink-0">
           <button onClick={onClose}
             className="flex-1 py-3 border border-gray-200 dark:border-gray-600 rounded-xl font-medium text-sm
                        text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
             {t.cancel}
           </button>
-          <button
-            onClick={handleAdd}
-            disabled={selected.size === 0 || saving}
+          <button onClick={handleAdd} disabled={selected.size === 0 || saving}
             className="flex-1 py-3 rounded-xl font-semibold text-sm transition-colors
                        bg-primary-600 hover:bg-primary-700 text-white
                        disabled:bg-gray-200 dark:disabled:bg-gray-700 disabled:text-gray-400
-                       flex items-center justify-center gap-2"
-          >
+                       flex items-center justify-center gap-2">
             {saving && <Spinner size="w-4 h-4" />}
             {t.addSelected}{selected.size > 0 ? ` (${selected.size})` : ''}
           </button>
@@ -390,141 +622,15 @@ function AddVideosModal({ existingVideoIds, uid, onAdd, onClose, t }) {
   )
 }
 
-// ── CollectionVideoCard ───────────────────────────────────────────────────────
-function CollectionVideoCard({ video, onPlay, onToggleWatched, onRemove, t }) {
-  const isWatched = video.watch_status === 'watched'
-  const [confirmRm, setConfirmRm] = useState(false)
-  const [busy, setBusy]           = useState(false)
-
-  const run = async (fn) => {
-    if (busy) return
-    setBusy(true)
-    await fn()
-    setBusy(false)
-  }
-
-  return (
-    <article className="group flex flex-col rounded-2xl overflow-hidden
-                        bg-[var(--card)]
-                        transition-all duration-200 hover:-translate-y-0.5"
-             style={{
-               border: '1px solid var(--border)',
-               boxShadow: 'var(--shadow-card)',
-             }}>
-      {/* Thumbnail */}
-      <div
-        className="relative aspect-video cursor-pointer overflow-hidden"
-        onClick={onPlay}
-      >
-        <MiniThumb src={video.thumbnail_url} title={video.title} youtubeId={video.youtube_id}/>
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors pointer-events-none"/>
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 rounded-full p-2.5">
-            <svg className="w-4 h-4 text-gray-900" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M8 5v14l11-7z"/>
-            </svg>
-          </div>
-        </div>
-        {isWatched && (
-          <div className="absolute top-2 start-2 flex items-center gap-1
-                          text-[10px] font-semibold px-2 py-0.5 rounded-full"
-               style={{ background: 'var(--success-tint)', color: 'var(--success)' }}>
-            <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd"
-                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                clipRule="evenodd"/>
-            </svg>
-            {t.watched}
-          </div>
-        )}
-      </div>
-
-      {/* Body */}
-      <div className="flex flex-col flex-1 p-3 gap-1.5">
-        <h3
-          className="text-sm font-medium line-clamp-2 cursor-pointer
-                     hover:text-[var(--accent)] transition-colors leading-snug"
-          style={{ color: 'var(--ink)' }}
-          onClick={onPlay}
-        >
-          {video.title}
-        </h3>
-        {video.channel && (
-          <p className="text-xs truncate" style={{ color: 'var(--muted)' }}>{video.channel}</p>
-        )}
-        <div className="flex-1"/>
-
-        {/* Footer: Remove (left) + Watched toggle (right) */}
-        <div className="pt-2 flex items-center justify-between"
-             style={{ borderTop: '1px solid var(--border)' }}>
-          {confirmRm ? (
-            <div className="flex gap-1.5 w-full">
-              <button
-                onClick={onRemove}
-                className="flex-1 text-xs px-2.5 py-1 rounded-lg bg-red-600 hover:bg-red-700 text-white font-medium transition-colors"
-              >
-                {t.confirmDelete}
-              </button>
-              <button
-                onClick={() => setConfirmRm(false)}
-                className="flex-1 text-xs px-2.5 py-1 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              >
-                {t.cancel}
-              </button>
-            </div>
-          ) : (
-            <>
-              {/* Remove from collection */}
-              <button
-                onClick={() => setConfirmRm(true)}
-                disabled={busy}
-                className="text-xs px-2.5 py-1 rounded-lg text-gray-400
-                           hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20
-                           transition-colors disabled:opacity-40"
-              >
-                {t.removeFromCollection}
-              </button>
-
-              {/* Watched toggle — same style as library card */}
-              <button
-                onClick={() => run(onToggleWatched)}
-                disabled={busy}
-                title={isWatched ? t.markUnwatched : t.markWatched}
-                className="flex items-center justify-center transition-colors disabled:opacity-40"
-                style={{
-                  width: '30px',
-                  height: '30px',
-                  borderRadius: '6px',
-                  background: isWatched ? 'rgba(34,197,94,0.1)' : 'transparent',
-                  color: isWatched ? 'rgb(21,128,60)' : 'rgb(104,111,125)',
-                }}
-              >
-                <svg
-                  className="w-[15px] h-[15px]"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={isWatched ? 2.5 : 1.75}
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
-                </svg>
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-    </article>
-  )
-}
-
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function CollectionsPage() {
   const { session, showTags } = useAuth()
-  const { t }       = useLang()
+  const { t, lang }           = useLang()
   const uid = session?.user?.id
 
   const [collections, setCollections]   = useState([])
   const [videoCounts, setVideoCounts]   = useState({})
+  const [completedCounts, setCompletedCounts] = useState({})
   const [colsLoading, setColsLoading]   = useState(true)
 
   const [selectedId, setSelectedId]     = useState(null)
@@ -538,7 +644,10 @@ export default function CollectionsPage() {
   const [confirmDel, setConfirmDel]     = useState(false)
   const [activeVideo, setActiveVideo]   = useState(null)
 
-  // ── Load all collections + sidebar counts ─────────────────────────────────
+  const [showCelebration, setShowCelebration] = useState(false)
+  const [loadedAsComplete, setLoadedAsComplete] = useState(false)
+
+  // ── Load collections + sidebar counts ──────────────────────────────────────
   const loadCollections = useCallback(async () => {
     if (!uid) return
     setColsLoading(true)
@@ -555,11 +664,16 @@ export default function CollectionsPage() {
       if (list.length) {
         const { data: cv } = await supabase
           .from('collection_videos')
-          .select('collection_id')
+          .select('collection_id, completed_at')
           .in('collection_id', list.map(c => c.id))
-        const counts = {}
-        ;(cv ?? []).forEach(r => { counts[r.collection_id] = (counts[r.collection_id] ?? 0) + 1 })
-        setVideoCounts(counts)
+        const totals = {}
+        const dones  = {}
+        ;(cv ?? []).forEach(r => {
+          totals[r.collection_id] = (totals[r.collection_id] ?? 0) + 1
+          if (r.completed_at) dones[r.collection_id] = (dones[r.collection_id] ?? 0) + 1
+        })
+        setVideoCounts(totals)
+        setCompletedCounts(dones)
       }
     } finally {
       setColsLoading(false)
@@ -568,44 +682,53 @@ export default function CollectionsPage() {
 
   useEffect(() => { loadCollections() }, [loadCollections])
 
-  // ── Load videos for the selected collection (2-step, no embed join) ─────────
+  // ── Load detail: position + completed_at from CV, learning + notes from videos ─
   const loadColVideos = useCallback(async (colId) => {
     if (!colId || !uid) return
     setCvLoading(true)
     setCvError('')
     try {
-      // Step 1: get video_ids for this collection
       const { data: cvRows, error: cvErr } = await supabase
         .from('collection_videos')
-        .select('video_id')
+        .select('video_id, position, completed_at')
         .eq('collection_id', colId)
-      if (cvErr) {
-        console.error('[Collections] fetch collection_videos failed:', cvErr)
-        throw new Error(cvErr.message)
-      }
+        .order('position', { ascending: true })
+      if (cvErr) throw new Error(cvErr.message)
 
       const videoIds = (cvRows ?? []).map(r => r.video_id).filter(Boolean)
       if (videoIds.length === 0) {
         setColVideos([])
         setVideoCounts(prev => ({ ...prev, [colId]: 0 }))
+        setLoadedAsComplete(false)
         return
       }
 
-      // Step 2: fetch full video rows, scoped to this user for isolation
       const { data: videos, error: vErr } = await supabase
         .from('videos')
-        .select('id, title, channel, thumbnail_url, youtube_id, watch_status')
+        .select('id, title, channel, thumbnail_url, youtube_id, watch_status, learning, notes')
         .in('id', videoIds)
         .eq('user_id', uid)
-        .order('created_at', { ascending: false })
-      if (vErr) {
-        console.error('[Collections] fetch videos failed:', vErr)
-        throw new Error(vErr.message)
-      }
+      if (vErr) throw new Error(vErr.message)
 
-      setColVideos(videos ?? [])
-      setVideoCounts(prev => ({ ...prev, [colId]: (videos ?? []).length }))
+      // Merge: position order from cvRows, video data from videos
+      const videoMap = {}
+      ;(videos ?? []).forEach(v => { videoMap[v.id] = v })
+
+      const merged = (cvRows ?? [])
+        .map(r => {
+          const v = videoMap[r.video_id]
+          return v ? { ...v, position: r.position, completed_at: r.completed_at } : null
+        })
+        .filter(Boolean)
+
+      setColVideos(merged)
+      setVideoCounts(prev => ({ ...prev, [colId]: merged.length }))
+
+      const allDone = merged.length > 0 && merged.every(v => !!v.completed_at)
+      setLoadedAsComplete(allDone)
+      // Don't trigger celebration on page load — only on toggle action
     } catch (err) {
+      console.error('[Collections] load failed:', err)
       setCvError(err.message)
     } finally {
       setCvLoading(false)
@@ -614,31 +737,95 @@ export default function CollectionsPage() {
 
   useEffect(() => {
     if (selectedId) loadColVideos(selectedId)
-    else setColVideos([])
+    else { setColVideos([]); setLoadedAsComplete(false) }
   }, [selectedId, loadColVideos])
 
   const selectedCol = collections.find(c => c.id === selectedId) ?? null
 
-  // ── Stats (completion) ────────────────────────────────────────────────────
-  const stats = useMemo(() => {
-    const total   = colVideos.length
-    const watched = colVideos.filter(v => v.watch_status === 'watched').length
-    const pct     = total > 0 ? Math.round((watched / total) * 100) : 0
-    return { total, watched, pct }
-  }, [colVideos])
+  // ── Derived state ───────────────────────────────────────────────────────────
+  const progress = useMemo(() => calcProgress(colVideos), [colVideos])
 
-  // ── CRUD ──────────────────────────────────────────────────────────────────
+  const nextUpVideo = useMemo(() =>
+    colVideos.find(v => !v.completed_at) ?? null
+  , [colVideos])
+
+  const allNotes = useMemo(() => colVideos.flatMap(v => extractNotes(v)), [colVideos])
+
+  const celebrationStats = useMemo(() => {
+    const n     = colVideos.length
+    const notes = allNotes.length
+    const completedTs = colVideos
+      .filter(v => !!v.completed_at)
+      .map(v => new Date(v.completed_at).getTime())
+    const days = completedTs.length > 1
+      ? Math.max(1, Math.ceil((Math.max(...completedTs) - Math.min(...completedTs)) / 86400000))
+      : 1
+    return { n, notes, days }
+  }, [colVideos, allNotes])
+
+  const createdDate = selectedCol?.created_at
+    ? new Date(selectedCol.created_at).toLocaleDateString(
+        lang === 'ar' ? 'ar-SA' : 'en-US',
+        { year: 'numeric', month: 'short' }
+      )
+    : ''
+
+  // ── Toggle completion (collection_videos.completed_at) ──────────────────────
+  const handleToggleCompletion = async (video) => {
+    const wasCompleted  = !!video.completed_at
+    const newCompletedAt = wasCompleted ? null : new Date().toISOString()
+
+    const newVideos = colVideos.map(v =>
+      v.id === video.id ? { ...v, completed_at: newCompletedAt } : v
+    )
+    setColVideos(newVideos)
+
+    const delta = wasCompleted ? -1 : 1
+    setCompletedCounts(prev => ({
+      ...prev,
+      [selectedId]: Math.max(0, (prev[selectedId] ?? 0) + delta),
+    }))
+
+    const { error } = await supabase
+      .from('collection_videos')
+      .update({ completed_at: newCompletedAt })
+      .eq('collection_id', selectedId)
+      .eq('video_id', video.id)
+
+    if (error) {
+      // Revert optimistic update
+      setColVideos(colVideos)
+      setCompletedCounts(prev => ({
+        ...prev,
+        [selectedId]: Math.max(0, (prev[selectedId] ?? 0) - delta),
+      }))
+      setCvError(error.message)
+      console.error('[Collections] toggle completion failed:', error)
+      return
+    }
+
+    // Detect completion moment (action, not load)
+    if (!wasCompleted) {
+      const newCompleted = newVideos.filter(v => !!v.completed_at).length
+      if (newCompleted === newVideos.length && newVideos.length > 0) {
+        setShowCelebration(true)
+        setLoadedAsComplete(false)
+      }
+    } else {
+      // Un-completing reverts any banners
+      setShowCelebration(false)
+      setLoadedAsComplete(false)
+    }
+  }
+
+  // ── CRUD ────────────────────────────────────────────────────────────────────
   const handleCreate = async ({ name, icon, tags }) => {
     const { data, error } = await supabase
       .from('collections')
       .insert({ user_id: uid, name, icon: icon || null, tags: tags ?? [] })
       .select('id, name, icon, tags, created_at')
       .single()
-    if (error) {
-      console.error('[Collections] insert failed:', error)
-      throw new Error(error.message)
-    }
-    // Success: update sidebar, select new collection, close modal
+    if (error) throw new Error(error.message)
     setCollections(prev => [...prev, data])
     setVideoCounts(prev => ({ ...prev, [data.id]: 0 }))
     setSelectedId(data.id)
@@ -653,86 +840,62 @@ export default function CollectionsPage() {
       .eq('id', editTarget.id).eq('user_id', uid)
       .select('id, name, icon, tags, created_at')
       .single()
-    if (error) {
-      console.error('[Collections] update failed:', error)
-      throw new Error(error.message)
-    }
+    if (error) throw new Error(error.message)
     setCollections(prev => prev.map(c => c.id === data.id ? data : c))
     setEditTarget(null)
   }
 
   const handleDelete = async () => {
     if (!selectedId) return
-    // Delete junction rows first in case there's no CASCADE
     await supabase.from('collection_videos').delete().eq('collection_id', selectedId)
     await supabase.from('collections').delete().eq('id', selectedId).eq('user_id', uid)
     setCollections(prev => prev.filter(c => c.id !== selectedId))
     setVideoCounts(prev => { const n = { ...prev }; delete n[selectedId]; return n })
+    setCompletedCounts(prev => { const n = { ...prev }; delete n[selectedId]; return n })
     setSelectedId(null)
     setColVideos([])
     setConfirmDel(false)
   }
 
   const handleRemoveVideo = async (videoId) => {
-    await supabase
-      .from('collection_videos')
-      .delete()
-      .eq('collection_id', selectedId)
-      .eq('video_id', videoId)
+    const removing = colVideos.find(v => v.id === videoId)
+    await supabase.from('collection_videos').delete()
+      .eq('collection_id', selectedId).eq('video_id', videoId)
     const next = colVideos.filter(v => v.id !== videoId)
     setColVideos(next)
     setVideoCounts(prev => ({ ...prev, [selectedId]: next.length }))
-  }
-
-  const handleToggleWatched = async (video) => {
-    const next = video.watch_status === 'watched' ? 'unwatched' : 'watched'
-    // Optimistic update
-    setColVideos(prev => prev.map(v => v.id === video.id ? { ...v, watch_status: next } : v))
-    const { error } = await supabase
-      .from('videos')
-      .update({ watch_status: next })
-      .eq('id', video.id)
-      .eq('user_id', uid)
-    if (error) {
-      console.error('[Collections] toggle watched failed:', error)
-      // Revert
-      setColVideos(prev => prev.map(v => v.id === video.id ? { ...v, watch_status: video.watch_status } : v))
+    if (removing?.completed_at) {
+      setCompletedCounts(prev => ({
+        ...prev,
+        [selectedId]: Math.max(0, (prev[selectedId] ?? 0) - 1),
+      }))
     }
   }
 
   const handleAddVideos = async (videoIds) => {
-    // AddVideosModal already filters out existing videos, so plain insert is safe.
-    // Only send the columns that exist in the schema.
-    const rows = videoIds.map(vid => ({
-      collection_id: selectedId,
-      video_id: vid,
-    }))
-    const { error } = await supabase
-      .from('collection_videos')
-      .insert(rows)
-    if (error) {
-      console.error('[Collections] add videos failed:', error)
-      throw new Error(error.message)
-    }
+    const rows = videoIds.map(vid => ({ collection_id: selectedId, video_id: vid }))
+    const { error } = await supabase.from('collection_videos').insert(rows)
+    if (error) throw new Error(error.message)
     await loadColVideos(selectedId)
   }
 
-  // ── Select a collection, reset delete confirm ─────────────────────────────
   const handleSelectCol = (id) => {
     setSelectedId(id)
     setConfirmDel(false)
+    setShowCelebration(false)
+    setLoadedAsComplete(false)
+    setCvError('')
   }
 
-  // ── Render ────────────────────────────────────────────────────────────────
+  // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <div className="flex flex-col md:flex-row min-h-[calc(100dvh-4rem)]">
 
-      {/* ── Sidebar (first in DOM = right in RTL, left in LTR) ── */}
-      <aside className="w-full md:w-72 shrink-0 flex flex-col
-                        bg-[var(--card)]
-                        border-b md:border-b-0"
-             style={{ borderInlineEnd: '1px solid var(--border)' }}>
-
+      {/* ── Sidebar ── */}
+      <aside
+        className="w-full md:w-72 shrink-0 flex flex-col bg-[var(--card)] border-b md:border-b-0"
+        style={{ borderInlineEnd: '1px solid var(--border)' }}
+      >
         <div className="flex items-center justify-between px-4 py-4 border-b border-[var(--border)]">
           <h2 className="text-xs font-bold uppercase tracking-wider text-[var(--muted)]">
             {t.collections}
@@ -757,7 +920,10 @@ export default function CollectionsPage() {
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{t.noCollectionsDesc}</p>
             </div>
           ) : collections.map(col => {
-            const active = selectedId === col.id
+            const active  = selectedId === col.id
+            const total   = videoCounts[col.id]   ?? 0
+            const done    = completedCounts[col.id] ?? 0
+            const minPct  = total > 0 ? Math.round((done / total) * 100) : 0
             return (
               <button
                 key={col.id}
@@ -770,13 +936,26 @@ export default function CollectionsPage() {
               >
                 <span className="text-xl shrink-0">{col.icon || '📁'}</span>
                 <span className="flex-1 text-sm font-medium truncate">{col.name}</span>
-                <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${
-                  active
-                    ? 'bg-[var(--accent-soft)] text-[var(--accent)]'
-                    : 'bg-[var(--accent-tint)] text-[var(--muted)]'
-                }`}>
-                  {videoCounts[col.id] ?? 0}
-                </span>
+
+                {/* Mini progress */}
+                <div className="shrink-0 flex flex-col items-end gap-0.5">
+                  <span className={`text-xs tabular-nums font-medium ${
+                    active ? 'text-[var(--accent)]' : 'text-[var(--muted)]'
+                  }`}>
+                    {done}/{total}
+                  </span>
+                  {total > 0 && (
+                    <div
+                      className="w-12 h-1.5 rounded-full overflow-hidden"
+                      style={{ background: 'var(--accent-tint)' }}
+                    >
+                      <div
+                        className="h-full rounded-full transition-all duration-300"
+                        style={{ width: `${minPct}%`, background: '#1D9E75' }}
+                      />
+                    </div>
+                  )}
+                </div>
               </button>
             )
           })}
@@ -794,142 +973,133 @@ export default function CollectionsPage() {
             )}
           </div>
         ) : (
-          <div className="p-6 space-y-6 max-w-6xl">
+          <div className="p-6 space-y-6 max-w-3xl">
 
             {/* ── Collection header ── */}
-            <div className="flex items-start justify-between gap-4 rounded-2xl p-5 -m-1"
-                 style={{
-                   background: 'linear-gradient(135deg, var(--accent-tint) 0%, var(--card) 70%)',
-                   border: '1px solid var(--accent-soft)',
-                 }}>
-              <div className="flex items-center gap-3 min-w-0">
-                <span className="text-4xl shrink-0">{selectedCol.icon || '📁'}</span>
-                <div className="min-w-0">
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white truncate">
-                    {selectedCol.name}
-                  </h1>
-                  {showTags && toArr(selectedCol.tags).length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 mt-1.5">
-                      {toArr(selectedCol.tags).map(tag => (
-                        <span key={tag}
-                          className="text-xs px-2.5 py-0.5 rounded-full
-                                     bg-primary-100 dark:bg-primary-900/40
-                                     text-primary-700 dark:text-primary-300">
-                          {tag}
-                        </span>
-                      ))}
+            <div
+              className="rounded-2xl p-5"
+              style={{
+                background: 'linear-gradient(135deg, var(--accent-tint) 0%, var(--card) 70%)',
+                border: '1px solid var(--accent-soft)',
+              }}
+            >
+              {/* Title row + edit/delete */}
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="text-4xl shrink-0">{selectedCol.icon || '📁'}</span>
+                  <div className="min-w-0">
+                    <h1 className="text-2xl font-bold truncate" style={{ color: 'var(--ink)' }}>
+                      {selectedCol.name}
+                    </h1>
+                    {showTags && toArr(selectedCol.tags).length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mt-1.5">
+                        {toArr(selectedCol.tags).map(tag => (
+                          <span key={tag}
+                            className="text-xs px-2.5 py-0.5 rounded-full
+                                       bg-primary-100 dark:bg-primary-900/40
+                                       text-primary-700 dark:text-primary-300">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => { setEditTarget(selectedCol); setConfirmDel(false) }}
+                    title={t.editCollection}
+                    className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5
+                           m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                  </button>
+                  {confirmDel ? (
+                    <div className="flex items-center gap-1.5">
+                      <button onClick={handleDelete}
+                        className="px-3 py-1.5 rounded-lg text-sm font-semibold bg-red-600 hover:bg-red-700 text-white transition-colors">
+                        {t.confirmDelete}
+                      </button>
+                      <button onClick={() => setConfirmDel(false)}
+                        className="px-3 py-1.5 rounded-lg text-sm border border-gray-200 dark:border-gray-600
+                                   text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                        {t.cancel}
+                      </button>
                     </div>
+                  ) : (
+                    <button onClick={() => setConfirmDel(true)} title={t.deleteCollection}
+                      className="p-2 rounded-lg text-gray-500
+                                 hover:bg-red-50 dark:hover:bg-red-900/20
+                                 hover:text-red-600 dark:hover:text-red-400 transition-colors">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7
+                             m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                      </svg>
+                    </button>
                   )}
                 </div>
               </div>
 
-              {/* Edit / Delete */}
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  onClick={() => { setEditTarget(selectedCol); setConfirmDel(false) }}
-                  title={t.editCollection}
-                  className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5
-                         m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                  </svg>
-                </button>
-                {confirmDel ? (
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={handleDelete}
-                      className="px-3 py-1.5 rounded-lg text-sm font-semibold bg-red-600 hover:bg-red-700 text-white transition-colors"
-                    >
-                      {t.confirmDelete}
-                    </button>
-                    <button
-                      onClick={() => setConfirmDel(false)}
-                      className="px-3 py-1.5 rounded-lg text-sm border border-gray-200 dark:border-gray-600
-                                 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                    >
-                      {t.cancel}
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setConfirmDel(true)}
-                    title={t.deleteCollection}
-                    className="p-2 rounded-lg text-gray-500
-                               hover:bg-red-50 dark:hover:bg-red-900/20
-                               hover:text-red-600 dark:hover:text-red-400 transition-colors"
+              {/* Meta + pill */}
+              <div className="flex flex-wrap items-center gap-2 mt-3">
+                <span className="text-xs" style={{ color: 'var(--muted)' }}>
+                  {(t.videosMeta ?? '').replace('{n}', progress.total)}
+                  {createdDate ? ` · ${createdDate}` : ''}
+                </span>
+                {progress.total > 0 && (
+                  <span
+                    className="text-xs font-semibold px-2.5 py-0.5 rounded-full"
+                    style={{ background: 'rgba(29,158,117,0.15)', color: '#1D9E75' }}
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7
-                           m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                    </svg>
-                  </button>
+                    {(t.progressPill ?? '')
+                      .replace('{done}',  progress.completed)
+                      .replace('{total}', progress.total)}
+                  </span>
                 )}
               </div>
-            </div>
 
-            {/* ── Stats row ── */}
-            <div className="grid grid-cols-3 gap-3">
-              <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4"
-                   style={{ boxShadow: 'var(--shadow-card)' }}>
-                <div className="flex items-start gap-2.5">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-base
-                                  bg-gray-100 dark:bg-gray-800/60">🎬</div>
-                  <div>
-                    <p className="text-2xl font-bold text-[var(--ink)]">{stats.total}</p>
-                    <p className="text-[11px] text-[var(--muted)] mt-0.5">{t.statsTotal}</p>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4"
-                   style={{ boxShadow: 'var(--shadow-card)' }}>
-                <div className="flex items-start gap-2.5">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-base
-                                  bg-[var(--accent-tint)]">✓</div>
-                  <div>
-                    <p className="text-2xl font-bold text-[var(--accent)]">{stats.watched}</p>
-                    <p className="text-[11px] text-[var(--muted)] mt-0.5">{t.statsWatched}</p>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4"
-                   style={{ boxShadow: 'var(--shadow-card)' }}>
-                <div className="flex items-start gap-2.5">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-base
-                                  bg-sky-50 dark:bg-sky-900/20">📊</div>
-                  <div>
-                    <p className="text-2xl font-bold text-[var(--ink)]">{stats.pct}%</p>
-                    <p className="text-[11px] text-[var(--muted)] mt-0.5">{t.completion}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* ── Progress bar ── */}
-            {stats.total > 0 && (
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-                  <span>{t.statsWatched}</span>
-                  <span>{stats.watched} / {stats.total}</span>
-                </div>
-                <div className="h-2.5 rounded-full overflow-hidden"
-                     style={{ background: 'var(--accent-tint)' }}>
+              {/* Progress bar */}
+              {progress.total > 0 && (
+                <div
+                  className="mt-3 h-2 rounded-full overflow-hidden"
+                  style={{ background: 'rgba(29,158,117,0.15)' }}
+                >
                   <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{ width: `${stats.pct}%`, background: 'var(--accent-spring)' }}
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${progress.pct}%`,
+                      background: '#1D9E75',
+                      transition: 'width 300ms ease-out',
+                    }}
                   />
                 </div>
+              )}
+            </div>
+
+            {/* ── Error banner (e.g. RLS policy) ── */}
+            {cvError && (
+              <div className="px-4 py-3 rounded-xl text-sm text-red-600 dark:text-red-400
+                              bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                <strong>Error:</strong> {cvError}
               </div>
+            )}
+
+            {/* ── Completed banner (static, on page load) ── */}
+            {loadedAsComplete && !showCelebration && (
+              <CompletedBanner stats={celebrationStats} t={t} />
             )}
 
             {/* ── Add Videos button ── */}
             <div className="flex justify-end">
               <button
                 onClick={() => setShowAddVids(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-colors
-                           bg-primary-600 hover:bg-primary-700 text-white"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold
+                           bg-primary-600 hover:bg-primary-700 text-white transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4"/>
@@ -938,20 +1108,9 @@ export default function CollectionsPage() {
               </button>
             </div>
 
-            {/* ── Video grid ── */}
+            {/* ── Checklist ── */}
             {cvLoading ? (
               <div className="flex justify-center py-16"><Spinner size="w-6 h-6" /></div>
-            ) : cvError ? (
-              <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
-                <div className="text-4xl">⚠️</div>
-                <p className="text-sm font-semibold text-red-600 dark:text-red-400">{cvError}</p>
-                <button
-                  onClick={() => loadColVideos(selectedId)}
-                  className="px-4 py-2 text-sm bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition-colors"
-                >
-                  {t.retry}
-                </button>
-              </div>
             ) : colVideos.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
                 <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center">
@@ -964,18 +1123,33 @@ export default function CollectionsPage() {
                 <p className="text-base font-semibold text-gray-900 dark:text-white">{t.noVideosInCollection}</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {colVideos.map(video => (
-                  <CollectionVideoCard
+              <div
+                className="rounded-2xl overflow-hidden divide-y"
+                style={{
+                  border: '1px solid var(--border)',
+                  background: 'var(--card)',
+                  boxShadow: 'var(--shadow-card)',
+                  divideColor: 'var(--border)',
+                }}
+              >
+                {colVideos.map((video, idx) => (
+                  <ChecklistRow
                     key={video.id}
                     video={video}
-                    onPlay={() => setActiveVideo(video)}
-                    onToggleWatched={() => handleToggleWatched(video)}
+                    idx={idx}
+                    isNextUp={nextUpVideo?.id === video.id}
+                    onToggle={handleToggleCompletion}
                     onRemove={() => handleRemoveVideo(video.id)}
+                    onPlay={() => setActiveVideo(video)}
                     t={t}
                   />
                 ))}
               </div>
+            )}
+
+            {/* ── Journey Notes ── */}
+            {!cvLoading && colVideos.length > 0 && (
+              <JourneyNotes notes={allNotes} t={t} />
             )}
 
           </div>
@@ -1016,6 +1190,15 @@ export default function CollectionsPage() {
 
       {activeVideo && (
         <VideoPlayerModal video={activeVideo} onClose={() => setActiveVideo(null)} />
+      )}
+
+      {showCelebration && selectedCol && (
+        <CelebrationModal
+          collectionName={selectedCol.name}
+          stats={celebrationStats}
+          t={t}
+          onDismiss={() => setShowCelebration(false)}
+        />
       )}
     </div>
   )
