@@ -68,6 +68,14 @@ export const translations = {
     myPrompts:    'ملاحظاتي',
     collectionsNav: 'القوائم',
     howItWorksNav:  'كيف تعمل LuminaVerse',
+    // ── Account menu ─────────────────────────────────────────────────────────
+    accountMenuLabel: 'الحساب',
+    planLabel:        'الخطة',
+    menuLanguage:     'اللغة',
+    currentLangName:  'العربية',
+    menuTheme:        'المظهر',
+    themeDark:        'داكن',
+    themeLight:       'فاتح',
     // ── Landing page ─────────────────────────────────────────────────────────
     landingBadge:     'مكتبتك الشخصية من يوتيوب',
     landingHeadline1: 'ابنِ جامعتك الخاصة',
@@ -362,6 +370,14 @@ export const translations = {
     myPrompts:      'My Notes',
     collectionsNav: 'Collections',
     howItWorksNav:  'How it Works',
+    // ── Account menu ─────────────────────────────────────────────────────────
+    accountMenuLabel: 'Account',
+    planLabel:        'Plan',
+    menuLanguage:     'Language',
+    currentLangName:  'English',
+    menuTheme:        'Theme',
+    themeDark:        'Dark',
+    themeLight:       'Light',
     // ── Landing page ─────────────────────────────────────────────────────────
     landingBadge:     'Your personal YouTube library',
     landingHeadline1: 'Build your own university',
