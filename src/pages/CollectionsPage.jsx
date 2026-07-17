@@ -32,9 +32,9 @@ function extractNotes(video) {
   const learning = (video.learning && typeof video.learning === 'object') ? video.learning : {}
   const result = []
   if (typeof learning.takeaways === 'string' && learning.takeaways.trim())
-    result.push({ text: learning.takeaways.trim(), videoTitle: video.title, videoId: video.id })
+    result.push({ text: learning.takeaways.trim(), videoTitle: video.title, videoId: video.id, video })
   if (typeof video.notes === 'string' && video.notes.trim())
-    result.push({ text: video.notes.trim(), videoTitle: video.title, videoId: video.id })
+    result.push({ text: video.notes.trim(), videoTitle: video.title, videoId: video.id, video })
   return result
 }
 
@@ -43,6 +43,53 @@ function calcProgress(videos) {
   const completed = videos.filter(v => !!v.completed_at).length
   const pct       = total > 0 ? Math.round((completed / total) * 100) : 0
   return { total, completed, pct }
+}
+
+// Fully-pluralized stats string for celebration modal and completed banner
+function buildCelebStats({ n, notes, completedTs }, lang) {
+  // Videos
+  let vidPart
+  if (lang === 'ar') {
+    vidPart = n === 1 ? 'فيديو واحد' : `${n} فيديوهات`
+  } else {
+    vidPart = `${n} ${n === 1 ? 'video' : 'videos'}`
+  }
+
+  // Notes
+  let notesPart
+  if (lang === 'ar') {
+    notesPart = notes === 1 ? 'ملاحظة واحدة' : `${notes} ملاحظات`
+  } else {
+    notesPart = `${notes} ${notes === 1 ? 'note' : 'notes'}`
+  }
+
+  // Days — guard against "0 days" and "same-day" case
+  let daysPart
+  const isSameDay = completedTs.length <= 1 ||
+    (Math.max(...completedTs) - Math.min(...completedTs)) < 86400000
+  if (isSameDay) {
+    const isToday = completedTs.length > 0 &&
+      new Date(Math.max(...completedTs)).toDateString() === new Date().toDateString()
+    if (lang === 'ar') {
+      daysPart = isToday ? 'أنجزتها اليوم' : 'في يوم واحد'
+    } else {
+      daysPart = isToday ? 'today' : 'in one day'
+    }
+  } else {
+    const days = Math.ceil((Math.max(...completedTs) - Math.min(...completedTs)) / 86400000)
+    if (lang === 'ar') {
+      daysPart = `في ${days} ${days === 1 ? 'يوم' : 'أيام'}`
+    } else {
+      daysPart = `in ${days} ${days === 1 ? 'day' : 'days'}`
+    }
+  }
+
+  return `${vidPart} · ${notesPart} · ${daysPart}`
+}
+
+function videoMetaStr(n, lang, t) {
+  if (lang === 'ar') return (t.videosMeta ?? '').replace('{n}', n)
+  return `${n} ${n === 1 ? 'video' : 'videos'}`
 }
 
 // ── MiniThumb ─────────────────────────────────────────────────────────────────
@@ -113,7 +160,8 @@ function TagInput({ tags, setTags, placeholder }) {
 // ── ChecklistRow ──────────────────────────────────────────────────────────────
 function ChecklistRow({ video, idx, isNextUp, onToggle, onRemove, onPlay, t }) {
   const [confirmRm, setConfirmRm] = useState(false)
-  const completed = !!video.completed_at
+  const completed  = !!video.completed_at
+  const notesCount = extractNotes(video).length
 
   return (
     <div
@@ -190,7 +238,7 @@ function ChecklistRow({ video, idx, isNextUp, onToggle, onRemove, onPlay, t }) {
         )}
       </div>
 
-      {/* End: position + remove */}
+      {/* End: notes badge + position + remove */}
       <div className="shrink-0 ms-auto flex items-center gap-2">
         {confirmRm ? (
           <>
@@ -210,6 +258,21 @@ function ChecklistRow({ video, idx, isNextUp, onToggle, onRemove, onPlay, t }) {
           </>
         ) : (
           <>
+            {/* Notes count — hidden when 0 */}
+            {notesCount > 0 && (
+              <span
+                title={t.notesTooltip}
+                className="flex items-center gap-0.5 text-xs tabular-nums"
+                style={{ color: 'var(--muted)' }}
+              >
+                <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5
+                       m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+                {notesCount}
+              </span>
+            )}
             <span className="text-xs tabular-nums" style={{ color: 'var(--muted)' }}>
               {video.position ?? idx + 1}
             </span>
@@ -233,7 +296,7 @@ function ChecklistRow({ video, idx, isNextUp, onToggle, onRemove, onPlay, t }) {
 }
 
 // ── JourneyNotes ──────────────────────────────────────────────────────────────
-function JourneyNotes({ notes, t }) {
+function JourneyNotes({ notes, onOpenVideo, t }) {
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
@@ -255,15 +318,31 @@ function JourneyNotes({ notes, t }) {
           {notes.map((note, i) => (
             <div
               key={`${note.videoId}-${i}`}
-              className="rounded-xl px-4 py-3"
+              role="button"
+              tabIndex={0}
+              onClick={() => {
+                if (window.getSelection()?.toString()) return
+                onOpenVideo(note.video)
+              }}
+              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpenVideo(note.video) } }}
+              className="rounded-xl px-4 py-3 cursor-pointer transition-all"
               style={{
                 background: 'var(--card)',
                 border: '1px solid var(--border)',
                 boxShadow: 'var(--shadow-card)',
               }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--accent-tint)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'var(--card)' }}
             >
               <p className="text-sm leading-relaxed" style={{ color: 'var(--ink)' }}>{note.text}</p>
-              <p className="text-xs mt-1.5" style={{ color: 'var(--muted)' }}>
+              {/* Source link */}
+              <p
+                className="text-xs mt-2 inline-flex items-center gap-1 hover:underline"
+                style={{ color: '#1D9E75' }}
+              >
+                <svg className="w-3 h-3 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
                 {t.noteSource}{note.videoTitle}
               </p>
             </div>
@@ -275,11 +354,8 @@ function JourneyNotes({ notes, t }) {
 }
 
 // ── CompletedBanner ───────────────────────────────────────────────────────────
-function CompletedBanner({ stats, t }) {
-  const statsStr = (t.celebStats ?? '')
-    .replace('{n}', stats.n)
-    .replace('{notes}', stats.notes)
-    .replace('{days}', stats.days)
+function CompletedBanner({ collectionName, stats, lang, t }) {
+  const statsStr = buildCelebStats(stats, lang)
   return (
     <div
       className="rounded-2xl px-4 py-3 flex items-center gap-3"
@@ -289,6 +365,7 @@ function CompletedBanner({ stats, t }) {
       <div className="min-w-0">
         <p className="text-sm font-bold" style={{ color: 'var(--accent)' }}>
           {t.completedBannerTitle}
+          {collectionName && <> — <bdi className="font-bold">{collectionName}</bdi></>}
         </p>
         <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>{statsStr}</p>
       </div>
@@ -297,12 +374,13 @@ function CompletedBanner({ stats, t }) {
 }
 
 // ── CelebrationModal ──────────────────────────────────────────────────────────
-function CelebrationModal({ collectionName, stats, t, onDismiss }) {
-  const title    = (t.celebTitle    ?? '').replace('{title}', collectionName)
-  const statsStr = (t.celebStats    ?? '')
-    .replace('{n}',     stats.n)
-    .replace('{notes}', stats.notes)
-    .replace('{days}',  stats.days)
+function CelebrationModal({ collectionName, stats, lang, t, onDismiss }) {
+  // Split template at {title} so we can wrap with <bdi>
+  const titleTemplate = t.celebTitle ?? ''
+  const [titleBefore, titleAfter] = titleTemplate.includes('{title}')
+    ? titleTemplate.split('{title}')
+    : [titleTemplate, '']
+  const statsStr = buildCelebStats(stats, lang)
 
   return (
     <div
@@ -344,7 +422,9 @@ function CelebrationModal({ collectionName, stats, t, onDismiss }) {
         ))}
 
         <div className="text-5xl mb-3">🎓</div>
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{title}</h2>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+          {titleBefore}<bdi>{collectionName}</bdi>{titleAfter}
+        </h2>
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">{statsStr}</p>
 
         <div
@@ -644,8 +724,8 @@ export default function CollectionsPage() {
   const [confirmDel, setConfirmDel]     = useState(false)
   const [activeVideo, setActiveVideo]   = useState(null)
 
-  const [showCelebration, setShowCelebration] = useState(false)
-  const [loadedAsComplete, setLoadedAsComplete] = useState(false)
+  const [showCelebration, setShowCelebration]       = useState(false)
+  const [showCompletedBanner, setShowCompletedBanner] = useState(false)
 
   // ── Load collections + sidebar counts ──────────────────────────────────────
   const loadCollections = useCallback(async () => {
@@ -699,7 +779,7 @@ export default function CollectionsPage() {
       if (videoIds.length === 0) {
         setColVideos([])
         setVideoCounts(prev => ({ ...prev, [colId]: 0 }))
-        setLoadedAsComplete(false)
+        setShowCompletedBanner(false)
         return
       }
 
@@ -710,7 +790,6 @@ export default function CollectionsPage() {
         .eq('user_id', uid)
       if (vErr) throw new Error(vErr.message)
 
-      // Merge: position order from cvRows, video data from videos
       const videoMap = {}
       ;(videos ?? []).forEach(v => { videoMap[v.id] = v })
 
@@ -725,8 +804,7 @@ export default function CollectionsPage() {
       setVideoCounts(prev => ({ ...prev, [colId]: merged.length }))
 
       const allDone = merged.length > 0 && merged.every(v => !!v.completed_at)
-      setLoadedAsComplete(allDone)
-      // Don't trigger celebration on page load — only on toggle action
+      setShowCompletedBanner(allDone)
     } catch (err) {
       console.error('[Collections] load failed:', err)
       setCvError(err.message)
@@ -737,7 +815,7 @@ export default function CollectionsPage() {
 
   useEffect(() => {
     if (selectedId) loadColVideos(selectedId)
-    else { setColVideos([]); setLoadedAsComplete(false) }
+    else { setColVideos([]); setShowCompletedBanner(false) }
   }, [selectedId, loadColVideos])
 
   const selectedCol = collections.find(c => c.id === selectedId) ?? null
@@ -757,10 +835,7 @@ export default function CollectionsPage() {
     const completedTs = colVideos
       .filter(v => !!v.completed_at)
       .map(v => new Date(v.completed_at).getTime())
-    const days = completedTs.length > 1
-      ? Math.max(1, Math.ceil((Math.max(...completedTs) - Math.min(...completedTs)) / 86400000))
-      : 1
-    return { n, notes, days }
+    return { n, notes, completedTs }
   }, [colVideos, allNotes])
 
   const createdDate = selectedCol?.created_at
@@ -772,7 +847,7 @@ export default function CollectionsPage() {
 
   // ── Toggle completion (collection_videos.completed_at) ──────────────────────
   const handleToggleCompletion = async (video) => {
-    const wasCompleted  = !!video.completed_at
+    const wasCompleted   = !!video.completed_at
     const newCompletedAt = wasCompleted ? null : new Date().toISOString()
 
     const newVideos = colVideos.map(v =>
@@ -793,7 +868,6 @@ export default function CollectionsPage() {
       .eq('video_id', video.id)
 
     if (error) {
-      // Revert optimistic update
       setColVideos(colVideos)
       setCompletedCounts(prev => ({
         ...prev,
@@ -804,17 +878,33 @@ export default function CollectionsPage() {
       return
     }
 
-    // Detect completion moment (action, not load)
     if (!wasCompleted) {
+      // Silently mark watched in library if not already (one-directional, fire-and-forget)
+      if (video.watch_status !== 'watched') {
+        supabase.from('videos')
+          .update({ watch_status: 'watched' })
+          .eq('id', video.id)
+          .eq('user_id', uid)
+          .then(({ error: we }) => {
+            if (we) console.warn('[Collections] watch sync failed:', we.message)
+          })
+      }
+
+      // Celebration: only when 2+ videos and all now complete
       const newCompleted = newVideos.filter(v => !!v.completed_at).length
-      if (newCompleted === newVideos.length && newVideos.length > 0) {
+      const newTotal     = newVideos.length
+      if (newCompleted === newTotal && newTotal >= 2) {
         setShowCelebration(true)
-        setLoadedAsComplete(false)
+        setShowCompletedBanner(false)
+      } else if (newCompleted === newTotal && newTotal === 1) {
+        // Single-video collection: banner only, no celebration
+        setShowCompletedBanner(true)
+        setShowCelebration(false)
       }
     } else {
-      // Un-completing reverts any banners
+      // Un-completing clears both
       setShowCelebration(false)
-      setLoadedAsComplete(false)
+      setShowCompletedBanner(false)
     }
   }
 
@@ -883,7 +973,7 @@ export default function CollectionsPage() {
     setSelectedId(id)
     setConfirmDel(false)
     setShowCelebration(false)
-    setLoadedAsComplete(false)
+    setShowCompletedBanner(false)
     setCvError('')
   }
 
@@ -937,14 +1027,14 @@ export default function CollectionsPage() {
                 <span className="text-xl shrink-0">{col.icon || '📁'}</span>
                 <span className="flex-1 text-sm font-medium truncate">{col.name}</span>
 
-                {/* Mini progress */}
-                <div className="shrink-0 flex flex-col items-end gap-0.5">
-                  <span className={`text-xs tabular-nums font-medium ${
-                    active ? 'text-[var(--accent)]' : 'text-[var(--muted)]'
-                  }`}>
-                    {done}/{total}
-                  </span>
-                  {total > 0 && (
+                {/* Mini progress — hidden for empty collections */}
+                {total > 0 && (
+                  <div className="shrink-0 flex flex-col items-end gap-0.5">
+                    <span className={`text-xs tabular-nums font-medium ${
+                      active ? 'text-[var(--accent)]' : 'text-[var(--muted)]'
+                    }`}>
+                      {done}/{total}
+                    </span>
                     <div
                       className="w-12 h-1.5 rounded-full overflow-hidden"
                       style={{ background: 'var(--accent-tint)' }}
@@ -954,8 +1044,8 @@ export default function CollectionsPage() {
                         style={{ width: `${minPct}%`, background: '#1D9E75' }}
                       />
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </button>
             )
           })}
@@ -1045,10 +1135,10 @@ export default function CollectionsPage() {
                 </div>
               </div>
 
-              {/* Meta + pill */}
+              {/* Meta + pill — pill/bar hidden for empty collections */}
               <div className="flex flex-wrap items-center gap-2 mt-3">
                 <span className="text-xs" style={{ color: 'var(--muted)' }}>
-                  {(t.videosMeta ?? '').replace('{n}', progress.total)}
+                  {videoMetaStr(progress.total, lang, t)}
                   {createdDate ? ` · ${createdDate}` : ''}
                 </span>
                 {progress.total > 0 && (
@@ -1063,7 +1153,7 @@ export default function CollectionsPage() {
                 )}
               </div>
 
-              {/* Progress bar */}
+              {/* Progress bar — hidden for empty collections */}
               {progress.total > 0 && (
                 <div
                   className="mt-3 h-2 rounded-full overflow-hidden"
@@ -1089,9 +1179,14 @@ export default function CollectionsPage() {
               </div>
             )}
 
-            {/* ── Completed banner (static, on page load) ── */}
-            {loadedAsComplete && !showCelebration && (
-              <CompletedBanner stats={celebrationStats} t={t} />
+            {/* ── Completed banner (page load or single-video completion) ── */}
+            {showCompletedBanner && !showCelebration && (
+              <CompletedBanner
+                collectionName={selectedCol?.name}
+                stats={celebrationStats}
+                lang={lang}
+                t={t}
+              />
             )}
 
             {/* ── Add Videos button ── */}
@@ -1121,6 +1216,7 @@ export default function CollectionsPage() {
                   </svg>
                 </div>
                 <p className="text-base font-semibold text-gray-900 dark:text-white">{t.noVideosInCollection}</p>
+                <p className="text-sm" style={{ color: 'var(--muted)' }}>{t.emptyCollectionHint}</p>
               </div>
             ) : (
               <div
@@ -1149,7 +1245,11 @@ export default function CollectionsPage() {
 
             {/* ── Journey Notes ── */}
             {!cvLoading && colVideos.length > 0 && (
-              <JourneyNotes notes={allNotes} t={t} />
+              <JourneyNotes
+                notes={allNotes}
+                onOpenVideo={(video) => setActiveVideo(video)}
+                t={t}
+              />
             )}
 
           </div>
@@ -1189,13 +1289,18 @@ export default function CollectionsPage() {
       )}
 
       {activeVideo && (
-        <VideoPlayerModal video={activeVideo} onClose={() => setActiveVideo(null)} />
+        <VideoPlayerModal
+          video={activeVideo}
+          initialTab="learn"
+          onClose={() => setActiveVideo(null)}
+        />
       )}
 
       {showCelebration && selectedCol && (
         <CelebrationModal
           collectionName={selectedCol.name}
           stats={celebrationStats}
+          lang={lang}
           t={t}
           onDismiss={() => setShowCelebration(false)}
         />

@@ -288,6 +288,8 @@ export const translations = {
     celebDismiss:         'رائع!',
     completedBannerTitle: 'أكملت هذه الرحلة ✓',
     statsCompleted:       'مكتمل',
+    emptyCollectionHint:  'أضف أول فيديو لبدء رحلة التعلم',
+    notesTooltip:         'عدد الملاحظات',
   },
 
   en: {
@@ -579,5 +581,7 @@ export const translations = {
     celebDismiss:         'Awesome!',
     completedBannerTitle: 'Journey complete ✓',
     statsCompleted:       'Completed',
+    emptyCollectionHint:  'Add your first video to start the journey',
+    notesTooltip:         'Notes',
   },
 }
