@@ -4,7 +4,7 @@ import { useLang } from '../context/LanguageContext'
 import { useAuth } from '../context/AuthContext'
 import HelpTip from './HelpTip'
 
-const TABS = ['learn', 'prompts', 'links']
+const TABS = ['learn', 'prompts', 'links', 'summary']
 
 // Parse "1:23" / "1:02:45" / "90" to seconds; returns null if unparseable
 function parseTimeSecs(str) {
@@ -104,7 +104,7 @@ const INPUT_CLS = `w-full px-3 py-2 rounded-xl border border-gray-700
 
 export default function VideoPlayerModal({ video, onClose, onEdit, initialTab = 'learn' }) {
   const { t } = useLang()
-  const { session } = useAuth()
+  const { session, profile } = useAuth()
   const uid = session?.user?.id
 
   const [activeTab, setActiveTab] = useState(initialTab)
@@ -134,6 +134,12 @@ export default function VideoPlayerModal({ video, onClose, onEdit, initialTab = 
   const [links,        setLinks]        = useState([])
   const [newLinkUrl,   setNewLinkUrl]   = useState('')
   const [newLinkLabel, setNewLinkLabel] = useState('')
+
+  // AI Summary
+  const [summary,        setSummary]        = useState(null)
+  const [summaryLoading, setSummaryLoading] = useState(false)
+  const [summaryError,   setSummaryError]   = useState(null)
+  const [summaryFetched, setSummaryFetched] = useState(false)
 
   // Load all data on mount (select * so every column loads without migration changes)
   useEffect(() => {
@@ -242,7 +248,53 @@ export default function VideoPlayerModal({ video, onClose, onEdit, initialTab = 
     await supabase.from('videos').update({ links: next.length ? next : null }).eq('id', video.id)
   }
 
-  const tabLabel = { learn: t.tabLearn, prompts: t.tabPrompts, links: t.tabLinks }
+  // Load existing summary when the tab is first opened (no credit consumed)
+  useEffect(() => {
+    if (activeTab !== 'summary' || summaryFetched || !uid) return
+    setSummaryFetched(true)
+    supabase
+      .from('summaries')
+      .select('*')
+      .eq('user_id', uid)
+      .eq('video_id', video.id)
+      .maybeSingle()
+      .then(({ data }) => { if (data) setSummary(data) })
+  }, [activeTab, summaryFetched, uid, video.id])
+
+  const handleSummarize = async () => {
+    if (summaryLoading) return
+    setSummaryLoading(true)
+    setSummaryError(null)
+    try {
+      const { data: { session: s } } = await supabase.auth.getSession()
+      const token = s?.access_token
+      if (!token) { setSummaryError('unauthorized'); return }
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/summarize-video`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+          },
+          body: JSON.stringify({ video_id: video.id }),
+        },
+      )
+      const data = await res.json()
+      if (!res.ok) {
+        setSummaryError(data.error ?? 'unknown_error')
+      } else {
+        setSummary(data.summary)
+      }
+    } catch {
+      setSummaryError('network_error')
+    } finally {
+      setSummaryLoading(false)
+    }
+  }
+
+  const tabLabel = { learn: t.tabLearn, prompts: t.tabPrompts, links: t.tabLinks, summary: t.tabSummary }
 
   const saveBtnCls = (dirty, saved) => `
     px-5 py-2 rounded-xl text-sm font-semibold transition-all
@@ -613,6 +665,69 @@ export default function VideoPlayerModal({ video, onClose, onEdit, initialTab = 
                       </button>
                     </div>
                   </div>
+                </div>
+              )}
+
+              {/* ── AI Summary ── */}
+              {activeTab === 'summary' && (
+                <div className="space-y-4">
+                  {summaryLoading ? (
+                    <div className="flex flex-col items-center justify-center py-14 gap-4">
+                      <div className="w-8 h-8 rounded-full border-2 border-primary-500 border-t-transparent animate-spin" />
+                      <p className="text-sm text-gray-400">{t.generating}</p>
+                    </div>
+                  ) : summary ? (
+                    <div className="space-y-4">
+                      <div className="rounded-xl bg-gray-800/70 border border-gray-700/60 p-4 space-y-2">
+                        {summary.summary_text.split('\n').filter(Boolean).map((para, i) => (
+                          <p key={i} className="text-sm text-gray-200 leading-relaxed">{para}</p>
+                        ))}
+                      </div>
+                      {Array.isArray(summary.key_points) && summary.key_points.length > 0 && (
+                        <div className="space-y-2.5">
+                          <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-500">
+                            {t.keyPoints}
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {summary.key_points.map((point, i) => (
+                              <span
+                                key={i}
+                                className="text-xs px-3 py-1.5 rounded-full
+                                           bg-primary-900/40 text-primary-300
+                                           border border-primary-800/50"
+                              >
+                                {point}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      <p className="text-[11px] text-gray-600">{t.cachedSummary}</p>
+                    </div>
+                  ) : summaryError === 'no_credits' ? (
+                    <div className="flex flex-col items-center justify-center py-12 gap-3 text-center">
+                      <span className="text-3xl">⚡</span>
+                      <p className="text-sm font-semibold text-white">{t.noCredits}</p>
+                      <p className="text-xs text-gray-500">{t.upgradeForMore}</p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-12 gap-3 text-center">
+                      {summaryError && (
+                        <p className="text-xs text-red-400 mb-1">{t.summaryError}</p>
+                      )}
+                      <button
+                        onClick={handleSummarize}
+                        className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl
+                                   text-sm font-semibold bg-primary-600 hover:bg-primary-700
+                                   text-white transition-colors"
+                      >
+                        ✨ {t.aiSummaryBtn}
+                      </button>
+                      <p className="text-xs text-gray-500">
+                        {profile?.summary_credits ?? 0} {t.creditsLeft}
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
 

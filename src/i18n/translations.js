@@ -299,6 +299,16 @@ export const translations = {
     emptyCollectionHint:  'أضف أول فيديو لبدء رحلة التعلم',
     notesTooltip:         'عدد الملاحظات',
     linksTooltip:         'الروابط المرفقة',
+    // ── AI Summary ───────────────────────────────────────────────
+    tabSummary:           'ملخص AI',
+    aiSummaryBtn:         'توليد ملخص بالذكاء الاصطناعي',
+    generating:           'جارٍ التلخيص...',
+    creditsLeft:          'رصيد متبقٍّ',
+    noCredits:            'انتهى رصيدك من الملخصات',
+    upgradeForMore:       'يمكنك الترقية للحصول على رصيد إضافي',
+    summaryError:         'تعذّر التلخيص — حاول مرة أخرى',
+    cachedSummary:        '✦ بواسطة الذكاء الاصطناعي',
+    keyPoints:            'النقاط الرئيسية',
   },
 
   en: {
@@ -601,5 +611,15 @@ export const translations = {
     emptyCollectionHint:  'Add your first video to start the journey',
     notesTooltip:         'Notes',
     linksTooltip:         'Saved links',
+    // ── AI Summary ───────────────────────────────────────────────
+    tabSummary:           'AI Summary',
+    aiSummaryBtn:         'Generate AI Summary',
+    generating:           'Generating summary…',
+    creditsLeft:          'credits left',
+    noCredits:            'No summary credits remaining',
+    upgradeForMore:       'Upgrade to get more credits',
+    summaryError:         'Failed to generate summary — please try again',
+    cachedSummary:        '✦ Powered by AI',
+    keyPoints:            'Key Points',
   },
 }
