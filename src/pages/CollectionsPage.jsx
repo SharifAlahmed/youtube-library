@@ -289,8 +289,11 @@ function ChecklistRow({ video, idx, isNextUp, onToggle, onRemove, onPlay, t }) {
                 {notesCount}
               </span>
             )}
-            {/* Position — always 1-based, never bare 0 */}
-            <span className="text-xs tabular-nums" style={{ color: 'var(--muted)' }}>
+            {/* Position — visible only on row hover, beside the remove button */}
+            <span
+              className="text-xs tabular-nums opacity-0 group-hover:opacity-50 transition-opacity"
+              style={{ color: 'var(--muted)' }}
+            >
               #{idx + 1}
             </span>
             <button
@@ -318,12 +321,14 @@ function JourneyNotes({ notes, onOpenVideo, t }) {
     <div className="space-y-3">
       <div className="flex items-center gap-2">
         <h2 className="text-base font-bold" style={{ color: 'var(--ink)' }}>{t.journeyNotes}</h2>
-        <span
-          className="text-xs font-semibold px-2 py-0.5 rounded-full"
-          style={{ background: 'var(--accent-tint)', color: 'var(--accent)' }}
-        >
-          {notes.length}
-        </span>
+        {notes.length > 0 && (
+          <span
+            className="text-xs font-semibold px-2 py-0.5 rounded-full"
+            style={{ background: 'var(--accent-tint)', color: 'var(--accent)' }}
+          >
+            {notes.length}
+          </span>
+        )}
       </div>
       {notes.length === 0 ? (
         <div className="py-8 text-center rounded-2xl border border-dashed border-[var(--border)]">
