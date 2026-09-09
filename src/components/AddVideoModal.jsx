@@ -33,6 +33,25 @@ function extractYoutubeId(url) {
   return null
 }
 
+const BATCH_CAP = 10
+
+// Postgres unique_violation — used to catch the (user_id, youtube_id) partial
+// unique index racing with our own pre-check, and treat it as "already exists"
+// rather than a failure.
+function isUniqueViolation(error) {
+  return error?.code === '23505'
+}
+
+async function getNextPosition(collectionId) {
+  const { data } = await supabase
+    .from('collection_videos')
+    .select('position')
+    .eq('collection_id', collectionId)
+    .order('position', { ascending: false })
+    .limit(1)
+  return (data?.[0]?.position ?? 0) + 1
+}
+
 // ── Autosuggest dropdown ──────────────────────────────────────────────────────
 function SuggestDropdown({ options, onSelect }) {
   if (!options.length) return null
@@ -63,6 +82,264 @@ function SuggestDropdown({ options, onSelect }) {
   )
 }
 
+// ── Batch Import panel ────────────────────────────────────────────────────────
+const ROW_ICON = { pending: '○', processing: '⟳', done: '✓', exists: '✓', error: '✗' }
+const ROW_COLOR = {
+  pending: 'text-gray-400', processing: 'text-primary-500',
+  done: 'text-emerald-600', exists: 'text-emerald-600', error: 'text-red-600',
+}
+
+function BatchImportPanel({ collectionId, existingVideoIds, uid, onClose, onImported, t }) {
+  const [text, setText]               = useState('')
+  const [sharedDomain, setSharedDomain] = useState('')
+  const [sharedTags, setSharedTags]   = useState('')
+  const [rows, setRows]               = useState(null) // null = not started yet
+  const [running, setRunning]         = useState(false)
+  const [summary, setSummary]         = useState(null)
+
+  const lines = text.split('\n').map(s => s.trim()).filter(Boolean)
+  const overCap = lines.length > BATCH_CAP
+
+  const setRowStatus = (idx, patch) => {
+    setRows(prev => prev.map((r, i) => (i === idx ? { ...r, ...patch } : r)))
+  }
+
+  const handleImport = async () => {
+    if (!lines.length || overCap || running) return
+    setRunning(true)
+    setSummary(null)
+    setRows(lines.map(url => ({ url, status: 'pending', message: '' })))
+
+    // One snapshot of the user's existing videos, not re-queried per row.
+    const { data: existingVideos } = await supabase
+      .from('videos')
+      .select('id, youtube_id')
+      .eq('user_id', uid)
+      .not('youtube_id', 'is', null)
+    const idByYoutubeId = new Map((existingVideos ?? []).map(v => [v.youtube_id, v.id]))
+    const linkedVideoIds = new Set(existingVideoIds)
+
+    let nextPosition = await getNextPosition(collectionId)
+    const finalTags   = parseTags(sharedTags)
+    const finalDomain = sharedDomain.trim().toLowerCase() || null
+
+    let added = 0, existing = 0, failed = 0
+
+    for (let i = 0; i < lines.length; i++) {
+      const url = lines[i]
+      setRowStatus(i, { status: 'processing' })
+
+      const youtubeId = extractYoutubeId(url)
+      if (!youtubeId) {
+        setRowStatus(i, { status: 'error', message: t.batchInvalidUrl })
+        failed++
+        continue
+      }
+
+      let videoId = idByYoutubeId.get(youtubeId)
+      let isNew = false
+
+      if (!videoId) {
+        let meta = { title: url, channel: null, thumbnail: null }
+        try {
+          const { data, error } = await supabase.functions.invoke('oembed', { body: { url } })
+          if (!error && !data?.error) meta = data
+        } catch { /* best-effort — fall back to placeholder below */ }
+
+        const payload = {
+          user_id:       uid,
+          youtube_id:    youtubeId,
+          url,
+          title:         meta.title || url,
+          channel:       meta.channel   || null,
+          thumbnail_url: meta.thumbnail || null,
+        }
+        if (finalDomain)        payload.domain = finalDomain
+        if (finalTags.length)   payload.tags   = finalTags
+
+        const { data: inserted, error: insertError } = await supabase
+          .from('videos').insert(payload).select('id').single()
+
+        if (insertError) {
+          if (isUniqueViolation(insertError)) {
+            // Lost the race between our snapshot and this insert — fetch the row it collided with.
+            const { data: existingRow } = await supabase
+              .from('videos').select('id').eq('user_id', uid).eq('youtube_id', youtubeId).single()
+            videoId = existingRow?.id
+          } else {
+            setRowStatus(i, { status: 'error', message: insertError.message })
+            failed++
+            continue
+          }
+        } else {
+          videoId = inserted.id
+          isNew = true
+          idByYoutubeId.set(youtubeId, videoId)
+        }
+      }
+
+      if (!videoId) {
+        setRowStatus(i, { status: 'error', message: t.errGeneric })
+        failed++
+        continue
+      }
+
+      if (linkedVideoIds.has(videoId)) {
+        setRowStatus(i, { status: 'exists', message: t.batchStatusExistsLinked })
+        existing++
+        continue
+      }
+
+      const { error: linkError } = await supabase
+        .from('collection_videos')
+        .insert({ collection_id: collectionId, video_id: videoId, position: nextPosition })
+
+      if (linkError) {
+        setRowStatus(i, { status: 'error', message: linkError.message })
+        failed++
+        continue
+      }
+
+      nextPosition++
+      linkedVideoIds.add(videoId)
+
+      if (isNew) {
+        setRowStatus(i, { status: 'done', message: t.batchStatusAdded })
+        added++
+      } else {
+        setRowStatus(i, { status: 'exists', message: t.batchStatusExists })
+        existing++
+      }
+    }
+
+    setSummary({ added, existing, failed })
+    setRunning(false)
+  }
+
+  const handleDone = () => {
+    onImported?.()
+    onClose()
+  }
+
+  return (
+    <div className="overflow-y-auto flex-1 px-6 py-5 space-y-5">
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+          {t.batchUrlsLabel}
+        </label>
+        <textarea
+          value={text}
+          onChange={e => setText(e.target.value)}
+          disabled={running}
+          placeholder={t.batchUrlsPlaceholder}
+          dir="ltr"
+          rows={6}
+          className="w-full px-4 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700
+                     text-gray-900 dark:text-white placeholder-gray-400 text-start
+                     focus:outline-none focus:ring-2 focus:border-transparent transition-all text-sm
+                     border-gray-200 dark:border-gray-600 focus:ring-primary-500 resize-y
+                     disabled:opacity-60"
+        />
+        {overCap && (
+          <p className="mt-1.5 text-xs text-red-600 dark:text-red-400">
+            {t.batchCapExceeded.replace('{n}', lines.length)}
+          </p>
+        )}
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+          {t.batchSharedDomainLabel}
+        </label>
+        <input
+          type="text"
+          value={sharedDomain}
+          onChange={e => setSharedDomain(e.target.value)}
+          disabled={running}
+          placeholder={t.domainPlaceholder}
+          className="w-full px-4 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700
+                     text-gray-900 dark:text-white placeholder-gray-400
+                     focus:outline-none focus:ring-2 focus:border-transparent transition-all text-sm
+                     border-gray-200 dark:border-gray-600 focus:ring-primary-500 disabled:opacity-60"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+          {t.batchSharedTagsLabel}
+        </label>
+        <input
+          type="text"
+          value={sharedTags}
+          onChange={e => setSharedTags(e.target.value)}
+          disabled={running}
+          placeholder={t.tagsPlaceholder}
+          className="w-full px-4 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700
+                     text-gray-900 dark:text-white placeholder-gray-400
+                     focus:outline-none focus:ring-2 focus:border-transparent transition-all text-sm
+                     border-gray-200 dark:border-gray-600 focus:ring-primary-500 disabled:opacity-60"
+        />
+      </div>
+
+      {!rows && (
+        <button
+          onClick={handleImport}
+          disabled={!lines.length || overCap}
+          className="w-full py-3 bg-primary-600 hover:bg-primary-700
+                     disabled:bg-gray-200 dark:disabled:bg-gray-600
+                     text-white disabled:text-gray-400
+                     rounded-xl text-sm font-semibold transition-colors"
+        >
+          {t.batchImportBtn}{lines.length > 0 && !overCap ? ` (${lines.length})` : ''}
+        </button>
+      )}
+
+      {rows && (
+        <div className="space-y-3">
+          <div className="rounded-xl border border-gray-200 dark:border-gray-600 divide-y divide-gray-100 dark:divide-gray-700 overflow-hidden">
+            {rows.map((row, i) => (
+              <div key={i} className="flex items-center gap-2.5 px-3 py-2 text-sm">
+                <span className={`shrink-0 w-4 text-center font-bold ${ROW_COLOR[row.status]} ${row.status === 'processing' ? 'inline-block animate-spin' : ''}`}>
+                  {ROW_ICON[row.status]}
+                </span>
+                <span className="flex-1 min-w-0 truncate text-gray-700 dark:text-gray-300" dir="ltr">
+                  {row.url}
+                </span>
+                {row.message && (
+                  <span className={`shrink-0 text-xs ${row.status === 'error' ? 'text-red-600' : 'text-gray-500 dark:text-gray-400'}`}>
+                    {row.message}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {summary && (
+            <>
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                {t.batchSummary
+                  .replace('{added}', summary.added)
+                  .replace('{existing}', summary.existing)
+                  .replace('{failed}', summary.failed)}
+              </p>
+              <button
+                onClick={handleDone}
+                className="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white
+                           rounded-xl text-sm font-semibold transition-colors"
+              >
+                {t.batchClose}
+              </button>
+            </>
+          )}
+          {running && (
+            <p className="text-sm text-gray-500 dark:text-gray-400">{t.batchImporting}</p>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Thumbnail preview ─────────────────────────────────────────────────────────
 function ThumbPreview({ src, title, youtubeId }) {
   const [useFallback, setUseFallback] = useState(false)
@@ -83,10 +360,17 @@ function ThumbPreview({ src, title, youtubeId }) {
 
 // ── Main ─────────────────────────────────────────────────────────────────────
 // video prop = null → add mode; video prop = object → edit mode
-export default function AddVideoModal({ onClose, video: initialVideo = null }) {
+// collectionId (optional) → opened from a Collection page: adds a "Batch Links"
+// tab alongside the single-link form, and links added video(s) into that
+// collection. Absent (opened from the global "+" button) → unchanged behavior.
+export default function AddVideoModal({
+  onClose, video: initialVideo = null, collectionId = null, existingVideoIds = [], onImported,
+}) {
   const { session, showTags } = useAuth()
   const { t } = useLang()
   const { triggerRefresh } = useLibrary()
+
+  const [addTab, setAddTab] = useState('single') // 'single' | 'batch' — only shown when collectionId is set
 
   const isEditMode = !!initialVideo
 
@@ -265,7 +549,7 @@ export default function AddVideoModal({ onClose, video: initialVideo = null }) {
         watch_status:    'unwatched',
         saved_for_later: false,
       }
-      const { error } = await supabase.from('videos').insert(payload)
+      const { data: inserted, error } = await supabase.from('videos').insert(payload).select('id').single()
       if (error) {
         if (error.message?.includes('FREE_LIMIT_REACHED')) {
           setUpgrade(true)
@@ -274,6 +558,14 @@ export default function AddVideoModal({ onClose, video: initialVideo = null }) {
         }
         setSaving(false)
         return
+      }
+      if (collectionId) {
+        const position = await getNextPosition(collectionId)
+        const { error: linkError } = await supabase
+          .from('collection_videos')
+          .insert({ collection_id: collectionId, video_id: inserted.id, position })
+        if (linkError) { setSaveError(linkError.message); setSaving(false); return }
+        onImported?.()
       }
       triggerRefresh()
       onClose()
@@ -318,6 +610,39 @@ export default function AddVideoModal({ onClose, video: initialVideo = null }) {
           </button>
         </div>
 
+        {/* ── Tabs — only when opened from a Collection page ── */}
+        {collectionId && !isEditMode && (
+          <div className="flex border-b border-gray-100 dark:border-gray-700 px-6 shrink-0">
+            {['single', 'batch'].map(tab => (
+              <button
+                key={tab}
+                onClick={() => setAddTab(tab)}
+                className={`relative py-3 px-4 text-sm font-medium transition-colors ${
+                  addTab === tab
+                    ? 'text-primary-600 dark:text-primary-400'
+                    : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'
+                }`}
+              >
+                {tab === 'single' ? t.tabSingleLink : t.tabBatchLinks}
+                {addTab === tab && (
+                  <span className="absolute bottom-0 start-0 end-0 h-0.5 bg-primary-500 rounded-t-full" />
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {collectionId && !isEditMode && addTab === 'batch' ? (
+          <BatchImportPanel
+            collectionId={collectionId}
+            existingVideoIds={existingVideoIds}
+            uid={session?.user?.id}
+            onClose={onClose}
+            onImported={onImported}
+            t={t}
+          />
+        ) : (
+        <>
         {/* ── Scrollable body ── */}
         <div className="overflow-y-auto flex-1 px-6 py-5 space-y-5">
 
@@ -596,6 +921,8 @@ export default function AddVideoModal({ onClose, video: initialVideo = null }) {
             ) : isEditMode ? t.saveChanges : t.save}
           </button>
         </div>
+        </>
+        )}
 
       </div>
     </div>

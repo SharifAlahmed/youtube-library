@@ -235,7 +235,7 @@ export function AISummaryTab({ videoId, language = 'ar', onSeek, onCreditsChange
           <section>
             <div className="flex items-center justify-between gap-2 mb-3">
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-semibold" style={{ color: '#15332a' }}>
+                <h3 className="text-lg font-semibold" style={{ color: '#FFFFFF' }}>
                   {t('الملخّص', 'Summary')}
                 </h3>
                 {summary.source === 'external' && (
@@ -276,7 +276,7 @@ export function AISummaryTab({ videoId, language = 'ar', onSeek, onCreditsChange
 
           {summary.key_points?.length > 0 && (
             <section>
-              <h3 className="text-lg font-semibold mb-3" style={{ color: '#15332a' }}>
+              <h3 className="text-lg font-semibold mb-3" style={{ color: '#FFFFFF' }}>
                 {t('أهم النقاط', 'Key points')}
               </h3>
               <ul className="space-y-2">
@@ -294,7 +294,7 @@ export function AISummaryTab({ videoId, language = 'ar', onSeek, onCreditsChange
 
           {summary.video_timestamps?.length > 0 && (
             <section>
-              <h3 className="text-lg font-semibold mb-3" style={{ color: '#15332a' }}>
+              <h3 className="text-lg font-semibold mb-3" style={{ color: '#FFFFFF' }}>
                 {t('لحظات مفصلية', 'Key moments')}
               </h3>
               <div className="space-y-2">

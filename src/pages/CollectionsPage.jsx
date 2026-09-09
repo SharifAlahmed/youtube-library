@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LanguageContext'
 import VideoPlayerModal from '../components/VideoPlayerModal'
+import AddVideoModal from '../components/AddVideoModal'
 import LuminaverseIcon from '../components/LuminaverseIcon'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -743,6 +744,7 @@ export default function CollectionsPage() {
   const [showCreate, setShowCreate]     = useState(false)
   const [editTarget, setEditTarget]     = useState(null)
   const [showAddVids, setShowAddVids]   = useState(false)
+  const [showImportLinks, setShowImportLinks] = useState(false)
   const [confirmDel, setConfirmDel]     = useState(false)
   const [activeVideo, setActiveVideo]   = useState(null)
 
@@ -847,6 +849,21 @@ export default function CollectionsPage() {
 
   const nextUpVideo = useMemo(() =>
     colVideos.find(v => !v.completed_at) ?? null
+  , [colVideos])
+
+  // "Processed" = learning IS NOT NULL — derived, not a stored column.
+  // "learning IS NULL" doesn't hold in practice: fresh inserts default the
+  // column to '{}' (empty object), not NULL. Treat "has been saved via the
+  // Learn tab at least once" (any key present — handleSaveLearning always
+  // writes all four keys together) as the real processed signal instead.
+  const isProcessed = (v) => v.learning != null && Object.keys(v.learning).length > 0
+
+  const processedCount = useMemo(() =>
+    colVideos.filter(isProcessed).length
+  , [colVideos])
+
+  const firstUnprocessedVideo = useMemo(() =>
+    colVideos.find(v => !isProcessed(v)) ?? null
   , [colVideos])
 
   const allNotes = useMemo(() => colVideos.flatMap(v => extractNotes(v)), [colVideos])
@@ -1173,6 +1190,31 @@ export default function CollectionsPage() {
                       .replace('{total}', progress.total)}
                   </span>
                 )}
+                {progress.total > 0 && (
+                  <span
+                    className="text-xs font-semibold px-2.5 py-0.5 rounded-full"
+                    style={{ background: 'rgba(29,158,117,0.15)', color: '#1D9E75' }}
+                  >
+                    {(t.processedPill ?? '')
+                      .replace('{done}',  processedCount)
+                      .replace('{total}', progress.total)}
+                  </span>
+                )}
+                {progress.total > 0 && (
+                  firstUnprocessedVideo ? (
+                    <button
+                      onClick={() => setActiveVideo(firstUnprocessedVideo)}
+                      className="text-xs font-semibold px-2.5 py-0.5 rounded-full text-white transition-colors"
+                      style={{ background: '#1D9E75' }}
+                    >
+                      {t.nextUnprocessedBtn}
+                    </button>
+                  ) : (
+                    <span className="text-xs font-medium" style={{ color: 'var(--muted)' }}>
+                      {t.allProcessedMsg}
+                    </span>
+                  )
+                )}
               </div>
 
               {/* Progress bar — hidden for empty collections */}
@@ -1211,8 +1253,20 @@ export default function CollectionsPage() {
               />
             )}
 
-            {/* ── Add Videos button ── */}
-            <div className="flex justify-end">
+            {/* ── Add Videos / Import Links buttons ── */}
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setShowImportLinks(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold
+                           border border-primary-600 text-primary-600 dark:text-primary-400
+                           hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"/>
+                </svg>
+                {t.importLinksBtn}
+              </button>
               <button
                 onClick={() => setShowAddVids(true)}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold
@@ -1307,6 +1361,15 @@ export default function CollectionsPage() {
           onAdd={handleAddVideos}
           onClose={() => setShowAddVids(false)}
           t={t}
+        />
+      )}
+
+      {showImportLinks && selectedId && (
+        <AddVideoModal
+          collectionId={selectedId}
+          existingVideoIds={colVideos.map(v => v.id)}
+          onImported={() => loadColVideos(selectedId)}
+          onClose={() => setShowImportLinks(false)}
         />
       )}
 
