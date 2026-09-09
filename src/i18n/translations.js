@@ -299,8 +299,9 @@ export const translations = {
     emptyCollectionHint:  'أضف أول فيديو لبدء رحلة التعلم',
     notesTooltip:         'عدد الملاحظات',
     linksTooltip:         'الروابط المرفقة',
+    summaryTooltip:       'يوجد ملخص لهذا الفيديو',
     // ── AI Summary ───────────────────────────────────────────────
-    tabSummary:           'ملخص AI',
+    tabSummary:           'الملخص',
     aiSummaryBtn:         'توليد ملخص بالذكاء الاصطناعي',
     generating:           'جارٍ التلخيص...',
     creditsLeft:          'رصيد متبقٍّ',
@@ -611,8 +612,9 @@ export const translations = {
     emptyCollectionHint:  'Add your first video to start the journey',
     notesTooltip:         'Notes',
     linksTooltip:         'Saved links',
+    summaryTooltip:       'This video has a summary',
     // ── AI Summary ───────────────────────────────────────────────
-    tabSummary:           'AI Summary',
+    tabSummary:           'Summary',
     aiSummaryBtn:         'Generate AI Summary',
     generating:           'Generating summary…',
     creditsLeft:          'credits left',

@@ -35,7 +35,9 @@ async function fetchTranscriptEntries(youtubeId: string): Promise<TranscriptEntr
   if (!match) return []
 
   const tracks: Array<{ languageCode?: string; baseUrl?: string }> = JSON.parse(match[1])
-  const track = tracks.find(t => t.languageCode?.startsWith('en')) ?? tracks[0]
+  const track = tracks.find(t => t.languageCode?.startsWith('ar'))
+    ?? tracks.find(t => t.languageCode?.startsWith('en'))
+    ?? tracks[0]
   if (!track?.baseUrl) return []
 
   const captRes = await fetch(track.baseUrl)
@@ -142,6 +144,10 @@ serve(async (req: Request) => {
     if (transcriptEntries.length) transcriptText = formatTranscriptForPrompt(transcriptEntries)
   } catch (_) { /* proceed without transcript */ }
 
+  if (!transcriptEntries.length) {
+    return json({ error: 'no_transcript' }, 200)
+  }
+
   // 7. Blend in learner's own context
   const userContext: string[] = []
   const learning = (video.learning && typeof video.learning === 'object')
@@ -236,5 +242,5 @@ Respond ONLY with valid JSON (no markdown fences, no extra text) in exactly this
   // 11. Decrement credits (floored at 0 by the RPC)
   await supabase.rpc('decrement_summary_credits', { uid: user.id })
 
-  return json({ summary: newSummary, cached: false })
+  return json({ summary: newSummary, cached: false, has_transcript: hasTimestamps })
 })

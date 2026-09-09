@@ -159,7 +159,7 @@ export default function HomePage() {
     try {
       const { data, error } = await supabase
         .from('videos')
-        .select('id, title, channel, thumbnail_url, domain, tags, watch_status, saved_for_later, created_at, youtube_id, notes, prompts, links, intent, url')
+        .select('id, title, channel, thumbnail_url, domain, tags, watch_status, saved_for_later, created_at, youtube_id, notes, prompts, links, intent, url, summaries(id)')
         .eq('user_id', uid)
         .order('created_at', { ascending: false })
       if (error) throw error
@@ -269,6 +269,13 @@ export default function HomePage() {
     setVideos(prev => prev.filter(v => v.id !== video.id))
     const { error } = await supabase.from('videos').delete().eq('id', video.id)
     if (error) setVideos(prev => [video, ...prev])
+  }, [])
+
+  // Local flag only — the summary itself is already saved by AISummaryTab.
+  // Deliberately not a refetch: flipping loadState to 'loading' would unmount
+  // every VideoCard (including the one whose modal is currently open).
+  const handleSummarySaved = useCallback((video) => {
+    patch(video.id, { summaries: [{ id: 'local' }] })
   }, [])
 
   const filterLabel = {
@@ -506,6 +513,7 @@ export default function HomePage() {
                   onToggleSaved={() => handleToggleSaved(video)}
                   onDelete={() => handleDelete(video)}
                   onEdit={openEditModal}
+                  onSummarySaved={() => handleSummarySaved(video)}
                 />
               ))}
             </div>

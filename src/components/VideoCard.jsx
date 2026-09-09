@@ -53,15 +53,16 @@ function Thumbnail({ src, title }) {
 }
 
 // ── Main component ───────────────────────────────────────────────────────────
-export default function VideoCard({ video, onToggleWatched, onToggleSaved, onDelete, onEdit }) {
+export default function VideoCard({ video, onToggleWatched, onToggleSaved, onDelete, onEdit, onSummarySaved }) {
   const { t } = useLang()
   const { showTags } = useAuth()
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [busy, setBusy] = useState(false)
   const [showPlayer, setShowPlayer] = useState(false)
 
-  const isWatched = video.watch_status === 'watched'
-  const isSaved   = !!video.saved_for_later
+  const isWatched   = video.watch_status === 'watched'
+  const isSaved     = !!video.saved_for_later
+  const hasSummary  = Array.isArray(video.summaries) && video.summaries.length > 0
 
   const run = async (fn) => {
     if (busy) return
@@ -151,6 +152,20 @@ export default function VideoCard({ video, onToggleWatched, onToggleSaved, onDel
             <div className="absolute top-2 end-2" style={{ color: 'rgb(245,158,11)' }}>
               <svg className="w-4 h-4 drop-shadow" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+              </svg>
+            </div>
+          )}
+
+          {/* Summary indicator */}
+          {hasSummary && (
+            <div
+              className="absolute bottom-2 start-2 flex items-center justify-center rounded-full shadow"
+              style={{ width: '20px', height: '20px', background: 'rgba(255,255,255,0.92)', color: '#1D9E75' }}
+              title={t.summaryTooltip}
+            >
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5}
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
               </svg>
             </div>
           )}
@@ -388,6 +403,7 @@ export default function VideoCard({ video, onToggleWatched, onToggleSaved, onDel
           video={video}
           onClose={() => setShowPlayer(false)}
           onEdit={onEdit ? (v) => { setShowPlayer(false); onEdit(v) } : undefined}
+          onSummarySaved={onSummarySaved}
         />
       )}
     </>

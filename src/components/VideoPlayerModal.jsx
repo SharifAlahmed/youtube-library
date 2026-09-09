@@ -103,7 +103,7 @@ const INPUT_CLS = `w-full px-3 py-2 rounded-xl border border-gray-700
   bg-gray-800 text-gray-100 placeholder-gray-500
   focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm`
 
-export default function VideoPlayerModal({ video, onClose, onEdit, initialTab = 'learn' }) {
+export default function VideoPlayerModal({ video, onClose, onEdit, onSummarySaved, initialTab = 'learn' }) {
   const { t, lang } = useLang()
   const { session, profile } = useAuth()
   const uid = session?.user?.id
@@ -635,6 +635,7 @@ export default function VideoPlayerModal({ video, onClose, onEdit, initialTab = 
                     videoId={video.id}
                     language={lang}
                     onSeek={handleSeek}
+                    onSummarySaved={onSummarySaved}
                   />
                 </div>
               )}
